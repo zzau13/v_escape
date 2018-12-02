@@ -7,14 +7,20 @@ documentation = "https://docs.rs/v_htmlescape"
 keywords = ["html", "escaping", "simd"]
 homepage = "https://github.com/rust-iendo/v_htmlescape"
 repository = "https://github.com/rust-iendo/v_htmlescape"
-license = "MIT OR Apache-2.0"
+license = "MIT/Apache-2.0"
 readme = "README.md"
+exclude = [".gitignore", ".travis.yml", ".cargo/config", "appveyor.yml"]
+build = "build.rs"
 
 [badges]
 appveyor = { repository = "botika/v_htmlescape" }
 maintenance = { status = "actively-developed" }
 travis-ci = { repository =  "rust-iendo/v_htmlescape", branch = "master" }
 codecov = { repository = "rust-iendo/v_htmlescape", branch = "master", service = "github" }
+
+[lib]
+name = "v_htmlescape"
+path = "src/lib.rs"
 
 [dependencies]
 cfg-if = "0.1"
@@ -28,3 +34,8 @@ criterion = "0.2"
 [[bench]]
 name = "all"
 harness = false
+
+[profile.release]
+lto = true
+opt-level = 3
+codegen-units = 1
