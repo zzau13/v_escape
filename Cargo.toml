@@ -13,7 +13,8 @@ readme = "README.md"
 [badges]
 appveyor = { repository = "botika/v_htmlescape" }
 maintenance = { status = "actively-developed" }
-travis-ci = { repository =  "rust-iendo/v_htmlescape" }
+travis-ci = { repository =  "rust-iendo/v_htmlescape", branch = "master" }
+codecov = { repository = "rust-iendo/v_htmlescape", branch = "master", service = "github" }
 
 [dependencies]
 cfg-if = "0.1"
