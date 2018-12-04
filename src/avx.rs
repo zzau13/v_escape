@@ -21,6 +21,7 @@ const VECTOR_SIZE: usize = size_of::<__m256i>();
 const VECTOR_ALIGN: usize = VECTOR_SIZE - 1;
 const LOOP_SIZE: usize = 4 * VECTOR_SIZE;
 
+#[inline]
 #[target_feature(enable = "avx2")]
 pub unsafe fn escape(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
     let v_translation_a = _mm256_set1_epi8(TRANSLATION_A);

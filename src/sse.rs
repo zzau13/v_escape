@@ -10,6 +10,7 @@ const VECTOR_SIZE: usize = size_of::<__m128i>();
 const VECTOR_ALIGN: usize = VECTOR_SIZE - 1;
 const NEEDLE_LEN: i32 = 6;
 
+#[inline]
 #[target_feature(enable = "sse4.2")]
 pub unsafe fn escape(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
     #[rustfmt::skip]
