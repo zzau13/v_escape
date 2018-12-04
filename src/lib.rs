@@ -16,7 +16,8 @@ mod utils;
 
 use utils::*;
 
-macro_rules! escape {
+#[macro_export]
+macro_rules! new_escape {
     ($name:ident, $fun:ident) => {
         use std::fmt::{self, Display, Formatter};
 
@@ -43,15 +44,15 @@ macro_rules! escape {
     };
 }
 
-escape!(Escape, _imp);
+new_escape!(Escape, _imp);
 
 cfg_if! {
     if #[cfg(all(target_arch = "x86_64", not(target_os = "windows"), v_htmlescape_simd))] {
 
         use std::mem;
         use std::sync::atomic::{AtomicUsize, Ordering};
-        mod avx;
-        mod sse;
+        pub mod avx;
+        pub mod sse;
 
         #[inline(always)]
         fn _imp(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
@@ -64,7 +65,7 @@ cfg_if! {
                 } else if cfg!(v_htmlescape_sse) && is_x86_feature_detected!("sse4.2") {
                     sse::escape as usize
                 } else {
-                    _escape as usize
+                    escape as usize
                 };
 
                 let slot = unsafe { &*(&FN as *const _ as *const AtomicUsize) };
@@ -84,14 +85,14 @@ cfg_if! {
 
         #[inline(always)]
         fn _imp(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
-            _escape(bytes, fmt)
+            escape(bytes, fmt)
         }
     }
 }
 
 /// Scalar html escape
 #[inline]
-fn _escape(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
+pub fn escape(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
     let mut start = 0;
 
     for (i, b) in bytes.iter().enumerate() {
@@ -107,10 +108,13 @@ fn _escape(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
 mod test {
     use super::*;
 
-    escape!(SEscape, _escape);
+    new_escape!(SEscape, escape);
 
     #[test]
     fn test_escape() {
+        let empty = "";
+        assert_eq!(SEscape::new(empty.as_bytes()).to_string(), empty);
+
         assert_eq!(SEscape::new("".as_bytes()).to_string(), "");
         assert_eq!(SEscape::new("<&>".as_bytes()).to_string(), "&lt;&amp;&gt;");
         assert_eq!(SEscape::new("bar&".as_bytes()).to_string(), "bar&amp;");

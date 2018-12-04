@@ -127,10 +127,13 @@ pub unsafe fn escape(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
 mod test {
     use super::*;
 
-    escape!(SSEscape, escape);
+    new_escape!(SSEscape, escape);
 
     #[test]
     fn test_escape() {
+        let empty = "";
+        assert_eq!(SSEscape::new(empty.as_bytes()).to_string(), empty);
+
         assert_eq!(SSEscape::new("".as_bytes()).to_string(), "");
         assert_eq!(SSEscape::new("<&>".as_bytes()).to_string(), "&lt;&amp;&gt;");
         assert_eq!(SSEscape::new("bar&".as_bytes()).to_string(), "bar&amp;");
