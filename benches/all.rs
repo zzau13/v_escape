@@ -37,6 +37,36 @@ fn functions(c: &mut Criterion) {
     c.bench_function("Escaping 1 MB left 3%", escaping_r_long);
     c.bench_function("Escaping 1 MB right 3%", escaping_l_long);
     c.bench_function("Escaping 1 MB false-positive at 3%", escaping_f_long);
+
+    c.bench_function("Sized No Escapable 1 bytes", size_no_escaping_short);
+    c.bench_function("Sized False Positive 1 bytes", size_false_positive_short);
+    c.bench_function("Sized Escaping 1 bytes", size_escaping_short);
+
+    c.bench_function("Sized No Escapable 10 bytes", size_no_escaping_10);
+    c.bench_function("Sized False Positive 10 bytes", size_false_positive_10);
+    c.bench_function("Sized Escaping 10 b at 10%", size_escaping_10);
+
+    c.bench_function("Sized No Escapable 30 bytes", size_no_escaping_30);
+    c.bench_function("Sized False Positive 30 b", size_false_positive_30);
+    c.bench_function("Sized Escaping 30 b at 3.33%", size_escaping_30);
+
+    c.bench_function("Sized No Escapable 130 b", size_no_escaping);
+    c.bench_function("Sized False Positive 130 b", size_false_positive);
+    c.bench_function("Sized Escaping 130 b at 3.08%", size_escaping);
+
+    c.bench_function("Sized No Escapable tweet", size_no_escaping_tweet);
+    c.bench_function("Sized False Positive tweet", size_false_positive_tweet);
+    c.bench_function("Sized Escaping tweet at 2.86%", size_escaping_tweet);
+
+    c.bench_function("Sized No Escaping 1 MB", size_no_escaping_long);
+    c.bench_function("Sized False Positive 1 MB", size_false_positive_long);
+    c.bench_function("Sized Escaping 1 MB at 3.125%", size_escaping_long);
+    c.bench_function("Sized Escaping 1 MB left 3%", size_escaping_r_long);
+    c.bench_function("Sized Escaping 1 MB right 3%", size_escaping_l_long);
+    c.bench_function(
+        "Sized Escaping 1 MB false-positive at 3%",
+        size_escaping_f_long,
+    );
 }
 
 static A: &str = "a";
@@ -287,5 +317,270 @@ fn escaping_f_long(b: &mut criterion::Bencher) {
 
     b.iter(|| {
         write!(writer, "{}", Escape::new(string));
+    });
+}
+
+// 1 byte
+fn size_escaping_short(b: &mut criterion::Bencher) {
+    let string = E.as_bytes();
+    let e = Escape::new(string);
+    let mut writer = String::with_capacity(e.size());
+
+    b.iter(|| {
+        write!(writer, "{}", e);
+    });
+}
+
+fn size_no_escaping_short(b: &mut criterion::Bencher) {
+    let string = A.as_bytes();
+    let e = Escape::new(string);
+    let mut writer = String::with_capacity(e.size());
+
+    b.iter(|| {
+        write!(writer, "{}", e);
+    });
+}
+
+fn size_false_positive_short(b: &mut criterion::Bencher) {
+    let string = F.as_bytes();
+    let e = Escape::new(string);
+    let mut writer = String::with_capacity(e.size());
+
+    b.iter(|| {
+        write!(writer, "{}", e);
+    });
+}
+
+// 10 bytes
+fn size_escaping_10(b: &mut criterion::Bencher) {
+    // 10 bytes at 10% escape
+    let s = [A, A, A, A, A, E, A, A, A, A, A].join("");
+    let string = s.as_bytes();
+    let e = Escape::new(string);
+    let mut writer = String::with_capacity(e.size());
+
+    b.iter(|| {
+        write!(writer, "{}", Escape::new(string));
+    });
+}
+
+fn size_no_escaping_10(b: &mut criterion::Bencher) {
+    let s = A.repeat(10);
+    let string = s.as_bytes();
+    let e = Escape::new(string);
+    let mut writer = String::with_capacity(e.size());
+
+    b.iter(|| {
+        write!(writer, "{}", e);
+    });
+}
+
+fn size_false_positive_10(b: &mut criterion::Bencher) {
+    let s = F.repeat(10);
+    let string = s.as_bytes();
+    let e = Escape::new(string);
+    let mut writer = String::with_capacity(e.size());
+
+    b.iter(|| {
+        write!(writer, "{}", e);
+    });
+}
+
+// 30 bytes
+fn size_escaping_30(b: &mut criterion::Bencher) {
+    // 30 bytes at 3.33% escape
+    let s = [&A.repeat(15), E, &A.repeat(14)].join("");
+    let string = s.as_bytes();
+    let e = Escape::new(string);
+    let mut writer = String::with_capacity(e.size());
+
+    b.iter(|| {
+        write!(writer, "{}", e);
+    });
+}
+
+fn size_no_escaping_30(b: &mut criterion::Bencher) {
+    let s = A.repeat(30);
+    let string = s.as_bytes();
+    let e = Escape::new(string);
+    let mut writer = String::with_capacity(e.size());
+
+    b.iter(|| {
+        write!(writer, "{}", e);
+    });
+}
+
+fn size_false_positive_30(b: &mut criterion::Bencher) {
+    let s = F.repeat(30);
+    let string = s.as_bytes();
+    let e = Escape::new(string);
+    let mut writer = String::with_capacity(e.size());
+
+    b.iter(|| {
+        write!(writer, "{}", e);
+    });
+}
+
+// 130 bytes
+fn size_escaping(b: &mut criterion::Bencher) {
+    // 130 bytes at 3.08% escape
+    let s = [
+        &A.repeat(25),
+        E,
+        &A.repeat(25),
+        E,
+        &A.repeat(25),
+        E,
+        &A.repeat(25),
+        E,
+        &A.repeat(26),
+    ]
+        .join("");
+    let string = s.as_bytes();
+    let e = Escape::new(string);
+    let mut writer = String::with_capacity(e.size());
+
+    b.iter(|| {
+        write!(writer, "{}", e);
+    });
+}
+
+fn size_no_escaping(b: &mut criterion::Bencher) {
+    let s = A.repeat(130);
+    let string = s.as_bytes();
+    let e = Escape::new(string);
+    let mut writer = String::with_capacity(e.size());
+
+    b.iter(|| {
+        write!(writer, "{}", e);
+    });
+}
+
+fn size_false_positive(b: &mut criterion::Bencher) {
+    let s = F.repeat(130);
+    let string = s.as_bytes();
+    let e = Escape::new(string);
+    let mut writer = String::with_capacity(e.size());
+
+    b.iter(|| {
+        write!(writer, "{}", e);
+    });
+}
+
+// 280 bytes
+fn size_escaping_tweet(b: &mut criterion::Bencher) {
+    // 280 bytes at 2.86% escape
+    let s = [
+        &A.repeat(30),
+        E,
+        &A.repeat(25),
+        E,
+        &A.repeat(25),
+        E,
+        &A.repeat(25),
+        E,
+        &A.repeat(31),
+    ]
+        .join("")
+        .repeat(2);
+    let string = s.as_bytes();
+    let e = Escape::new(string);
+    let mut writer = String::with_capacity(e.size());
+
+    b.iter(|| {
+        write!(writer, "{}", e);
+    });
+}
+
+fn size_no_escaping_tweet(b: &mut criterion::Bencher) {
+    let s = A.repeat(280);
+    let string = s.as_bytes();
+    let e = Escape::new(string);
+    let mut writer = String::with_capacity(e.size());
+
+    b.iter(|| {
+        write!(writer, "{}", e);
+    });
+}
+
+fn size_false_positive_tweet(b: &mut criterion::Bencher) {
+    let s = F.repeat(280);
+    let string = s.as_bytes();
+    let e = Escape::new(string);
+    let mut writer = String::with_capacity(e.size());
+
+    b.iter(|| {
+        write!(writer, "{}", e);
+    });
+}
+
+// 1 MB
+fn size_escaping_long(b: &mut criterion::Bencher) {
+    // 1 MB at 3.125% escape
+    let s = [&A.repeat(15), E, &A.repeat(16)].join("").repeat(32 * 1024);
+    let string = s.as_bytes();
+    let e = Escape::new(string);
+    let mut writer = String::with_capacity(e.size());
+
+    b.iter(|| {
+        write!(writer, "{}", e);
+    });
+}
+
+fn size_no_escaping_long(b: &mut criterion::Bencher) {
+    let s = A.repeat(1024 * 1024);
+    let string = s.as_bytes();
+    let e = Escape::new(string);
+    let mut writer = String::with_capacity(e.size());
+
+    b.iter(|| {
+        write!(writer, "{}", e);
+    });
+}
+
+fn size_false_positive_long(b: &mut criterion::Bencher) {
+    let s = F.repeat(1024 * 1024);
+    let string = s.as_bytes();
+    let e = Escape::new(string);
+    let mut writer = String::with_capacity(e.size());
+
+    b.iter(|| {
+        write!(writer, "{}", e);
+    });
+}
+
+fn size_escaping_r_long(b: &mut criterion::Bencher) {
+    let _3 = 3 * ((1024 * 1024) / 100);
+    let s = [A.repeat(1024 * 1024 - _3), E.repeat(_3)].join("");
+    let string = s.as_bytes();
+    let e = Escape::new(string);
+    let mut writer = String::with_capacity(e.size());
+
+    b.iter(|| {
+        write!(writer, "{}", e);
+    });
+}
+
+fn size_escaping_l_long(b: &mut criterion::Bencher) {
+    let _3 = 3 * ((1024 * 1024) / 100);
+    let s = [E.repeat(_3), A.repeat(1024 * 1024 - _3)].join("");
+    let string = s.as_bytes();
+    let e = Escape::new(string);
+    let mut writer = String::with_capacity(e.size());
+
+    b.iter(|| {
+        write!(writer, "{}", e);
+    });
+}
+
+fn size_escaping_f_long(b: &mut criterion::Bencher) {
+    // 1 MB at 3.125% escape
+    let s = [&F.repeat(15), E, &F.repeat(16)].join("").repeat(32 * 1024);
+    let string = s.as_bytes();
+    let e = Escape::new(string);
+    let mut writer = String::with_capacity(e.size());
+
+    b.iter(|| {
+        write!(writer, "{}", e);
     });
 }

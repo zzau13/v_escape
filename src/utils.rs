@@ -31,6 +31,36 @@ pub(crate) static TABLE: [u8; 256] = [
 pub(crate) static QUOTES: [&str; 6] = ["&lt;", "&gt;", "&amp;", "&quot;", "&#x27;", "&#x2f;"];
 pub(crate) const QUOTES_LEN: usize = 6;
 
+// ASCII codes to quotes length - 1
+#[rustfmt::skip]
+pub(crate) static SIZES: [u8; 256] = [
+//  \0                            \n
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//  commands
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//  \w !  "  #  $  %  &  '  (  )  *  +  ,  -  .  /
+    0, 0, 5, 0, 0, 0, 4, 5, 0, 0, 0, 0, 0, 0, 0, 5,
+//  0  1  2  3  4  5  0  7  8  9  :  ;  <  =  >  ?
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 3, 0,
+//  @  A  B  C  D  E  F  G  H  I  J  K  L  M  N  O
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//  P  Q  R  S  T  U  V  W  X  Y  Z  [  \  ]  ^  _
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//  `  a  b  c  d  e  f  g  h  i  j  k  l  m  n  o
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//  p  q  r  s  t  u  v  w  x  y  z  {  |  }  ~  del
+//   ====== Extended ASCII (aka. obs-text) ======
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+];
+
 /// Returns subtraction of two pointers `b` and `a` as usize,
 /// checks if value in `a` is larger or equal to the one in `b`
 ///
@@ -89,5 +119,12 @@ macro_rules! bodies {
             // `QUOTES[c]` is the string representation of the escaped character
             $callback!($i, $start, $fmt, $bytes, QUOTES[c]);
         }
+    };
+}
+
+// Accumulate current escaping byte size
+macro_rules! size_bodies {
+    ($acc:ident, $b:expr) => {
+        $acc += SIZES[$b as usize] as usize;
     };
 }

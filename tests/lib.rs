@@ -161,4 +161,66 @@ quis lacus at, gravida maximus elit. Duis tristique, nisl nullam.
         Escape::new(string_long.as_bytes()).to_string(),
         string_long_escaped
     );
+
+    // Size
+    assert_eq!(
+        Escape::new(&"<".repeat(16).as_bytes()).size(),
+        "&lt;".repeat(16).len()
+    );
+    assert_eq!(
+        Escape::new(&"<".repeat(32).as_bytes()).size(),
+        "&lt;".repeat(32).len()
+    );
+    assert_eq!(
+        Escape::new(&"<".repeat(64).as_bytes()).size(),
+        "&lt;".repeat(64).len()
+    );
+    assert_eq!(
+        Escape::new(&"<".repeat(128).as_bytes()).size(),
+        "&lt;".repeat(128).len()
+    );
+    assert_eq!(
+        Escape::new(&"<".repeat(1024).as_bytes()).size(),
+        "&lt;".repeat(1024).len()
+    );
+    assert_eq!(
+        Escape::new(&"<".repeat(129).as_bytes()).size(),
+        "&lt;".repeat(129).len()
+    );
+    assert_eq!(
+        Escape::new(&"<".repeat(128 * 2 - 1).as_bytes()).size(),
+        "&lt;".repeat(128 * 2 - 1).len()
+    );
+    assert_eq!(
+        Escape::new(&"<".repeat(128 * 8 - 1).as_bytes()).size(),
+        "&lt;".repeat(128 * 8 - 1).len()
+    );
+    assert_eq!(
+        Escape::new(string_long.as_bytes()).size(),
+        string_long_escaped.len()
+    );
+    assert_eq!(
+        Escape::new(&[string_long, "<"].join("").as_bytes()).size(),
+        [string_long_escaped, "&lt;"].join("").len()
+    );
+    assert_eq!(
+        Escape::new(&["<", string_long].join("").as_bytes()).size(),
+        ["&lt;", string_long_escaped].join("").len()
+    );
+    assert_eq!(
+        Escape::new(&escapes.repeat(1024).as_bytes()).size(),
+        escaped.repeat(1024).len()
+    );
+    assert_eq!(
+        Escape::new(
+            &[string_long, &escapes.repeat(13)]
+                .join("")
+                .repeat(1024)
+                .as_bytes()
+        ).size(),
+        [string_long_escaped, &escaped.repeat(13)]
+            .join("")
+            .repeat(1024)
+            .len()
+    );
 }
