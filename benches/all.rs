@@ -11,6 +11,13 @@ criterion_main!(benches);
 criterion_group!(benches, functions);
 
 fn functions(c: &mut Criterion) {
+    // Sizing
+    c.bench_function("Sizing No Escaping 1 MB", sized_no_escaping_long);
+    c.bench_function("Sizing Escaping 1 MB at 3.125%", sized_escaping_long);
+    c.bench_function("Sizing Escaping 1 MB left 3%", sized_escaping_r_long);
+    c.bench_function("Sizing Escaping 1 MB right 3%", sized_escaping_l_long);
+
+    // Formatting
     c.bench_function("No Escapable 1 bytes", no_escaping_short);
     c.bench_function("False Positive 1 bytes", false_positive_short);
     c.bench_function("Escaping 1 bytes", escaping_short);
@@ -74,6 +81,49 @@ static E: &str = "<";
 static ED: &str = "&lt;";
 // between 35, 36, 37, 61 in ascii table and no escapable 1 / 64
 static F: &str = "=";
+
+fn sized_escaping_long(b: &mut criterion::Bencher) {
+    // 1 MB at 3.125% escape
+    let s = [&A.repeat(15), E, &A.repeat(16)].join("").repeat(32 * 1024);
+    let string = s.as_bytes();
+    let e = Escape::new(string);
+
+    b.iter(|| {
+        e.size();
+    });
+}
+
+fn sized_no_escaping_long(b: &mut criterion::Bencher) {
+    let s = A.repeat(1024 * 1024);
+    let string = s.as_bytes();
+    let e = Escape::new(string);
+
+    b.iter(|| {
+        e.size();
+    });
+}
+
+fn sized_escaping_r_long(b: &mut criterion::Bencher) {
+    let _3 = 3 * ((1024 * 1024) / 100);
+    let s = [A.repeat(1024 * 1024 - _3), E.repeat(_3)].join("");
+    let string = s.as_bytes();
+    let e = Escape::new(string);
+
+    b.iter(|| {
+        e.size();
+    });
+}
+
+fn sized_escaping_l_long(b: &mut criterion::Bencher) {
+    let _3 = 3 * ((1024 * 1024) / 100);
+    let s = [E.repeat(_3), A.repeat(1024 * 1024 - _3)].join("");
+    let string = s.as_bytes();
+    let e = Escape::new(string);
+
+    b.iter(|| {
+        e.size();
+    });
+}
 
 // 1 byte
 fn escaping_short(b: &mut criterion::Bencher) {
