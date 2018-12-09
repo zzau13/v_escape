@@ -10,16 +10,10 @@ env:
   - CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_AVX="true"
   - CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_SIMD="true"
 
-before_script:
-  - rustup component add rustfmt-preview
-
 script:
   - cargo test --all
-  - if [[ "${TRAVIS_RUST_VERSION}" == stable ]]; then
-    cargo fmt -- --check;
-    fi
   - |
-    if [[ "$TRAVIS_RUST_VERSION" == "nightly" ]] && [[ -z "$CARGO_CFG_ESCAPE_DISABLE_AUTO_AVX" ]] && [[ -z "$CARGO_CFG_ESCAPE_DISABLE_AUTO_SIMD" ]]; then
+    if [[ "$TRAVIS_RUST_VERSION" == "nightly" ]] && [[ -z "$CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_AVX" ]] && [[ -z "$CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_SIMD" ]]; then
     RUSTFLAGS="--cfg procmacro2_semver_exempt" cargo install -f cargo-tarpaulin
     RUST_BACKTRACE=1 cargo tarpaulin --out Xml
     bash <(curl -s https://codecov.io/bash)
