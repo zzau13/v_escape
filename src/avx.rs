@@ -1,11 +1,12 @@
-use std::fmt::{self, Formatter};
-use std::i8;
-use std::mem::size_of;
-use std::str;
-use std::arch::x86_64::{__m256i, _tzcnt_u32, _tzcnt_u64, _mm256_add_epi8, _mm256_cmpeq_epi8,
-                        _mm256_cmpgt_epi8, _mm256_lddqu_si256, _mm256_load_si256,
-                        _mm256_loadu_si256, _mm256_movemask_epi8, _mm256_or_si256,
-                        _mm256_set1_epi8};
+use std::{
+    arch::x86_64::{__m256i, _mm256_add_epi8, _mm256_cmpeq_epi8, _mm256_cmpgt_epi8,
+                   _mm256_lddqu_si256, _mm256_load_si256, _mm256_loadu_si256,
+                   _mm256_movemask_epi8, _mm256_or_si256, _mm256_set1_epi8},
+    fmt::{self, Formatter},
+    i8,
+    mem::size_of,
+    str,
+};
 
 use utils::*;
 
@@ -21,6 +22,123 @@ const VECTOR_SIZE: usize = size_of::<__m256i>();
 const VECTOR_ALIGN: usize = VECTOR_SIZE - 1;
 const LOOP_SIZE: usize = 4 * VECTOR_SIZE;
 
+// Main loop DI with macros:
+// write_mask(mask: {integer}, ptr: *const u8)
+// write_forward(mask: {integer}, until: usize})
+// masking(a: __m256i) -> __m256i masking at i8
+// TODO: document in detail
+macro_rules! loops {
+    ($len: ident, $ptr: ident, $start_ptr: ident, $bytes: ident) => {{
+        if $len < VECTOR_SIZE {
+            let mut mask = {
+                let a = _mm256_lddqu_si256($ptr as *const __m256i);
+                _mm256_movemask_epi8(masking!(a))
+            };
+
+            write_forward!(mask, $len);
+        } else {
+            let end_ptr = $bytes[$len..].as_ptr();
+
+            {
+                let align = VECTOR_SIZE - ($start_ptr as usize & VECTOR_ALIGN);
+                if align < VECTOR_SIZE {
+                    let mut mask = {
+                        let a = _mm256_loadu_si256($ptr as *const __m256i);
+                        _mm256_movemask_epi8(masking!(a))
+                    };
+
+                    write_forward!(mask, align);
+                    $ptr = $ptr.add(align);
+                }
+            }
+
+            debug_assert!($start_ptr <= $ptr && $start_ptr <= end_ptr.sub(VECTOR_SIZE));
+
+            if LOOP_SIZE <= $len {
+                while $ptr <= end_ptr.sub(LOOP_SIZE) {
+                    debug_assert_eq!(0, ($ptr as usize) % VECTOR_SIZE);
+                    let cmp_a = {
+                        let a = _mm256_load_si256($ptr as *const __m256i);
+                        masking!(a)
+                    };
+
+                    let cmp_b = {
+                        let a = _mm256_load_si256($ptr.add(VECTOR_SIZE) as *const __m256i);
+                        masking!(a)
+                    };
+
+                    let cmp_c = {
+                        let a = _mm256_load_si256($ptr.add(VECTOR_SIZE * 2) as *const __m256i);
+                        masking!(a)
+                    };
+
+                    let cmp_d = {
+                        let a = _mm256_load_si256($ptr.add(VECTOR_SIZE * 3) as *const __m256i);
+                        masking!(a)
+                    };
+
+                    // Adjust the four masks in two from right to left.
+                    if _mm256_movemask_epi8(_mm256_or_si256(_mm256_or_si256(cmp_a, cmp_b), _mm256_or_si256(cmp_c, cmp_d))) != 0 {
+                        let mut mask = _mm256_movemask_epi8(cmp_a);
+                        if mask != 0 {
+                            write_mask!(mask, $ptr);
+                        }
+
+                        mask = _mm256_movemask_epi8(cmp_b);
+                        if mask != 0 {
+                            let ptr = $ptr.add(VECTOR_SIZE);
+                            write_mask!(mask, ptr);
+                        }
+
+                        mask = _mm256_movemask_epi8(cmp_c);
+                        if mask != 0 {
+                            let ptr = $ptr.add(VECTOR_SIZE * 2);
+                            write_mask!(mask, ptr);
+                        }
+
+                        mask = _mm256_movemask_epi8(cmp_d);
+                        if mask != 0 {
+                            let ptr = $ptr.add(VECTOR_SIZE * 3);
+                            write_mask!(mask, ptr);
+                        }
+                    }
+
+                    $ptr = $ptr.add(LOOP_SIZE);
+                }
+            }
+
+            while $ptr <= end_ptr.sub(VECTOR_SIZE) {
+                debug_assert_eq!(0, ($ptr as usize) % VECTOR_SIZE);
+
+                let mut mask = {
+                    let a = _mm256_load_si256($ptr as *const __m256i);
+                    _mm256_movemask_epi8(masking!(a))
+                };
+
+                if mask != 0 {
+                    write_mask!(mask, $ptr);
+                }
+                $ptr = $ptr.add(VECTOR_SIZE);
+            }
+
+            debug_assert!(end_ptr.sub(VECTOR_SIZE) < $ptr);
+
+            if $ptr < end_ptr {
+                debug_assert_eq!(0, ($ptr as usize) % VECTOR_SIZE);
+
+                let mut mask = {
+                    let a = _mm256_load_si256($ptr as *const __m256i);
+                    _mm256_movemask_epi8(masking!(a))
+                };
+                let end = sub(end_ptr, $ptr);
+
+                write_forward!(mask, end);
+            }
+        }
+    }};
+}
+
+/// Html escape formatter
 #[inline]
 #[target_feature(enable = "avx2")]
 pub unsafe fn escape(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
@@ -38,7 +156,7 @@ pub unsafe fn escape(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
 
     // Format bytes in the mask that starts in the current pointer
     macro_rules! mask_bodies {
-        ($mask:ident, $at:ident, $cur:ident, $ptr:ident, $tzcnt:ident) => {
+        ($mask:ident, $at:ident, $cur:ident, $ptr:ident) => {
             // Calls macro `bodies!` at position `$at + $cur`
             // of byte `*$ptr` + `$curr` with macro `mask_body!`
             bodies!($at + $cur, *$ptr.add($cur), start, fmt, bytes, mask_body);
@@ -52,22 +170,22 @@ pub unsafe fn escape(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
             }
 
             // Get to the next possible escape character avoiding zeros
-            $cur = $tzcnt($mask) as usize;
+            $cur = $mask.trailing_zeros() as usize;
         };
     }
 
     // Macro to write with mask
     macro_rules! write_mask {
-        ($mask:ident, $ptr:ident, $tzcnt:ident) => {{
+        ($mask:ident, $ptr:ident) => {{
             // Reference to the start of mask
             let at = sub($ptr, start_ptr);
             // Get to the first possible escape character avoiding zeros
-            let mut cur = $tzcnt($mask) as usize;
+            let mut cur = $mask.trailing_zeros() as usize;
 
             loop {
                 // Writing in `$fmt` with `$mask`
                 // The main loop will break when mask == 0
-                mask_bodies!($mask, at, cur, $ptr, $tzcnt);
+                mask_bodies!($mask, at, cur, $ptr);
             }
 
             debug_assert_eq!(at, sub($ptr, start_ptr))
@@ -79,10 +197,10 @@ pub unsafe fn escape(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
         ($mask: ident, $align:ident) => {{
             if $mask != 0 {
                 let at = sub(ptr, start_ptr);
-                let mut cur = _tzcnt_u32($mask) as usize;
+                let mut cur = $mask.trailing_zeros() as usize;
 
                 while cur < $align {
-                    mask_bodies!($mask, at, cur, ptr, _tzcnt_u32);
+                    mask_bodies!($mask, at, cur, ptr);
                 }
 
                 debug_assert_eq!(at, sub(ptr, start_ptr))
@@ -103,113 +221,7 @@ pub unsafe fn escape(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
         }};
     }
 
-    if len < VECTOR_SIZE {
-        let mut mask = {
-            let a = _mm256_lddqu_si256(ptr as *const __m256i);
-            _mm256_movemask_epi8(masking!(a)) as u32
-        };
-
-        write_forward!(mask, len);
-    } else {
-        let end_ptr = bytes[len..].as_ptr();
-
-        {
-            let align = VECTOR_SIZE - (start_ptr as usize & VECTOR_ALIGN);
-            if align < VECTOR_SIZE {
-                let mut mask = {
-                    let a = _mm256_loadu_si256(ptr as *const __m256i);
-                    _mm256_movemask_epi8(masking!(a)) as u32
-                };
-
-                write_forward!(mask, align);
-                ptr = ptr.add(align);
-
-                debug_assert!(start <= sub(ptr, start_ptr));
-            }
-        }
-
-        debug_assert!(start_ptr <= ptr && start_ptr <= end_ptr.sub(VECTOR_SIZE));
-
-        if LOOP_SIZE <= len {
-            while ptr <= end_ptr.sub(LOOP_SIZE) {
-                debug_assert_eq!(0, (ptr as usize) % VECTOR_SIZE);
-                let cmp_a = {
-                    let a = _mm256_load_si256(ptr as *const __m256i);
-                    masking!(a)
-                };
-
-                let cmp_b = {
-                    let a = _mm256_load_si256(ptr.add(VECTOR_SIZE) as *const __m256i);
-                    masking!(a)
-                };
-
-                let cmp_c = {
-                    let a = _mm256_load_si256(ptr.add(VECTOR_SIZE * 2) as *const __m256i);
-                    masking!(a)
-                };
-
-                let cmp_d = {
-                    let a = _mm256_load_si256(ptr.add(VECTOR_SIZE * 3) as *const __m256i);
-                    masking!(a)
-                };
-
-                let or1 = _mm256_or_si256(cmp_a, cmp_b);
-                let or2 = _mm256_or_si256(cmp_c, cmp_d);
-
-                // Adjust the four masks in two from right to left.
-                if _mm256_movemask_epi8(_mm256_or_si256(or1, or2)) != 0 {
-                    let mut mask = _mm256_movemask_epi8(cmp_a) as u64
-                        | (_mm256_movemask_epi8(cmp_b) as u64) << VECTOR_SIZE;
-
-                    if mask != 0 {
-                        write_mask!(mask, ptr, _tzcnt_u64);
-                    }
-                    let ptr = ptr.add(VECTOR_SIZE + VECTOR_SIZE);
-
-                    mask = _mm256_movemask_epi8(cmp_c) as u64
-                        | (_mm256_movemask_epi8(cmp_d) as u64) << VECTOR_SIZE;
-
-                    if mask != 0 {
-                        write_mask!(mask, ptr, _tzcnt_u64);
-                    }
-                }
-
-                ptr = ptr.add(LOOP_SIZE);
-
-                debug_assert!(start <= sub(ptr, start_ptr));
-            }
-        }
-
-        while ptr <= end_ptr.sub(VECTOR_SIZE) {
-            debug_assert_eq!(0, (ptr as usize) % VECTOR_SIZE);
-
-            let mut mask = {
-                let a = _mm256_load_si256(ptr as *const __m256i);
-                _mm256_movemask_epi8(masking!(a)) as u32
-            };
-
-            if mask != 0 {
-                write_mask!(mask, ptr, _tzcnt_u32);
-            }
-            ptr = ptr.add(VECTOR_SIZE);
-
-            debug_assert!(start <= sub(ptr, start_ptr));
-        }
-
-        debug_assert!(end_ptr.sub(VECTOR_SIZE) < ptr);
-
-        if ptr < end_ptr {
-            debug_assert_eq!(0, (ptr as usize) % VECTOR_SIZE);
-
-            let mut mask = {
-                let a = _mm256_load_si256(ptr as *const __m256i);
-                _mm256_movemask_epi8(masking!(a)) as u32
-            };
-            let end = sub(end_ptr, ptr);
-
-            write_forward!(mask, end);
-        }
-    }
+    loops!(len, ptr, start_ptr, bytes);
 
     // Write since start to the end of the slice
     debug_assert!(start <= len);
@@ -237,7 +249,7 @@ pub unsafe fn size(bytes: &[u8]) -> usize {
 
     // Size bytes in the mask that starts in the current pointer
     macro_rules! mask_bodies {
-        ($mask:ident, $cur:ident, $ptr:ident, $tzcnt:ident) => {
+        ($mask:ident, $cur:ident, $ptr:ident) => {
 
             size_bodies!(acc, *$ptr.add($cur));
             // Create binary vector of all zeros except
@@ -249,19 +261,19 @@ pub unsafe fn size(bytes: &[u8]) -> usize {
             }
 
             // Get to the next possible escape character avoiding zeros
-            $cur = $tzcnt($mask) as usize;
+            $cur = $mask.trailing_zeros() as usize;
         };
     }
 
     // Macro to write with mask
     macro_rules! write_mask {
-        ($mask:ident, $ptr:ident, $tzcnt:ident) => {{
+        ($mask:ident, $ptr:ident) => {{
             // Get to the first possible escape character avoiding zeros
-            let mut cur = $tzcnt($mask) as usize;
+            let mut cur = $mask.trailing_zeros() as usize;
 
             loop {
                 // The main loop will break when mask == 0
-                mask_bodies!($mask, cur, $ptr, $tzcnt);
+                mask_bodies!($mask, cur, $ptr);
             }
         }};
     }
@@ -270,10 +282,10 @@ pub unsafe fn size(bytes: &[u8]) -> usize {
     macro_rules! write_forward {
         ($mask: ident, $align:ident) => {{
             if $mask != 0 {
-                let mut cur = _tzcnt_u32($mask) as usize;
+                let mut cur = $mask.trailing_zeros() as usize;
 
                 while cur < $align {
-                    mask_bodies!($mask, cur, ptr, _tzcnt_u32);
+                    mask_bodies!($mask, cur, ptr);
                 }
             }
         }};
@@ -292,107 +304,7 @@ pub unsafe fn size(bytes: &[u8]) -> usize {
         }};
     }
 
-    if len < VECTOR_SIZE {
-        let mut mask = {
-            let a = _mm256_lddqu_si256(ptr as *const __m256i);
-            _mm256_movemask_epi8(masking!(a)) as u32
-        };
-
-        write_forward!(mask, len);
-    } else {
-        let end_ptr = bytes[len..].as_ptr();
-
-        {
-            let align = VECTOR_SIZE - (start_ptr as usize & VECTOR_ALIGN);
-            if align < VECTOR_SIZE {
-                let mut mask = {
-                    let a = _mm256_loadu_si256(ptr as *const __m256i);
-                    _mm256_movemask_epi8(masking!(a)) as u32
-                };
-
-                write_forward!(mask, align);
-                ptr = ptr.add(align);
-            }
-        }
-
-        debug_assert!(start_ptr <= ptr && start_ptr <= end_ptr.sub(VECTOR_SIZE));
-
-        if LOOP_SIZE <= len {
-            while ptr <= end_ptr.sub(LOOP_SIZE) {
-                debug_assert_eq!(0, (ptr as usize) % VECTOR_SIZE);
-                let cmp_a = {
-                    let a = _mm256_load_si256(ptr as *const __m256i);
-                    masking!(a)
-                };
-
-                let cmp_b = {
-                    let a = _mm256_load_si256(ptr.add(VECTOR_SIZE) as *const __m256i);
-                    masking!(a)
-                };
-
-                let cmp_c = {
-                    let a = _mm256_load_si256(ptr.add(VECTOR_SIZE * 2) as *const __m256i);
-                    masking!(a)
-                };
-
-                let cmp_d = {
-                    let a = _mm256_load_si256(ptr.add(VECTOR_SIZE * 3) as *const __m256i);
-                    masking!(a)
-                };
-
-                let or1 = _mm256_or_si256(cmp_a, cmp_b);
-                let or2 = _mm256_or_si256(cmp_c, cmp_d);
-
-                // Adjust the four masks in two from right to left.
-                if _mm256_movemask_epi8(_mm256_or_si256(or1, or2)) != 0 {
-                    let mut mask = _mm256_movemask_epi8(cmp_a) as u64
-                        | (_mm256_movemask_epi8(cmp_b) as u64) << VECTOR_SIZE;
-
-                    if mask != 0 {
-                        write_mask!(mask, ptr, _tzcnt_u64);
-                    }
-                    let ptr = ptr.add(VECTOR_SIZE + VECTOR_SIZE);
-
-                    mask = _mm256_movemask_epi8(cmp_c) as u64
-                        | (_mm256_movemask_epi8(cmp_d) as u64) << VECTOR_SIZE;
-
-                    if mask != 0 {
-                        write_mask!(mask, ptr, _tzcnt_u64);
-                    }
-                }
-
-                ptr = ptr.add(LOOP_SIZE);
-            }
-        }
-
-        while ptr <= end_ptr.sub(VECTOR_SIZE) {
-            debug_assert_eq!(0, (ptr as usize) % VECTOR_SIZE);
-
-            let mut mask = {
-                let a = _mm256_load_si256(ptr as *const __m256i);
-                _mm256_movemask_epi8(masking!(a)) as u32
-            };
-
-            if mask != 0 {
-                write_mask!(mask, ptr, _tzcnt_u32);
-            }
-            ptr = ptr.add(VECTOR_SIZE);
-        }
-
-        debug_assert!(end_ptr.sub(VECTOR_SIZE) < ptr);
-
-        if ptr < end_ptr {
-            debug_assert_eq!(0, (ptr as usize) % VECTOR_SIZE);
-
-            let mut mask = {
-                let a = _mm256_load_si256(ptr as *const __m256i);
-                _mm256_movemask_epi8(masking!(a)) as u32
-            };
-            let end = sub(end_ptr, ptr);
-
-            write_forward!(mask, end);
-        }
-    }
+    loops!(len, ptr, start_ptr, bytes);
 
     acc
 }
