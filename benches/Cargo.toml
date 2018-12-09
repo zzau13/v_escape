@@ -1,0 +1,24 @@
+[package]
+publish = false
+name = "v_htmlescape-bench"
+version = "0.0.1"
+authors = ["Rust-iendo Barcelona"]
+description = "Criterion benchmark suite for v_htmlescape."
+homepage = "https://github.com/rust-iendo/v_htmlescape"
+repository = "https://github.com/rust-iendo/v_htmlescape"
+license = "MIT/Apache-2.0"
+
+[lib]
+bench = false
+
+[[bench]]
+name = "v_htmlescape"
+harness = false
+path = "src/all.rs"
+
+[dependencies]
+criterion = "0.2"
+v_htmlescape = { version = "*", path = ".." }
+
+[profile.release]
+debug = true

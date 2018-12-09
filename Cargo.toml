@@ -21,6 +21,7 @@ codecov = { repository = "rust-iendo/v_htmlescape", branch = "master", service =
 [lib]
 name = "v_htmlescape"
 path = "src/lib.rs"
+bench = false
 
 [dependencies]
 cfg-if = "0.1"
@@ -30,10 +31,6 @@ version_check = "0.1"
 
 [dev-dependencies]
 criterion = "0.2"
-
-[[bench]]
-name = "all"
-harness = false
 
 [profile.release]
 lto = true

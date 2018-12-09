@@ -71,7 +71,8 @@ fn test_escape() {
                 .join("")
                 .repeat(1024)
                 .as_bytes()
-        ).to_string(),
+        )
+        .to_string(),
         [string_long, &escaped.repeat(13)].join("").repeat(1024)
     );
     assert_eq!(
@@ -83,7 +84,8 @@ fn test_escape() {
             &[string_long, "<", string_long, escapes, string_long,]
                 .join("")
                 .as_bytes()
-        ).to_string(),
+        )
+        .to_string(),
         [string_long, "&lt;", string_long, escaped, string_long,].join("")
     );
 
@@ -217,7 +219,8 @@ quis lacus at, gravida maximus elit. Duis tristique, nisl nullam.
                 .join("")
                 .repeat(1024)
                 .as_bytes()
-        ).size(),
+        )
+        .size(),
         [string_long_escaped, &escaped.repeat(13)]
             .join("")
             .repeat(1024)
