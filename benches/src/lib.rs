@@ -1,2 +1,2 @@
-// This is purposely empty. See src/bench.rs instead. We use src/bench.rs
+// This is purposely empty. See src/all.rs instead. We use src/all.rs
 // to avoid including the same file in multiple build targets.
