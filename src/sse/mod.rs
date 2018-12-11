@@ -1,13 +1,13 @@
 use std::fmt::{self, Formatter};
 use std::mem::size_of;
 use std::str;
-use std::arch::x86_64::{__m128i, _mm_cmpestrm, _mm_extract_epi16, _mm_lddqu_si128, _mm_load_si128,
-                        _mm_loadu_si128, _mm_setr_epi8};
+use std::arch::x86_64::{_mm_cmpestrm, _mm_extract_epi16, _mm_setr_epi8};
 
 use utils::*;
 
-const VECTOR_SIZE: usize = size_of::<__m128i>();
-const VECTOR_ALIGN: usize = VECTOR_SIZE - 1;
+#[macro_use]
+mod loops;
+
 const NEEDLE_LEN: i32 = 6;
 
 #[inline]
@@ -56,63 +56,13 @@ pub unsafe fn escape(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
         }};
     }
 
-    if len < VECTOR_SIZE {
-        let a = _mm_lddqu_si128(ptr as *const __m128i);
-        let cmp = _mm_cmpestrm(needle, NEEDLE_LEN, a, len as i32, 0);
-        let mut mask = _mm_extract_epi16(cmp, 0) as i16;
-
-        if mask != 0 {
-            write_mask!(mask);
-        }
-    } else {
-        let end_ptr = bytes[len..].as_ptr();
-
-        {
-            let align = VECTOR_SIZE - (start_ptr as usize & VECTOR_ALIGN);
-            if align < VECTOR_SIZE {
-                let a = _mm_loadu_si128(ptr as *const __m128i);
-                let cmp = _mm_cmpestrm(needle, NEEDLE_LEN, a, align as i32, 0);
-                let mut mask = _mm_extract_epi16(cmp, 0) as i16;
-
-                if mask != 0 {
-                    write_mask!(mask);
-                }
-                ptr = ptr.add(align);
-
-                debug_assert!(start <= sub(ptr, start_ptr));
-            }
-        }
-
-        while ptr <= end_ptr.sub(VECTOR_SIZE) {
-            debug_assert_eq!(0, (ptr as usize) % VECTOR_SIZE);
-
-            let a = _mm_load_si128(ptr as *const __m128i);
-            let cmp = _mm_cmpestrm(needle, NEEDLE_LEN, a, VECTOR_SIZE as i32, 0);
-            let mut mask = _mm_extract_epi16(cmp, 0) as u16;
-
-            if mask != 0 {
-                write_mask!(mask);
-            }
-            ptr = ptr.add(VECTOR_SIZE);
-
-            debug_assert!(start <= sub(ptr, start_ptr));
-        }
-
-        debug_assert!(end_ptr.sub(VECTOR_SIZE) < ptr);
-
-        if ptr < end_ptr {
-            debug_assert_eq!(0, (ptr as usize) % VECTOR_SIZE);
-
-            let end = sub(end_ptr, ptr);
-            let a = _mm_load_si128(ptr as *const __m128i);
-            let cmp = _mm_cmpestrm(needle, NEEDLE_LEN, a, end as i32, 0);
-            let mut mask = _mm_extract_epi16(cmp, 0) as u16;
-
-            if mask != 0 {
-                write_mask!(mask);
-            }
-        }
+    macro_rules! masking {
+        ($a:ident, $len:ident) => {
+            _mm_extract_epi16(_mm_cmpestrm(needle, NEEDLE_LEN, $a, $len as i32, 0), 0) as i16
+        };
     }
+
+    loop_m128!(len, ptr, start_ptr, bytes);
 
     // Write since start to the end of the slice
     debug_assert!(start <= len);
@@ -135,7 +85,8 @@ pub unsafe fn size(bytes: &[u8]) -> usize {
     );
 
     let start_ptr = bytes.as_ptr();
-    let mut acc = bytes.len();
+    let len = bytes.len();
+    let mut acc = len;
     let mut ptr = start_ptr;
 
     // Macro to write with mask
@@ -163,59 +114,13 @@ pub unsafe fn size(bytes: &[u8]) -> usize {
         }};
     }
 
-    if acc < VECTOR_SIZE {
-        let a = _mm_lddqu_si128(ptr as *const __m128i);
-        let cmp = _mm_cmpestrm(needle, NEEDLE_LEN, a, acc as i32, 0);
-        let mut mask = _mm_extract_epi16(cmp, 0) as i16;
-
-        if mask != 0 {
-            write_mask!(mask);
-        }
-    } else {
-        let end_ptr = bytes[acc..].as_ptr();
-
-        {
-            let align = VECTOR_SIZE - (start_ptr as usize & VECTOR_ALIGN);
-            if align < VECTOR_SIZE {
-                let a = _mm_loadu_si128(ptr as *const __m128i);
-                let cmp = _mm_cmpestrm(needle, NEEDLE_LEN, a, align as i32, 0);
-                let mut mask = _mm_extract_epi16(cmp, 0) as i16;
-
-                if mask != 0 {
-                    write_mask!(mask);
-                }
-                ptr = ptr.add(align);
-            }
-        }
-
-        while ptr <= end_ptr.sub(VECTOR_SIZE) {
-            debug_assert_eq!(0, (ptr as usize) % VECTOR_SIZE);
-
-            let a = _mm_load_si128(ptr as *const __m128i);
-            let cmp = _mm_cmpestrm(needle, NEEDLE_LEN, a, VECTOR_SIZE as i32, 0);
-            let mut mask = _mm_extract_epi16(cmp, 0) as u16;
-
-            if mask != 0 {
-                write_mask!(mask);
-            }
-            ptr = ptr.add(VECTOR_SIZE);
-        }
-
-        debug_assert!(end_ptr.sub(VECTOR_SIZE) < ptr);
-
-        if ptr < end_ptr {
-            debug_assert_eq!(0, (ptr as usize) % VECTOR_SIZE);
-
-            let end = sub(end_ptr, ptr) as i32;
-            let a = _mm_load_si128(ptr as *const __m128i);
-            let cmp = _mm_cmpestrm(needle, NEEDLE_LEN, a, end, 0);
-            let mut mask = _mm_extract_epi16(cmp, 0) as u16;
-
-            if mask != 0 {
-                write_mask!(mask);
-            }
-        }
+    macro_rules! masking {
+        ($a:ident, $len:ident) => {
+            _mm_extract_epi16(_mm_cmpestrm(needle, NEEDLE_LEN, $a, $len as i32, 0), 0) as i16
+        };
     }
+
+    loop_m128!(len, ptr, start_ptr, bytes);
 
     acc
 }
