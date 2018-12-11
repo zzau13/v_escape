@@ -29,9 +29,6 @@ cfg-if = "0.1"
 [build-dependencies]
 version_check = "0.1"
 
-[dev-dependencies]
-criterion = "0.2"
-
 [profile.release]
 lto = true
 opt-level = 3
