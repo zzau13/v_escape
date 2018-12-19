@@ -11,19 +11,19 @@ macro_rules! test {
         let escaped = $escaped;
         let string_long: &str = &"foobar".repeat(1024);
 
-        assert_eq!($name::new(empty.as_bytes()).to_string(), empty);
-        assert_eq!($name::new(escapes.as_bytes()).to_string(), escaped);
-        assert_eq!($name::new(string_long.as_bytes()).to_string(), string_long);
+        assert_eq!($name::from(empty).to_string(), empty);
+        assert_eq!($name::from(escapes).to_string(), escaped);
+        assert_eq!($name::from(string_long).to_string(), string_long);
         assert_eq!(
-            $name::new(&escapes.repeat(1024).as_bytes()).to_string(),
+            $name::from(escapes.repeat(1024).as_ref()).to_string(),
             escaped.repeat(1024)
         );
         assert_eq!(
-            $name::new(
-                &[string_long, &escapes.repeat(13)]
+            $name::from(
+                [string_long, &escapes.repeat(13)]
                     .join("")
                     .repeat(1024)
-                    .as_bytes()
+                    .as_ref()
             )
             .to_string(),
             [string_long, &escaped.repeat(13)].join("").repeat(1024)
@@ -38,19 +38,19 @@ macro_rules! test_sized {
         let escaped = $escaped;
         let string_long: &str = &"foobar".repeat(1024);
 
-        assert_eq!($name::new(empty.as_bytes()).size(), empty.len());
-        assert_eq!($name::new(escapes.as_bytes()).size(), escaped.len());
-        assert_eq!($name::new(string_long.as_bytes()).size(), string_long.len());
+        assert_eq!($name::from(empty).size(), empty.len());
+        assert_eq!($name::from(escapes).size(), escaped.len());
+        assert_eq!($name::from(string_long).size(), string_long.len());
         assert_eq!(
-            $name::new(&escapes.repeat(1024).as_bytes()).size(),
+            $name::from(escapes.repeat(1024).as_ref()).size(),
             escaped.repeat(1024).len()
         );
         assert_eq!(
-            $name::new(
-                &[string_long, &escapes.repeat(13)]
+            $name::from(
+                [string_long, &escapes.repeat(13)]
                     .join("")
                     .repeat(1024)
-                    .as_bytes()
+                    .as_ref()
             )
             .size(),
             [string_long, &escaped.repeat(13)]

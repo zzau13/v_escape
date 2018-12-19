@@ -7,8 +7,8 @@
 //! new_escape_sized!(MyEscape, "62->bar || ");
 //!
 //! # fn main() {
-//! # let s = b"foo>bar";
-//! let escaped = MyEscape::new(s);
+//! # let s = "foo>bar";
+//! let escaped = MyEscape::from(s);
 //!
 //! print!("#{} : {}", escaped.size(), escaped);
 //! # }
@@ -51,6 +51,14 @@ macro_rules! _v_escape_escape_new {
         impl<'a> $name<'a> {
             pub fn new(s: &[u8]) -> $name {
                 $name { bytes: s }
+            }
+        }
+
+        impl<'a> From<&'a str> for $name<'a> {
+            fn from(s: &str) -> $name {
+                $name {
+                    bytes: s.as_bytes(),
+                }
             }
         }
 
