@@ -49,8 +49,8 @@ macro_rules! _v_escape_escape_new {
     ($name:ident) => {
         #[allow(dead_code)]
         impl<'a> $name<'a> {
-            pub fn new(s: &[u8]) -> $name {
-                $name { bytes: s }
+            pub fn new(bytes: &[u8]) -> $name {
+                $name { bytes }
             }
         }
 
