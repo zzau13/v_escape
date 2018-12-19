@@ -1,16 +1,19 @@
 /// Main loop for search in byte slice with bit mask
 ///
-/// ## The following macros must be defined:
+/// #### The following macros must be defined:
 /// - `write_mask(mask: {integer}, ptr: *const u8)` do operation at full mask
 ///
 /// - `write_forward(mask: {integer}, until: usize})` do operation at sliced mask
 ///
 /// - `masking(a: __m256i) -> __m256i` make a mask from __m256i
 ///
-/// ## Example
+/// #### Example
+///
 /// ```
 /// #[macro_use]
 /// extern crate v_escape;
+///
+/// #[target_feature(enable = "avx2")]
 /// unsafe fn memchr(n1: u8, bytes: &[u8]) -> Option<usize> {
 ///     use std::arch::x86_64::{_mm256_cmpeq_epi8, _mm256_set1_epi8};
 ///
@@ -47,6 +50,10 @@
 ///     None
 /// }
 ///
+/// # #[cfg(not(target_feature = "avx2"))]
+/// # fn main() {
+/// # }
+/// # #[cfg(target_feature = "avx2")]
 /// # fn main() {
 /// assert_eq!(unsafe { memchr(b'a', b"b") }, None);
 /// assert_eq!(unsafe { memchr(b'a', b"ba") }, Some(1));
