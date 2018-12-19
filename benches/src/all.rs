@@ -4,7 +4,7 @@ extern crate v_htmlescape;
 extern crate criterion;
 
 use criterion::{Bencher, Benchmark, Criterion, Throughput};
-use v_htmlescape::Escape;
+use v_htmlescape::HTMLEscape as Escape;
 
 use std::fmt::Write;
 use std::str;

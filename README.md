@@ -4,7 +4,7 @@
  
 ```rust
 extern crate v_htmlescape;
-use v_htmlescape::Escape;
+use v_htmlescape::HTMLEscape;
 
-print!("{}", Escape::new("foo<bar".as_bytes()));
+print!("{}", HTMLEscape::new(b"foo<bar"));
 ```

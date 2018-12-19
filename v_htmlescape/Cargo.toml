@@ -1,0 +1,30 @@
+[package]
+name = "v_htmlescape"
+version = "0.1.2"
+authors = ["Rust-iendo Barcelona <riendocontributions@gmail.com>"]
+description = "The simd optimized HTML escaping code"
+documentation = "https://docs.rs/v_htmlescape"
+keywords = ["html", "escaping", "simd"]
+homepage = "https://github.com/rust-iendo/v_htmlescape"
+repository = "https://github.com/rust-iendo/v_htmlescape"
+license = "MIT/Apache-2.0"
+readme = "README.md"
+workspace = ".."
+
+[badges]
+appveyor = { repository = "botika/v_htmlescape" }
+maintenance = { status = "actively-developed" }
+travis-ci = { repository =  "rust-iendo/v_htmlescape", branch = "master" }
+codecov = { repository = "rust-iendo/v_htmlescape", branch = "master", service = "github" }
+
+[lib]
+name = "v_htmlescape"
+path = "src/lib.rs"
+bench = false
+
+[dependencies]
+v_escape = { version = "0.3", path = "../v_escape" }
+cfg-if = "0.1"
+
+[build-dependencies]
+version_check = "0.1"
