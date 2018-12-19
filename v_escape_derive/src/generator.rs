@@ -1,6 +1,6 @@
 use std::str;
 
-use parser::Pair;
+use crate::parser::Pair;
 
 struct Generator<'a> {
     pairs: &'a [Pair<'a>],
