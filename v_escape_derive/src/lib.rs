@@ -50,29 +50,39 @@ fn build(ast: &syn::DeriveInput) -> String {
         if let syn::NestedMeta::Meta(ref item) = nm_item {
             if let syn::Meta::NameValue(ref pair) = item {
                 match pair.ident.to_string().as_ref() {
-                    name @ "avx" => {
-                        if let syn::Lit::Str(ref s) = pair.lit {
-                            avx = resolve_true(&s.value(), name);
+                    "avx" => {
+                        if let syn::Lit::Bool(ref s) = pair.lit {
+                            avx = s.value
+                        } else {
+                            panic!("avx value must be boolean literal")
                         }
                     }
                     "pairs" => {
                         if let syn::Lit::Str(ref s) = pair.lit {
                             pairs = Some(s.value());
+                        } else {
+                            panic!("pairs value must be string literal")
                         }
                     }
-                    name @ "print" => {
-                        if let syn::Lit::Str(ref s) = pair.lit {
-                            print = resolve_true(&s.value(), name);
+                    "print" => {
+                        if let syn::Lit::Bool(ref s) = pair.lit {
+                            print = s.value;
+                        } else {
+                            panic!("print value must be boolean literal")
                         }
                     }
-                    name @ "simd" => {
-                        if let syn::Lit::Str(ref s) = pair.lit {
-                            simd = resolve_true(&s.value(), name);
+                    "simd" => {
+                        if let syn::Lit::Bool(ref s) = pair.lit {
+                            simd = s.value;
+                        } else {
+                            panic!("simd value must be boolean literal")
                         }
                     }
-                    name @ "sized" => {
-                        if let syn::Lit::Str(ref s) = pair.lit {
-                            sized = resolve_true(&s.value(), name);
+                    "sized" => {
+                        if let syn::Lit::Bool(ref s) = pair.lit {
+                            sized = s.value;
+                        } else {
+                            panic!("sized value must be boolean literal")
                         }
                     }
                     attr => panic!("unsupported annotation key '{}' found", attr),
@@ -81,28 +91,12 @@ fn build(ast: &syn::DeriveInput) -> String {
         }
     }
 
-    let pairs: &str = &pairs.expect("");
-
-    let mut pairs = parser::parse(pairs);
-    // need order for calculate ranges
-    pairs.sort_by(|a, b| a.char.cmp(&b.char));
-
-    let code = generator::generate(&pairs, sized, simd, avx);
+    let pairs: &str = &pairs.expect("pairs not found in attributes");
+    let code = generator::generate(&parser::parse(pairs), sized, simd, avx);
 
     if print {
         eprintln!("{}", code);
     }
 
     code
-}
-
-fn resolve_true(s: &str, name: &str) -> bool {
-    match s {
-        "true" => true,
-        "false" => false,
-        attr => panic!(
-            "{} attribute need \"true\" or \"false\" and is \"{}\"",
-            name, attr
-        ),
-    }
 }

@@ -19,19 +19,19 @@ cfg_if! {
         new_escape_sized!(
             HTMLEscape,
             "60->&lt; || 62->&gt; || 38->&amp; || 34->&quot; || 39->&#x27; || 47->&#x2f; || ",
-            avx = "true", simd = "true"
+            avx = true, simd = true
         );
     } else if #[cfg(all(v_htmlescape_simd, v_htmlescape_sse))] {
         new_escape_sized!(
             HTMLEscape,
             "60->&lt; || 62->&gt; || 38->&amp; || 34->&quot; || 39->&#x27; || 47->&#x2f; || ",
-            avx = "false", simd = "true"
+            avx = false, simd = true
         );
     } else {
         new_escape_sized!(
             HTMLEscape,
             "60->&lt; || 62->&gt; || 38->&amp; || 34->&quot; || 39->&#x27; || 47->&#x2f; || ",
-            avx = "false", simd = "false"
+            avx = false, simd = false
         );
     }
 }

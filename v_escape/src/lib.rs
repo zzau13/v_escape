@@ -129,14 +129,14 @@ macro_rules! new_escape_sized {
     };
     (imp $name:ident, $pairs:expr) => {
         #[derive(Escape)]
-        #[escape(pairs = $pairs, sized = "true")]
+        #[escape(pairs = $pairs, sized = true)]
         pub struct $name<'a> {
             bytes: &'a [u8],
         }
     };
     (imp $name:ident, $pairs:expr, $($t:tt)+) => {
         #[derive(Escape)]
-        #[escape(pairs = $pairs, sized = "true", $($t)+)]
+        #[escape(pairs = $pairs, sized = true, $($t)+)]
         pub struct $name<'a> {
             bytes: &'a [u8],
         }

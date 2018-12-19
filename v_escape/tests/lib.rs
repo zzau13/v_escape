@@ -76,7 +76,7 @@ mod no_simd {
         new_escape!(
             MyE,
             "65->a || 60->b || 61->c || 66->d || 80->e || 81->f || ",
-            simd = "false"
+            simd = false
         );
         #[test]
         fn test_escape() {
@@ -88,7 +88,7 @@ mod no_simd {
         new_escape_sized!(
             MyE,
             "65->a || 60->b || 61->c || 66->d || 80->e || 81->f || ",
-            simd = "false"
+            simd = false
         );
         #[test]
         fn test_escape() {
@@ -108,7 +108,7 @@ mod no_avx {
         new_escape!(
             MyE,
             "65->a || 60->b || 61->c || 66->d || 80->e || 81->f || ",
-            avx = "false"
+            avx = false
         );
         #[test]
         fn test_escape() {
@@ -120,7 +120,7 @@ mod no_avx {
         new_escape_sized!(
             MyE,
             "65->a || 60->b || 61->c || 66->d || 80->e || 81->f || ",
-            avx = "false"
+            avx = false
         );
         #[test]
         fn test_escape() {

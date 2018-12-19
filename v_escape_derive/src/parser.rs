@@ -34,7 +34,7 @@ named!(parse_pair<Input, Pair>, map!(
 ));
 
 pub fn parse(src: &str) -> Vec<Pair> {
-    match parse_syntax(Input(src.as_bytes())) {
+    let mut pairs = match parse_syntax(Input(src.as_bytes())) {
         Ok((left, res)) => {
             if !left.is_empty() {
                 let s = str::from_utf8(left.0).unwrap();
@@ -46,7 +46,11 @@ pub fn parse(src: &str) -> Vec<Pair> {
         Err(nom::Err::Error(err)) => panic!("problems parsing syntax source: {:?}", err),
         Err(nom::Err::Failure(err)) => panic!("problems parsing syntax source: {:?}", err),
         Err(nom::Err::Incomplete(_)) => panic!("parsing incomplete"),
-    }
+    };
+
+    // need order for calculate ranges
+    pairs.sort_by(|a, b| a.char.cmp(&b.char));
+    pairs
 }
 
 #[cfg(test)]
@@ -58,7 +62,7 @@ mod test {
         assert_eq!(parse("123->&lt; || "), vec![Pair::new(123, b"&lt;")]);
         assert_eq!(
             parse("123->&lt; || 10->&  || "),
-            vec![Pair::new(123, b"&lt;"), Pair::new(10, b"& ")]
+            vec![Pair::new(10, b"& "), Pair::new(123, b"&lt;"),]
         );
     }
 
