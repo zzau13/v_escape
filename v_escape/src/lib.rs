@@ -15,7 +15,7 @@
 //! ```
 //!
 //! > build.rs
-//! ```rust
+//! ```ignore
 //! use version_check::is_min_version;
 //!
 //! fn main() {
