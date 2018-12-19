@@ -1,12 +1,57 @@
 /// Main loop for search in byte slice with bit mask
 ///
-/// The following macros must be defined:
-/// - write_mask(mask: {integer}, ptr: *const u8).
-/// do op at full mask
-/// - write_forward(mask: {integer}, until: usize})
-/// do op at sliced mask
-/// - masking(a: __m256i) -> __m256i masking at i8
-/// make a mask from __m256i
+/// ## The following macros must be defined:
+/// - `write_mask(mask: {integer}, ptr: *const u8)` do operation at full mask
+///
+/// - `write_forward(mask: {integer}, until: usize})` do operation at sliced mask
+///
+/// - `masking(a: __m256i) -> __m256i` make a mask from __m256i
+///
+/// ## Example
+/// ```
+/// #[macro_use]
+/// extern crate v_escape;
+/// unsafe fn memchr(n1: u8, bytes: &[u8]) -> Option<usize> {
+///     use std::arch::x86_64::{_mm256_cmpeq_epi8, _mm256_set1_epi8};
+///
+///     let v_a = _mm256_set1_epi8(n1 as i8);
+///
+///     let len = bytes.len();
+///     let start_ptr = bytes.as_ptr();
+///     let mut ptr = start_ptr;
+///
+///     macro_rules! write_mask {
+///         ($mask:ident, $ptr:ident) => {{
+///             return Some(_v_escape_sub!($ptr, start_ptr) + $mask.trailing_zeros() as usize);
+///         }};
+///     }
+///
+///     macro_rules! write_forward {
+///         ($mask: ident, $align:ident) => {{
+///             let cur = $mask.trailing_zeros() as usize;
+///
+///                 if cur < $align {
+///                    return Some(_v_escape_sub!(ptr, start_ptr) + cur);
+///                 }
+///         }};
+///     }
+///
+///     macro_rules! masking {
+///         ($a:ident) => {{
+///             _mm256_cmpeq_epi8($a, v_a)
+///         }};
+///     }
+///
+///     loop_m256_128!(len, ptr, start_ptr, bytes);
+///
+///     None
+/// }
+///
+/// # fn main() {
+/// assert_eq!(unsafe { memchr(b'a', b"b") }, None);
+/// assert_eq!(unsafe { memchr(b'a', b"ba") }, Some(1));
+/// # }
+/// ```
 // TODO: document in detail
 #[macro_export]
 macro_rules! loop_m256_128 {
