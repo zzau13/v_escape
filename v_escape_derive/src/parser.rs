@@ -17,7 +17,7 @@ pub struct Pair<'a> {
 }
 
 impl<'a> Pair<'a> {
-    fn new(char: u8, quote: &[u8]) -> Pair {
+    pub fn new(char: u8, quote: &[u8]) -> Pair {
         Pair { char, quote }
     }
 }

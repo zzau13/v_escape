@@ -245,6 +245,20 @@ mod test_avx {
     }
 
     mod h {
+        // 1 range
+        new_escape_sized!(MyE, "60->a || 61->b || ");
+
+        #[test]
+        fn test_escape() {
+            test!(MyE, "<=", "ab");
+        }
+
+        #[test]
+        fn test_sized() {
+            test_sized!(MyE, "<=", "ab");
+        }
+    }
+    mod i {
         // 1 escapes
         new_escape_sized!(MyE, "60->f || ");
 
