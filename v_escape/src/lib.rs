@@ -14,8 +14,6 @@
 //! # }
 //! ```
 #![allow(unused_imports)]
-#[macro_use]
-extern crate v_escape_derive;
 
 use v_escape_derive::Escape;
 

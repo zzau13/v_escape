@@ -1,5 +1,3 @@
-extern crate v_htmlescape;
-
 use v_htmlescape::HTMLEscape as Escape;
 
 #[test]

@@ -1,5 +1,3 @@
-extern crate version_check;
-
 use version_check::is_min_version;
 
 fn main() {

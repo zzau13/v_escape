@@ -1,5 +1,3 @@
-extern crate version_check;
-
 use std::env;
 
 use version_check::is_min_version;

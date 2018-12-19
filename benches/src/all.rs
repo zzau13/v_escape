@@ -1,7 +1,4 @@
 #![allow(unused_must_use)]
-extern crate v_htmlescape;
-#[macro_use]
-extern crate criterion;
 
 use criterion::{Bencher, Benchmark, Criterion, Throughput};
 use v_htmlescape::HTMLEscape as Escape;
