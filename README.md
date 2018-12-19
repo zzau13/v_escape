@@ -6,5 +6,5 @@
 extern crate v_htmlescape;
 use v_htmlescape::HTMLEscape;
 
-print!("{}", HTMLEscape::new(b"foo<bar"));
+print!("{}", HTMLEscape::from("foo<bar"));
 ```

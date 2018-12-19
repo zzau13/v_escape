@@ -9,8 +9,8 @@ extern crate v_escape;
 new_escape_sized!(MyEscape, "62->bar || ");
 
 fn main() {
-    let s = b"foo<bar";
-    let escaped = MyEscape::new(s);
+    let s = "foo<bar";
+    let escaped = MyEscape::from(s);
     
     print!("#{} : {}", escaped.size(), escaped);
 }
