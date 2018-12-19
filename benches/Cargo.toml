@@ -2,11 +2,12 @@
 publish = false
 name = "v_htmlescape-bench"
 version = "0.0.1"
-authors = ["Rust-iendo Barcelona"]
+authors = ["Rust-iendo Barcelona <riendocontributions@gmail.com>"]
 description = "Criterion benchmark suite for v_htmlescape."
 homepage = "https://github.com/rust-iendo/v_htmlescape"
 repository = "https://github.com/rust-iendo/v_htmlescape"
 license = "MIT/Apache-2.0"
+workspace = '..'
 
 [lib]
 bench = false
@@ -18,7 +19,4 @@ path = "src/all.rs"
 
 [dependencies]
 criterion = "0.2"
-v_htmlescape = { version = "*", path = ".." }
-
-[profile.release]
-debug = true
+v_htmlescape = { version = "*", path = "../v_htmlescape" }

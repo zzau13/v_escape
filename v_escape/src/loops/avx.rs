@@ -8,17 +8,22 @@
 /// - masking(a: __m256i) -> __m256i masking at i8
 /// make a mask from __m256i
 // TODO: document in detail
-// TODO: simple unit test
 #[macro_export]
-macro_rules! loops {
+macro_rules! loop_m256_128 {
     ($len:ident, $ptr:ident, $start_ptr:ident, $bytes:ident) => {{
-        const VECTOR_SIZE: usize = size_of::<__m256i>();
+        #[allow(unused_imports)]
+        use std::arch::x86_64::{
+            __m256i, _mm256_load_si256, _mm256_loadu_si256, _mm256_movemask_epi8, _mm256_or_si256,
+        };
+
+        const VECTOR_SIZE: usize = ::std::mem::size_of::<__m256i>();
         const VECTOR_ALIGN: usize = VECTOR_SIZE - 1;
         const LOOP_SIZE: usize = 4 * VECTOR_SIZE;
 
         if $len < VECTOR_SIZE {
+            #[allow(unused_mut)]
             let mut mask = {
-                let a = _mm256_lddqu_si256($ptr as *const __m256i);
+                let a = _mm256_loadu_si256($ptr as *const __m256i);
                 _mm256_movemask_epi8(masking!(a))
             };
 
@@ -31,6 +36,7 @@ macro_rules! loops {
             {
                 let align = VECTOR_SIZE - ($start_ptr as usize & VECTOR_ALIGN);
                 if align < VECTOR_SIZE {
+                    #[allow(unused_mut)]
                     let mut mask = {
                         let a = _mm256_loadu_si256($ptr as *const __m256i);
                         _mm256_movemask_epi8(masking!(a))
@@ -68,7 +74,11 @@ macro_rules! loops {
                         masking!(a)
                     };
 
-                    if _mm256_movemask_epi8(_mm256_or_si256(_mm256_or_si256(cmp_a, cmp_b), _mm256_or_si256(cmp_c, cmp_d))) != 0 {
+                    if _mm256_movemask_epi8(_mm256_or_si256(
+                        _mm256_or_si256(cmp_a, cmp_b),
+                        _mm256_or_si256(cmp_c, cmp_d),
+                    )) != 0
+                    {
                         let mut mask = _mm256_movemask_epi8(cmp_a);
                         if mask != 0 {
                             write_mask!(mask, $ptr);
@@ -100,6 +110,7 @@ macro_rules! loops {
             while $ptr <= end_ptr.sub(VECTOR_SIZE) {
                 debug_assert_eq!(0, ($ptr as usize) % VECTOR_SIZE);
 
+                #[allow(unused_mut)]
                 let mut mask = {
                     let a = _mm256_load_si256($ptr as *const __m256i);
                     _mm256_movemask_epi8(masking!(a))
@@ -116,11 +127,12 @@ macro_rules! loops {
             if $ptr < end_ptr {
                 debug_assert_eq!(0, ($ptr as usize) % VECTOR_SIZE);
 
+                #[allow(unused_mut)]
                 let mut mask = {
                     let a = _mm256_load_si256($ptr as *const __m256i);
                     _mm256_movemask_epi8(masking!(a))
                 };
-                let end = sub(end_ptr, $ptr);
+                let end = _v_escape_sub!(end_ptr, $ptr);
 
                 if mask != 0 {
                     write_forward!(mask, end);

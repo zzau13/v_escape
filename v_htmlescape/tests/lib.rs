@@ -1,6 +1,6 @@
 extern crate v_htmlescape;
 
-use v_htmlescape::Escape;
+use v_htmlescape::HTMLEscape as Escape;
 
 #[test]
 fn test_escape() {

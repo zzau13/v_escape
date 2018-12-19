@@ -10,12 +10,14 @@ fn main() {
 
 fn enable_simd_optimizations() {
     if is_env_set("CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_SIMD") {
+        println!("cargo:rustc-cfg=v_escape_nosimd");
         return;
     }
     if !is_min_version("1.27.0")
         .map(|(yes, _)| yes)
         .unwrap_or(false)
     {
+        println!("cargo:rustc-cfg=v_escape_nosimd");
         return;
     }
 

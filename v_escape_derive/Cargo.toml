@@ -1,0 +1,30 @@
+[package]
+name = "v_escape_derive"
+version = "0.1.0"
+authors = ["Rust-iendo Barcelona <riendocontributions@gmail.com>"]
+description = "Procedural macro package for v_escape"
+documentation = "https://docs.rs/v_escape_derive"
+keywords = ["derive", "escaping", "simd"]
+homepage = "https://github.com/rust-iendo/v_htmlescape"
+repository = "https://github.com/rust-iendo/v_htmlescape"
+license = "MIT/Apache-2.0"
+readme = "README.md"
+workspace = ".."
+
+[badges]
+appveyor = { repository = "botika/v_htmlescape" }
+maintenance = { status = "actively-developed" }
+travis-ci = { repository =  "rust-iendo/v_htmlescape", branch = "master" }
+codecov = { repository = "rust-iendo/v_htmlescape", branch = "master", service = "github" }
+
+[lib]
+proc-macro = true
+name = "v_escape_derive"
+path = "src/lib.rs"
+bench = false
+
+[dependencies]
+proc-macro2 = "0.4"
+syn = "0.15"
+quote = "0.6"
+nom = "4.1"
