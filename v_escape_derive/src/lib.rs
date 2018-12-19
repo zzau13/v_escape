@@ -52,7 +52,7 @@ fn build(ast: &syn::DeriveInput) -> String {
                 match pair.ident.to_string().as_ref() {
                     name @ "avx" => {
                         if let syn::Lit::Str(ref s) = pair.lit {
-                            avx = resolve_true(s.value(), name);
+                            avx = resolve_true(&s.value(), name);
                         }
                     }
                     "pairs" => {
@@ -62,17 +62,17 @@ fn build(ast: &syn::DeriveInput) -> String {
                     }
                     name @ "print" => {
                         if let syn::Lit::Str(ref s) = pair.lit {
-                            print = resolve_true(s.value(), name);
+                            print = resolve_true(&s.value(), name);
                         }
                     }
                     name @ "simd" => {
                         if let syn::Lit::Str(ref s) = pair.lit {
-                            simd = resolve_true(s.value(), name);
+                            simd = resolve_true(&s.value(), name);
                         }
                     }
                     name @ "sized" => {
                         if let syn::Lit::Str(ref s) = pair.lit {
-                            sized = resolve_true(s.value(), name);
+                            sized = resolve_true(&s.value(), name);
                         }
                     }
                     attr => panic!("unsupported annotation key '{}' found", attr),
@@ -96,8 +96,7 @@ fn build(ast: &syn::DeriveInput) -> String {
     code
 }
 
-fn resolve_true(s: String, name: &str) -> bool {
-    let s: &str = &s;
+fn resolve_true(s: &str, name: &str) -> bool {
     match s {
         "true" => true,
         "false" => false,
