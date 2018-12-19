@@ -67,6 +67,23 @@ macro_rules! _v_escape_escape_new {
 
 #[macro_export]
 /// Generate code for new escape struct
+///
+/// #### Example
+///
+/// ```
+/// #[macro_use]
+/// extern crate v_escape;
+///
+/// new_escape_sized!(MyEscape, "62->bar || ");
+///
+/// # fn main() {
+/// # let s = b"foo>bar";
+/// let escaped = MyEscape::new(s);
+///
+/// print!("{}", escaped);
+/// # }
+/// ```
+///
 macro_rules! new_escape {
     ($name:ident, $pairs:expr) => {
         use std::fmt::{self, Display, Formatter};
@@ -96,6 +113,21 @@ macro_rules! new_escape {
 
 #[macro_export]
 /// Generate code for new escape struct with size method
+///
+/// ```
+/// #[macro_use]
+/// extern crate v_escape;
+///
+/// new_escape_sized!(MyEscape, "62->bar || ");
+///
+/// # fn main() {
+/// # let s = b"foo>bar";
+/// let escaped = MyEscape::new(s);
+///
+/// print!("#{} : {}", escaped.size(), escaped);
+/// # }
+/// ```
+///
 macro_rules! new_escape_sized {
     ($name:ident, $pairs:expr) => {
         use std::fmt::{self, Display, Formatter};
