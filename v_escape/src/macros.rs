@@ -20,12 +20,11 @@ macro_rules! _v_escape_sub {
 #[macro_export]
 macro_rules! _v_escape_escape_body {
     ($i:expr, $start:ident, $fmt:ident, $bytes:ident, $quote:expr) => {{
-        use std::str;
         // Test if `start` index is in current position `i`
         if $start < $i {
             // Write slice from `start` to `i`- 1 in formatter
             #[allow(unused_unsafe)]
-            $fmt.write_str(unsafe { str::from_utf8_unchecked(&$bytes[$start..$i]) })?;
+            $fmt.write_str(unsafe { ::std::str::from_utf8_unchecked(&$bytes[$start..$i]) })?;
         }
         // Write $quote to `$fmt` (instead of escape character)
         $fmt.write_str($quote)?;

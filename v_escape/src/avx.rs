@@ -1,5 +1,5 @@
-// Defining character interval from ASCII table to create bit masks from slice to be escaped
-// overflow above in addition
+/// Defining character interval from ASCII table to create bit masks from slice to be escaped
+/// overflow above in addition
 #[macro_export]
 macro_rules! _v_escape_translations {
     ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {

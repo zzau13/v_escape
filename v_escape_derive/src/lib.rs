@@ -25,13 +25,13 @@ fn build(ast: &syn::DeriveInput) -> String {
         match attr.interpret_meta() {
             Some(m) => {
                 if m.name() == "escape" {
-                    meta = Some(m)
+                    meta = Some(m);
                 }
             }
             None => {
                 let mut tokens = quote::__rt::TokenStream::new();
                 attr.to_tokens(&mut tokens);
-                panic!("unable to interpret attribute: {}", tokens)
+                panic!("unable to interpret attribute: {}", tokens);
             }
         }
     }
@@ -91,8 +91,12 @@ fn build(ast: &syn::DeriveInput) -> String {
         }
     }
 
-    let pairs: &str = &pairs.expect("pairs not found in attributes");
-    let code = generator::generate(&parser::parse(pairs), sized, simd, avx);
+    let code = generator::generate(
+        &parser::parse(&pairs.expect("pairs not found in attributes")),
+        sized,
+        simd,
+        avx,
+    );
 
     if print {
         eprintln!("{}", code);

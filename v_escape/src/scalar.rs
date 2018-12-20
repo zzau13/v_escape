@@ -1,7 +1,6 @@
 #[macro_export]
 macro_rules! _v_escape_escape_scalar {
     ($T:ident, $Q:ident, $Q_LEN:ident) => {
-        /// Scalar html escape
         #[inline]
         pub fn escape(bytes: &[u8], fmt: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
             use std::str::from_utf8_unchecked;
@@ -31,7 +30,6 @@ macro_rules! _v_escape_escape_scalar {
 #[macro_export]
 macro_rules! _v_escape_sized_scalar {
     ($S:ident) => {
-        /// Length of slice after escape
         #[inline]
         pub fn size(bytes: &[u8]) -> usize {
             let mut acc = bytes.len();
