@@ -134,6 +134,15 @@ mod no_avx {
     }
 }
 
+mod empty {
+    new_escape!(MyE, "65-> || ");
+
+    #[test]
+    fn test_escape() {
+        test!(MyE, "A", "");
+    }
+}
+
 #[cfg(target_arch = "x86_64")]
 mod test_avx {
     mod a {
@@ -258,6 +267,7 @@ mod test_avx {
             test_sized!(MyE, "<=", "ab");
         }
     }
+
     mod i {
         // 1 escapes
         new_escape_sized!(MyE, "60->f || ");
