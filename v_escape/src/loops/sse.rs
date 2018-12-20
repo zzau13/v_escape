@@ -12,7 +12,7 @@
 /// #[macro_use]
 /// extern crate v_escape;
 ///
-/// #[target_feature(enable = "sse4.2")]
+/// #[cfg(all(target_feature = "sse4.2", target_arch = "x86_64"))]
 /// unsafe fn memchr4(n0: u8, n1: u8, n2: u8, n3: u8, bytes: &[u8]) -> Option<usize> {
 ///     use std::arch::x86_64::{_mm_cmpestri, _mm_setr_epi8};
 ///     const NEEDLE_LEN: i32 = 4;
@@ -43,10 +43,10 @@
 ///     None
 /// }
 ///
-/// /// # #[cfg(not(target_feature = "sse4.2"))]
+/// # #[cfg(not(all(target_feature = "sse4.2", target_arch = "x86_64")))]
 /// # fn main() {
 /// # }
-/// # #[cfg(target_feature = "sse4.2")]
+/// # #[cfg(all(target_feature = "sse4.2", target_arch = "x86_64"))]
 /// # fn main() {
 /// assert_eq!(unsafe { memchr4(b'a', b'b', b'c', b'd', b"e") }, None);
 /// assert_eq!(unsafe { memchr4(b'a', b'b', b'c', b'd', b"abcd") }, Some(0));

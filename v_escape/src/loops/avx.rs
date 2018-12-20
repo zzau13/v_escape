@@ -13,7 +13,7 @@
 /// #[macro_use]
 /// extern crate v_escape;
 ///
-/// #[target_feature(enable = "avx2")]
+/// #[cfg(all(target_feature = "avx2", target_arch = "x86_64"))]
 /// unsafe fn memchr(n1: u8, bytes: &[u8]) -> Option<usize> {
 ///     use std::arch::x86_64::{_mm256_cmpeq_epi8, _mm256_set1_epi8};
 ///
@@ -50,10 +50,10 @@
 ///     None
 /// }
 ///
-/// # #[cfg(not(target_feature = "avx2"))]
+/// # #[cfg(not(all(target_feature = "avx2", target_arch = "x86_64")))]
 /// # fn main() {
 /// # }
-/// # #[cfg(target_feature = "avx2")]
+/// # #[cfg(all(target_feature = "avx2", target_arch = "x86_64"))]
 /// # fn main() {
 /// assert_eq!(unsafe { memchr(b'a', b"b") }, None);
 /// assert_eq!(unsafe { memchr(b'a', b"ba") }, Some(1));
