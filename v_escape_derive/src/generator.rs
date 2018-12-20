@@ -74,8 +74,10 @@ impl<'a> Generator<'a> {
 
     fn write_functions(&self, buf: &mut Buffer) {
         self.write_scalar(buf);
-        self.write_sse(buf);
-        self.write_avx(buf);
+        if self.simd {
+            self.write_sse(buf);
+            self.write_avx(buf);
+        }
     }
 
     fn write_scalar(&self, buf: &mut Buffer) {

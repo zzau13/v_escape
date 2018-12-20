@@ -33,7 +33,64 @@
 //! ```
 //!
 //! ## Pairs syntax
-//! v_escape
+//! v_escape uses a simple syntax to enter the characters and quotes
+//! to replace them, which I will name `Pairs`.
+//! The `Pairs` consist of the character, `i8+` and `0`, to the left
+//! of the delimiter `->` followed by the substitution quote and
+//! finalized by the delimiter ` || `
+//!
+//! The maximum number of `Pairs` with activated simd is 16.
+//! If you want more you can deactivate the optimizations by simd with
+//! sub-attribute `simd = false`
+//!
+//! Optimizations for avx require the creation of ranges. So if the
+//! distance between your characters is very large you should disable
+//! avx with sub-attribute `avx = false`
+//!
+//! For debug reasons you can print the code generated with the
+//! sub-attribute `print = true`
+//!
+//! ### Examples
+//! ```
+//! # #[macro_use]
+//! # extern crate v_escape;
+//! new_escape_sized!(MyEscape, "62->bar || ");
+//!
+//! # fn main() {
+//! assert_eq!(MyEscape::from("foo>bar").to_string(), "foobarbar");
+//! # }
+//! ```
+//! ```
+//! # #[macro_use]
+//! # extern crate v_escape;
+//! new_escape_sized!(MyEscape, "62->bar || 60->foo || ");
+//!
+//! # fn main() {
+//! assert_eq!(MyEscape::from("foo>bar<").to_string(), "foobarbarfoo");
+//! # }
+//! ```
+//! ```
+//! # #[macro_use]
+//! # extern crate v_escape;
+//! new_escape!(MyEscape, "0-> || 33->foo || 66->bar || 127-> || ", avx = false);
+//!
+//! # fn main() {
+//! assert_eq!(MyEscape::from("fooBbar").to_string(), "foobarbar");
+//! # }
+//! ```
+//! ```
+//! # #[macro_use]
+//! # extern crate v_escape;
+//! new_escape_sized!(
+//!     MyEscape,
+//!     "62->b || 60->f || 63->b || 65->f || 67->b || 66->f || 68->b || 71->f || 72->b || 73->f || 74->b || 75->f || 76->b || 77->f || 78->b || 79->f || 1->f || ",
+//!     simd = false
+//! );
+//!
+//! # fn main() {
+//! assert_eq!(MyEscape::from("foo>bar<").to_string(), "foobbarf");
+//! # }
+//! ```
 //!
 #![allow(unused_imports)]
 
@@ -127,6 +184,7 @@ macro_rules! new_escape {
 
 #[macro_export]
 /// Generate code for new escape struct with size method
+/// Not use with empty quote `"i8-> || "`
 ///
 /// ```
 /// #[macro_use]
@@ -191,7 +249,7 @@ macro_rules! new_escape_sized {
 
 #[macro_export]
 macro_rules! _v_escape_cfg_escape {
-    ($simd:expr, $avx:expr) => {
+    (true, $avx:expr) => {
         #[cfg(all(
             target_arch = "x86_64",
             not(all(target_os = "windows", v_escape_nosimd))
@@ -204,9 +262,9 @@ macro_rules! _v_escape_cfg_escape {
             static mut FN: fn(&[u8], &mut Formatter) -> fmt::Result = detect;
 
             fn detect(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
-                let fun = if $simd && $avx && is_x86_feature_detected!("avx2") {
+                let fun = if $avx && is_x86_feature_detected!("avx2") {
                     avx::escape as usize
-                } else if $simd && is_x86_feature_detected!("sse4.2") {
+                } else if is_x86_feature_detected!("sse4.2") {
                     sse::escape as usize
                 } else {
                     scalar::escape as usize
@@ -227,11 +285,16 @@ macro_rules! _v_escape_cfg_escape {
                 mem::transmute::<usize, fn(&[u8], &mut Formatter) -> fmt::Result>(fun)(bytes, fmt)
             }
         }
-
         #[cfg(not(all(
             target_arch = "x86_64",
             not(all(target_os = "windows", v_escape_nosimd))
         )))]
+        _v_escape_cfg_escape!(fn);
+    };
+    (false, $avx:expr) => {
+        _v_escape_cfg_escape!(fn);
+    };
+    (fn) => {
         #[inline(always)]
         fn _escape(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
             scalar::escape(bytes, fmt)
@@ -241,7 +304,7 @@ macro_rules! _v_escape_cfg_escape {
 
 #[macro_export]
 macro_rules! _v_escape_cfg_sized {
-    ($simd:expr, $avx:expr) => {
+    (true, $avx:expr) => {
         #[cfg(all(
             target_arch = "x86_64",
             not(all(target_os = "windows", v_escape_nosimd))
@@ -254,9 +317,9 @@ macro_rules! _v_escape_cfg_sized {
             static mut FN: fn(&[u8]) -> usize = detect;
 
             fn detect(bytes: &[u8]) -> usize {
-                let fun = if $simd && $avx && is_x86_feature_detected!("avx2") {
+                let fun = if $avx && is_x86_feature_detected!("avx2") {
                     avx::size as usize
-                } else if $simd && is_x86_feature_detected!("sse4.2") {
+                } else if is_x86_feature_detected!("sse4.2") {
                     sse::size as usize
                 } else {
                     scalar::size as usize
@@ -278,6 +341,12 @@ macro_rules! _v_escape_cfg_sized {
             target_arch = "x86_64",
             not(all(target_os = "windows", v_escape_nosimd))
         )))]
+        _v_escape_cfg_sized!(fn);
+    };
+    (false, $avx:expr) => {
+        _v_escape_cfg_sized!(fn);
+    };
+    (fn) => {
         #[inline(always)]
         fn _size(bytes: &[u8]) -> usize {
             scalar::size(bytes)
