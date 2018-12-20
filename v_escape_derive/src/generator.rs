@@ -204,7 +204,12 @@ impl<'a> Generator<'a> {
                     ranges.push(FLAG);
                 } else {
                     let i = d.first().unwrap().0;
-                    if i != 0 {
+                    if i == 0 {
+                        // 1 escape and 1 range
+                        ranges.push(self.pairs.get(i + 1).unwrap().char);
+                        ranges.push(self.pairs.last().unwrap().char);
+                        ranges.push(self.pairs.first().unwrap().char);
+                    } else {
                         // 1 escape and 1 range
                         ranges.push(self.pairs.first().unwrap().char);
                         ranges.push(self.pairs.get(i).unwrap().char);
@@ -213,11 +218,6 @@ impl<'a> Generator<'a> {
                             // 2 ranges
                             ranges.push(self.pairs.last().unwrap().char);
                         }
-                    } else {
-                        // 1 escape and 1 range
-                        ranges.push(self.pairs.get(i + 1).unwrap().char);
-                        ranges.push(self.pairs.last().unwrap().char);
-                        ranges.push(self.pairs.first().unwrap().char);
                     }
                 }
             }
@@ -238,7 +238,7 @@ impl<'a> Generator<'a> {
                 let first = d.first().unwrap().0;
                 let last = d.last().unwrap().0;
 
-                if last == first + 1 {
+                if first + 1 == last {
                     if first == 0 {
                         // 1 ranges and 2 escape
                         ranges.push(self.pairs.get(last + 1).unwrap().char);
@@ -280,7 +280,7 @@ impl<'a> Generator<'a> {
                             ranges.push(self.pairs.last().unwrap().char);
                             ranges.push(self.pairs.first().unwrap().char);
                         }
-                    } else if len == last + 2 {
+                    } else if last + 2 == len {
                         // 2 ranges and 1 escape
                         ranges.push(self.pairs.first().unwrap().char);
                         ranges.push(self.pairs.get(first).unwrap().char);
