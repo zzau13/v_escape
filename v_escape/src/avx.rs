@@ -3,6 +3,10 @@
 #[macro_export]
 macro_rules! _v_escape_translations {
     ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
+        use std::arch::x86_64::{
+            _mm256_add_epi8, _mm256_cmpeq_epi8, _mm256_cmpgt_epi8, _mm256_or_si256,
+            _mm256_set1_epi8,
+        };
         const TRANSLATION_A: i8 = ::std::i8::MAX - $ra;
         const BELOW_A: i8 = ::std::i8::MAX - ($ra - $la) - 1;
         const B: i8 = $fb;
@@ -23,6 +27,7 @@ macro_rules! _v_escape_translations {
         }
     };
     ($fa:expr, $fb:expr, $fc:expr, 128, ) => {
+        use std::arch::x86_64::{_mm256_cmpeq_epi8, _mm256_or_si256, _mm256_set1_epi8};
         const A: i8 = $fa;
         const B: i8 = $fb;
         const C: i8 = $fc;
@@ -41,6 +46,7 @@ macro_rules! _v_escape_translations {
         }
     };
     ($fa:expr, $fb:expr, 128, ) => {
+        use std::arch::x86_64::{_mm256_cmpeq_epi8, _mm256_or_si256, _mm256_set1_epi8};
         const A: i8 = $fa;
         const B: i8 = $fb;
 
@@ -54,6 +60,7 @@ macro_rules! _v_escape_translations {
         }
     };
     ($fa:expr, 128, ) => {
+        use std::arch::x86_64::{_mm256_cmpeq_epi8, _mm256_set1_epi8};
         const A: i8 = $fa;
 
         let v_a = _mm256_set1_epi8(A);
@@ -65,6 +72,9 @@ macro_rules! _v_escape_translations {
         }
     };
     ($la:expr, $ra:expr, $lb:expr, $rb:expr, $lc:expr, $rc:expr, ) => {
+        use std::arch::x86_64::{
+            _mm256_add_epi8, _mm256_cmpgt_epi8, _mm256_or_si256, _mm256_set1_epi8,
+        };
         const TRANSLATION_A: i8 = ::std::i8::MAX - $ra;
         const BELOW_A: i8 = ::std::i8::MAX - ($ra - $la) - 1;
         const TRANSLATION_B: i8 = ::std::i8::MAX - $rb;
@@ -92,6 +102,10 @@ macro_rules! _v_escape_translations {
         }
     };
     ($la:expr, $ra:expr, $lb:expr, $rb:expr, $c:expr, ) => {
+        use std::arch::x86_64::{
+            _mm256_add_epi8, _mm256_cmpeq_epi8, _mm256_cmpgt_epi8, _mm256_or_si256,
+            _mm256_set1_epi8,
+        };
         const TRANSLATION_A: i8 = ::std::i8::MAX - $ra;
         const BELOW_A: i8 = ::std::i8::MAX - ($ra - $la) - 1;
         const TRANSLATION_B: i8 = ::std::i8::MAX - $rb;
@@ -117,6 +131,9 @@ macro_rules! _v_escape_translations {
         }
     };
     ($la:expr, $ra:expr, $lb:expr, $rb:expr, ) => {
+        use std::arch::x86_64::{
+            _mm256_add_epi8, _mm256_cmpgt_epi8, _mm256_or_si256, _mm256_set1_epi8,
+        };
         const TRANSLATION_A: i8 = ::std::i8::MAX - $ra;
         const BELOW_A: i8 = ::std::i8::MAX - ($ra - $la) - 1;
         const TRANSLATION_B: i8 = ::std::i8::MAX - $rb;
@@ -137,6 +154,10 @@ macro_rules! _v_escape_translations {
         }
     };
     ($la:expr, $ra:expr, $b:expr, ) => {
+        use std::arch::x86_64::{
+            _mm256_add_epi8, _mm256_cmpeq_epi8, _mm256_cmpgt_epi8, _mm256_or_si256,
+            _mm256_set1_epi8,
+        };
         const TRANSLATION_A: i8 = ::std::i8::MAX - $ra;
         const BELOW_A: i8 = ::std::i8::MAX - ($ra - $la) - 1;
         const B: i8 = $b;
@@ -155,6 +176,7 @@ macro_rules! _v_escape_translations {
         }
     };
     ($la:expr, $ra:expr, ) => {
+        use std::arch::x86_64::{_mm256_add_epi8, _mm256_cmpgt_epi8, _mm256_set1_epi8};
         const TRANSLATION_A: i8 = ::std::i8::MAX - $ra;
         const BELOW_A: i8 = ::std::i8::MAX - ($ra - $la) - 1;
 
@@ -176,9 +198,6 @@ macro_rules! _v_escape_escape_avx {
         #[target_feature(enable = "avx2")]
         pub unsafe fn escape(bytes: &[u8], fmt: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
 
-            #[allow(unused_imports)]
-            use std::arch::x86_64::{_mm256_add_epi8, _mm256_cmpeq_epi8, _mm256_cmpgt_epi8,
-                                    _mm256_or_si256, _mm256_set1_epi8};
             let len = bytes.len();
             let start_ptr = bytes.as_ptr();
             let mut ptr = start_ptr;
@@ -258,9 +277,6 @@ macro_rules! _v_escape_sized_avx {
         #[target_feature(enable = "avx2")]
         pub unsafe fn size(bytes: &[u8]) -> usize {
 
-            #[allow(unused_imports)]
-            use std::arch::x86_64::{_mm256_add_epi8, _mm256_cmpeq_epi8, _mm256_cmpgt_epi8,
-                                    _mm256_or_si256, _mm256_set1_epi8};
             let len = bytes.len();
             let start_ptr = bytes.as_ptr();
             let mut acc = len;
