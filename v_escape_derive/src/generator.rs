@@ -59,6 +59,11 @@ impl<'a> Generator<'a> {
         buf.writeln(&format!("const V_ESCAPE_QUOTES_LEN: usize = {};", len));
 
         if self.sized {
+            {
+                let min_quote_len = self.pairs.iter().map(|p| p.quote.len()).min().unwrap();
+                assert_ne!(min_quote_len, 0);
+            }
+
             buf.write("static V_ESCAPE_SIZED: [u8; 256] = [");
             for i in 0..=255 as u8 {
                 let n = self
