@@ -1,5 +1,5 @@
-use nom;
-
+use nom::{self, AsBytes};
+use std::i8;
 use std::str;
 use std::u8;
 
@@ -29,9 +29,28 @@ named!(parse_syntax<Input, Vec<Pair>>, many1!(do_parse!(
 )));
 
 named!(parse_pair<Input, Pair>, map!(
-    separated_pair!(take_while!(nom::is_digit), tag!("->"), take_until!(" || ")),
-    |s| Pair::new(i8::from_str_radix(str::from_utf8(&s.0).unwrap(), 10).unwrap() as u8, &s.1)
+    separated_pair!(is_char, tag!("->"), take_until!(" || ")),
+    |s| Pair::new(s.0, &s.1)
 ));
+
+named!(is_char<Input, u8>, alt!(
+    map_res!(take_while!(nom::is_digit), is_digit) |
+    map!(take!(1),
+    |s| {
+        let b = s.as_bytes();
+        assert_eq!(b.len(), 1);
+        // TODO: use try_from
+        i8::from_str_radix(&b.first().unwrap().to_string(), 10).unwrap() as u8
+    })
+));
+
+fn is_digit(s: Input) -> Result<u8, nom::Err<Input>> {
+    if s.is_empty() {
+        Err(nom::Err::Failure(error_position!(s, nom::ErrorKind::IsNot)))
+    } else {
+        Ok(i8::from_str_radix(str::from_utf8(&s.as_bytes()).unwrap(), 10).unwrap() as u8)
+    }
+}
 
 pub fn parse(src: &str) -> Vec<Pair> {
     let mut pairs = match parse_syntax(Input(src.as_bytes())) {
@@ -66,10 +85,48 @@ mod test {
         );
     }
 
+    #[test]
+    fn test_syntax() {
+        assert_eq!(parse("b->& || "), vec![Pair::new(b'b', b"&")]);
+        assert_eq!(parse(" ->- || "), vec![Pair::new(b' ', b"-")]);
+        assert_eq!(
+            parse("<->& || >->- || "),
+            vec![Pair::new(b'<', b"&"), Pair::new(b'>', b"-"),]
+        );
+        assert_eq!(
+            parse("\"->& || a->- || "),
+            vec![Pair::new(b'"', b"&"), Pair::new(b'a', b"-"),]
+        );
+    }
+
     #[should_panic]
     #[test]
-    fn test_panic() {
+    fn test_panic_bad_syntax_a() {
         parse("1->f");
+    }
+
+    #[should_panic]
+    #[test]
+    fn test_panic_bad_syntax_b() {
+        parse("->f || ");
+    }
+
+    #[should_panic]
+    #[test]
+    fn test_panic_bad_syntax_c() {
+        parse("1>f || ");
+    }
+
+    #[should_panic]
+    #[test]
+    fn test_panic_bad_syntax_d() {
+        parse("1-f || ");
+    }
+
+    #[should_panic]
+    #[test]
+    fn test_panic_bad_syntax_e() {
+        parse("1-f ||");
     }
 
     #[should_panic]

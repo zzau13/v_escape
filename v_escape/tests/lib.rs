@@ -284,6 +284,22 @@ mod test_avx {
     }
 }
 
+mod char_syntax {
+    mod a {
+        new_escape_sized!(MyE, " ->f || ");
+
+        #[test]
+        fn test_escape() {
+            test!(MyE, " ", "f");
+        }
+
+        #[test]
+        fn test_sized() {
+            test_sized!(MyE, " ", "f");
+        }
+    }
+}
+
 #[cfg(target_arch = "x86_64")]
 mod simd_loops {
     unsafe fn memchr(n1: u8, bytes: &[u8]) -> Option<usize> {
