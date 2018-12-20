@@ -1,7 +1,5 @@
 use nom::{self, AsBytes};
-use std::i8;
-use std::str;
-use std::u8;
+use std::{i8, str};
 
 type Input<'a> = nom::types::CompleteByteSlice<'a>;
 

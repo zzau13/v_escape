@@ -1,13 +1,13 @@
 /// Main loop for search in byte slice with bit mask
 ///
-/// #### The following macros must be defined:
+/// ## The following macros must be defined:
 /// * `write_mask(mask: {integer}, ptr: *const u8)` do operation at full mask
 ///
 /// * `write_forward(mask: {integer}, until: usize})` do operation at sliced mask
 ///
 /// * `masking(a: __m256i) -> __m256i` make a mask from __m256i
 ///
-/// #### Example
+/// ## Example
 ///
 /// ```
 /// #[macro_use]

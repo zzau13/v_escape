@@ -39,22 +39,10 @@
 //! of the delimiter `->` followed by the substitution quote and
 //! finalized by the delimiter ` || `
 //!
-//! The maximum number of `Pairs` with activated simd is 16.
-//! If you want more you can deactivate the optimizations by simd with
-//! sub-attribute `simd = false`
-//!
-//! Optimizations for avx require the creation of ranges. So if the
-//! distance between your characters is very large you should disable
-//! avx with sub-attribute `avx = false`
-//!
-//! For debug reasons you can print the code generated with the
-//! sub-attribute `print = true`
-//!
-//! ### Examples
 //! ```
 //! # #[macro_use]
 //! # extern crate v_escape;
-//! new_escape_sized!(MyEscape, "62->bar || ");
+//! new_escape_sized!(MyEscape, ">->bar || ");
 //!
 //! # fn main() {
 //! assert_eq!(MyEscape::from("foo>bar").to_string(), "foobarbar");
@@ -63,12 +51,37 @@
 //! ```
 //! # #[macro_use]
 //! # extern crate v_escape;
-//! new_escape_sized!(MyEscape, "62->bar || 60->foo || ");
+//! new_escape_sized!(MyEscape, ">->bar || <->foo || ");
 //!
 //! # fn main() {
 //! assert_eq!(MyEscape::from("foo>bar<").to_string(), "foobarbarfoo");
 //! # }
 //! ```
+//!
+//! The maximum number of `Pairs` with activated simd is 16.
+//! If you want more you can deactivate the optimizations by simd with
+//! sub-attribute `simd = false`
+//!
+//! ```
+//! # #[macro_use]
+//! # extern crate v_escape;
+//! new_escape_sized!(
+//!     MyEscape,
+//!     "62->b || 60->f || 63->b || 65->f || 67->b || 66->f || 68->b || \
+//!     71->f || 72->b || 73->f || 74->b || 75->f || 76->b || 77->f || \
+//!     78->b || 79->f || 1->f || ",
+//!     simd = false
+//! );
+//!
+//! # fn main() {
+//! assert_eq!(MyEscape::from("foo>bar<").to_string(), "foobbarf");
+//! # }
+//! ```
+//!
+//! Optimizations for avx require the creation of ranges. So if the
+//! distance between your characters is very large you should disable
+//! avx with sub-attribute `avx = false`
+//!
 //! ```
 //! # #[macro_use]
 //! # extern crate v_escape;
@@ -78,17 +91,16 @@
 //! assert_eq!(MyEscape::from("fooBbar").to_string(), "foobarbar");
 //! # }
 //! ```
+//!
+//! For debug reasons you can print the code generated with the
+//! sub-attribute `print = true`
+//!
 //! ```
 //! # #[macro_use]
 //! # extern crate v_escape;
-//! new_escape_sized!(
-//!     MyEscape,
-//!     "62->b || 60->f || 63->b || 65->f || 67->b || 66->f || 68->b || 71->f || 72->b || 73->f || 74->b || 75->f || 76->b || 77->f || 78->b || 79->f || 1->f || ",
-//!     simd = false
-//! );
-//!
+//! new_escape_sized!(MyEscape, "o->bar || ", print = true);
 //! # fn main() {
-//! assert_eq!(MyEscape::from("foo>bar<").to_string(), "foobbarf");
+//! # assert_eq!(MyEscape::from("foo").to_string(), "fbarbar");
 //! # }
 //! ```
 //!
@@ -145,11 +157,11 @@ macro_rules! _v_escape_escape_new {
 /// #[macro_use]
 /// extern crate v_escape;
 ///
-/// new_escape_sized!(MyEscape, "62->bar || ");
+/// new_escape_sized!(MyEscape, "o->bar || ");
 ///
 /// # fn main() {
-/// # let s = b"foo>bar";
-/// let escaped = MyEscape::new(s);
+/// # let s = "foobar";
+/// let escaped = MyEscape::from(s);
 ///
 /// print!("{}", escaped);
 /// # }
@@ -190,11 +202,11 @@ macro_rules! new_escape {
 /// #[macro_use]
 /// extern crate v_escape;
 ///
-/// new_escape_sized!(MyEscape, "62->bar || ");
+/// new_escape_sized!(MyEscape, "o->bar || ");
 ///
 /// # fn main() {
-/// # let s = b"foo>bar";
-/// let escaped = MyEscape::new(s);
+/// # let s = "foo>bar";
+/// let escaped = MyEscape::from(s);
 ///
 /// print!("#{} : {}", escaped.size(), escaped);
 /// # }

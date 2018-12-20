@@ -9,7 +9,6 @@ env:
   -
   - CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_AVX="true"
   - CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_SIMD="true"
-  -
 before_script:
   - if [[ "${TRAVIS_RUST_VERSION}" == stable ]]; then
       rustup component add rustfmt;
