@@ -1,9 +1,9 @@
 /// Main loop for search in byte slice with bit mask
 ///
 /// #### The following macros must be defined:
-/// - `write_mask(mask: {integer})` do operation at mask
+/// * `write_mask(mask: {integer})` do operation at mask
 ///
-/// - `masking(a: __m128i, len: {integer}) -> {integer}` make a mask from __m128i
+/// * `masking(a: __m128i, len: {integer}) -> {integer}` make a mask from __m128i
 ///
 /// #### Example
 ///

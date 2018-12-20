@@ -1,3 +1,6 @@
+//! v_escape consists of two macros: `new_escape!` and `new_escape_sized!`.
+//! A `struct` is generated implementing trait `Display`
+//!
 //! # Quick start
 //!
 //! ```
@@ -28,6 +31,9 @@
 //!     }
 //! }
 //! ```
+//!
+//! ## Pairs syntax
+//! v_escape
 //!
 #![allow(unused_imports)]
 
