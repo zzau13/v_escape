@@ -140,8 +140,8 @@ cfg_if! {
             let group = "rocket/Sized Escaping";
             groups!(c, group, r_se);
 
-            let group = "v_escape/Sizing";
-            groups!($c, group, v_s);
+            let group = "rocket/Sizing";
+            groups!(c, group, v_s);
 
             askama_escape!(c);
             v_escape!(c);
