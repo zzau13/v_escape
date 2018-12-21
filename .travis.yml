@@ -1,16 +1,30 @@
 language: rust
-cache: cargo
 rust:
   - stable
   - beta
   - nightly
 env:
   -
-  - CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_AVX="true"
-  - CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_SIMD="true"
+  - CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_AVX=
+  - CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_SIMD=
 matrix:
   allow_failures:
     - rust: nightly
+  include:
+    - rust: nightly
+      env: STAGE=coverage
+    - rust: nightly
+      env: STAGE=benches
+    - rust: nightly
+      env:
+        - STAGE=benches
+        - CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_AVX=
+    - rust: nightly
+      env:
+        - STAGE=benches
+        - CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_SIMD=
+
+cache: cargo
 
 before_script:
   - if [[ "${TRAVIS_RUST_VERSION}" == stable ]]; then
@@ -18,21 +32,23 @@ before_script:
     fi
 
 script:
-  - cargo test
-  - if [[ "${TRAVIS_RUST_VERSION}" == stable ]]; then
+  - if [[ -z "$STAGE" ]]; then
+      cargo test;
+    fi
+  - if [[ "${TRAVIS_RUST_VERSION}" == "stable" ]]; then
       cargo fmt -- --check;
     fi
 
 after_success:
   - |
-    if [[ "$TRAVIS_RUST_VERSION" == "nightly" ]] && [[ -z "$CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_AVX" ]] && [[ -z "$CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_SIMD" ]]; then
+    if [[ "$STAGE" == "coverage" ]]; then
     RUSTFLAGS="--cfg procmacro2_semver_exempt" cargo install -f cargo-tarpaulin
     RUST_BACKTRACE=1 cargo tarpaulin --out Xml
     bash <(curl -s https://codecov.io/bash)
     echo "Uploaded code coverage"
     fi
   - |
-    if [ "$TRAVIS_RUST_VERSION" == "nightly" ]; then
+    if [[ "$STAGE" == "benches" ]] && [[ "$TRAVIS_RUST_VERSION" == "nightly" ]]; then
     REMOTE_URL="$(git config --get remote.origin.url)";
     cd ${TRAVIS_BUILD_DIR}/.. && \
     git clone ${REMOTE_URL} "${TRAVIS_REPO_SLUG}-bench" && \
