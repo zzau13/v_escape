@@ -1,4 +1,4 @@
-/// Main loop for search in byte slice with bit mask
+/// Main loop searches in byte slice with bit mask
 ///
 /// ## The following macros must be defined:
 /// * `write_mask(mask: {integer}, ptr: *const u8)` do operation at full mask

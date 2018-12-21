@@ -1,5 +1,6 @@
-//! v_escape consists of two macros: `new_escape!` and `new_escape_sized!`.
-//! A `struct` is generated implementing trait `Display`
+//! When using v_escape two macros can be used: `new_escape!` and `new_escape_sized!`.
+//! These macros generate a `struct` implementing trait `Display`.
+//! Simd was used to optimize.
 //!
 //! # Quick start
 //!
@@ -33,11 +34,15 @@
 //! ```
 //!
 //! ## Pairs syntax
-//! v_escape uses a simple syntax to enter the characters and quotes
-//! to replace them, which I will name `Pairs`.
-//! The `Pairs` consist of the character, `i8+` and `0`, to the left
-//! of the delimiter `->` followed by the substitution quote and
-//! finalized by the delimiter ` || `
+//! v_escape uses a simple syntax to replace charaters
+//! with their respective quotes. The tuple is named `Pair`,
+//! and several can be defined `Pairs`. The syntax to define
+//! (`Pairs`) consists of a character `i8+` or `0`, followed
+//! by the delimiter `->`, followed by the substitution quote
+//! and the delimiter ` || ` as follows:
+//!     `( [character]->[quote] || )*`
+//! Note: Numbers are read in ASCII for example:
+//!      `#6->foo ||`
 //!
 //! ```
 //! # #[macro_use]
@@ -59,8 +64,8 @@
 //! ```
 //!
 //! The maximum number of `Pairs` with activated simd is 16.
-//! If you want more you can deactivate the optimizations by simd with
-//! sub-attribute `simd = false`
+//! If more `Pairs`are needed simd optimizations can be deactivated
+//! using sub-attribute `simd = false`
 //!
 //! ```
 //! # #[macro_use]
@@ -78,9 +83,9 @@
 //! # }
 //! ```
 //!
-//! Optimizations for avx require the creation of ranges. So if the
-//! distance between your characters is very large you should disable
-//! avx with sub-attribute `avx = false`
+//! Optimization for avx requires the creation of ranges. If the
+//! distance between your characters is very large, sub-attribute
+//! `avx = false` should be disabled
 //!
 //! ```
 //! # #[macro_use]
@@ -92,8 +97,8 @@
 //! # }
 //! ```
 //!
-//! For debug reasons you can print the code generated with the
-//! sub-attribute `print = true`
+//! For debug purposes, sub-attribute `print = true`, can be used
+//! to print generated code
 //!
 //! ```
 //! # #[macro_use]
