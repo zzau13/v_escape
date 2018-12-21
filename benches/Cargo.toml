@@ -17,7 +17,16 @@ bench = false
 name = "v_htmlescape"
 harness = false
 path = "src/all.rs"
+[features]
+default = []
+with-rocket = ["rocket"]
 
 [dependencies]
+cfg-if = "0.1"
 criterion = "0.2"
 v_htmlescape = { version = "*", path = "../v_htmlescape" }
+rocket = { version = "0.4", optional = true }
+askama_escape = "0.1"
+
+[build-dependencies]
+version_check = "0.1"
