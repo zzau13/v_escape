@@ -1,10 +1,12 @@
 #![allow(unused_must_use)]
-
+#[macro_use]
+extern crate criterion;
 use criterion::{Bencher, Benchmark, Criterion, Throughput};
-use v_htmlescape::HTMLEscape as Escape;
 
 use std::fmt::Write;
 use std::str;
+
+mod v_escape;
 
 static HUGE: &[u8] = include_bytes!("../data/sherlock-holmes-huge.txt");
 // escapeable characters replaced by 'a'
@@ -37,48 +39,6 @@ static ULTRA_V_TINY: &[u8] = b"abcd<ef";
 static ULTRA_V_TINY_ED: &[u8] = b"abcd.ef";
 
 static EMPTY: &[u8] = &[];
-
-fn sized(corpus: &'static [u8]) -> impl FnMut(&mut Bencher) + 'static {
-    move |b: &mut Bencher| {
-        let e = Escape::new(corpus);
-
-        b.iter(|| {
-            e.size();
-        });
-    }
-}
-
-fn writing(corpus: &'static [u8]) -> impl FnMut(&mut Bencher) + 'static {
-    move |b: &mut Bencher| {
-        let mut writer = String::new();
-
-        b.iter(|| {
-            write!(writer, "{}", unsafe { str::from_utf8_unchecked(corpus) });
-        });
-    }
-}
-
-fn escaping(corpus: &'static [u8]) -> impl FnMut(&mut Bencher) + 'static {
-    move |b: &mut Bencher| {
-        let e = Escape::new(corpus);
-        let mut writer = String::new();
-
-        b.iter(|| {
-            write!(writer, "{}", e);
-        });
-    }
-}
-
-fn size_escaping(corpus: &'static [u8]) -> impl FnMut(&mut Bencher) + 'static {
-    move |b: &mut Bencher| {
-        let e = Escape::new(corpus);
-        let mut writer = String::with_capacity(e.size());
-
-        b.iter(|| {
-            write!(writer, "{}", e);
-        });
-    }
-}
 
 fn define(
     c: &mut Criterion,
@@ -120,14 +80,25 @@ macro_rules! groups {
     }};
 }
 
+fn writing(corpus: &'static [u8]) -> impl FnMut(&mut Bencher) + 'static {
+    move |b: &mut Bencher| {
+        let mut writer = String::new();
+
+        b.iter(|| {
+            write!(writer, "{}", unsafe { str::from_utf8_unchecked(corpus) });
+        });
+    }
+}
+
 fn functions(c: &mut Criterion) {
-    let group = "Sizing";
+    use crate::v_escape::{escaping, size_escaping, sized};
+    let group = "v_escape/Sizing";
     groups!(c, group, sized);
 
-    let group = "Escaping";
+    let group = "v_escape/Escaping";
     groups!(c, group, escaping);
 
-    let group = "Sized Escaping";
+    let group = "v_escape/Sized Escaping";
     groups!(c, group, size_escaping);
 
     let group = "std Writing";
