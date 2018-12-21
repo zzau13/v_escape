@@ -1,17 +1,17 @@
 language: rust
 cache: cargo
-matrix:
-  include:
-    - rust: stable
-    - rust: beta
-    - rust: nightly
-  allow_failures:
-    - rust: nightly
-
+rust:
+  - stable
+  - beta
+  - nightly
 env:
   -
   - CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_AVX="true"
   - CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_SIMD="true"
+matrix:
+  allow_failures:
+    - rust: nightly
+
 before_script:
   - if [[ "${TRAVIS_RUST_VERSION}" == stable ]]; then
       rustup component add rustfmt;
