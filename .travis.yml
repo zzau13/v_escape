@@ -1,9 +1,12 @@
 language: rust
-rust:
-  - stable
-  - beta
-  - nightly
 cache: cargo
+matrix:
+  include:
+    - rust: stable
+    - rust: beta
+    - rust: nightly
+  allow_failures:
+    - rust: nightly
 
 env:
   -
@@ -19,10 +22,28 @@ script:
   - if [[ "${TRAVIS_RUST_VERSION}" == stable ]]; then
       cargo fmt -- --check;
     fi
+
+after_success:
   - |
     if [[ "$TRAVIS_RUST_VERSION" == "nightly" ]] && [[ -z "$CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_AVX" ]] && [[ -z "$CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_SIMD" ]]; then
     RUSTFLAGS="--cfg procmacro2_semver_exempt" cargo install -f cargo-tarpaulin
     RUST_BACKTRACE=1 cargo tarpaulin --out Xml
     bash <(curl -s https://codecov.io/bash)
     echo "Uploaded code coverage"
+    fi
+  - |
+    if [ "$TRAVIS_RUST_VERSION" == "nightly" ]; then
+    REMOTE_URL="$(git config --get remote.origin.url)";
+    cd ${TRAVIS_BUILD_DIR}/.. && \
+    git clone ${REMOTE_URL} "${TRAVIS_REPO_SLUG}-bench" && \
+    cd  "${TRAVIS_REPO_SLUG}-bench" && \
+    # Bench master
+    git checkout master && \
+    cd benches &&
+    cargo bench --features with-rocket && \
+    cd .. &&
+    # Bench pull request
+    git checkout ${TRAVIS_COMMIT} && \
+    cd benches &&
+    cargo bench --features with-rocket
     fi
