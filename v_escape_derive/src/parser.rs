@@ -1,4 +1,4 @@
-use nom::{self, AsBytes};
+use nom::{self, AsBytes, Needed};
 use std::{i8, str};
 
 type Input<'a> = nom::types::CompleteByteSlice<'a>;
@@ -31,24 +31,41 @@ named!(parse_pair<Input, Pair>, map!(
     |s| Pair::new(s.0, &s.1)
 ));
 
-named!(is_char<Input, u8>, alt!(
-    map_res!(take_while!(nom::is_digit), is_digit) |
-    map!(take!(1),
-    |s| {
-        let b = s.as_bytes();
-        assert_eq!(b.len(), 1);
-        // TODO: use try_from
-        i8::from_str_radix(&b.first().unwrap().to_string(), 10).unwrap() as u8
-    })
-));
+macro_rules! is_digit {
+    ($name:ident, $base:expr) => {
+        fn $name(s: Input) -> Result<u8, nom::Err<Input>> {
+            if s.is_empty() {
+                Err(nom::Err::Incomplete(Needed::Size(1)))
+            } else {
+                Ok(
+                    i8::from_str_radix(str::from_utf8(&s.as_bytes()).unwrap(), $base)
+                        .expect("overflow at i8") as u8,
+                )
+            }
+        }
+    };
+}
 
-fn is_digit(s: Input) -> Result<u8, nom::Err<Input>> {
-    if s.is_empty() {
-        Err(nom::Err::Failure(error_position!(s, nom::ErrorKind::IsNot)))
+is_digit!(is_digit_8, 8);
+is_digit!(is_digit_10, 10);
+is_digit!(is_digit_16, 16);
+
+fn try_into_i8(s: Input) -> Result<u8, nom::Err<Input>> {
+    let b = s.as_bytes();
+    if b.len() == 1 {
+        Ok(i8::from_str_radix(&b.first().unwrap().to_string(), 10).unwrap() as u8)
     } else {
-        Ok(i8::from_str_radix(str::from_utf8(&s.as_bytes()).unwrap(), 10).unwrap() as u8)
+        Err(nom::Err::Incomplete(Needed::Size(1)))
     }
 }
+
+named!(is_char<Input, u8>, alt!(
+    map_res!(preceded!(tag!("0x"), take_while!(nom::is_hex_digit)), is_digit_16) |
+    map_res!(preceded!(tag!("0o"), take_while!(nom::is_oct_digit)), is_digit_8) |
+    map_res!(preceded!(tag!("#"), take_while!(nom::is_digit)), try_into_i8) |
+    map_res!(take_while!(nom::is_digit), is_digit_10) |
+    map_res!(take!(1), try_into_i8)
+));
 
 pub fn parse(src: &str) -> Vec<Pair> {
     let mut pairs = match parse_syntax(Input(src.as_bytes())) {
@@ -86,6 +103,12 @@ mod test {
     #[test]
     fn test_syntax() {
         assert_eq!(parse("b->& || "), vec![Pair::new(b'b', b"&")]);
+        assert_eq!(parse("#->& || "), vec![Pair::new(b'#', b"&")]);
+
+        assert_eq!(parse("#6->& || "), vec![Pair::new(b'6', b"&")]);
+        assert_eq!(parse("0x34->& || "), vec![Pair::new(0x34, b"&")]);
+        assert_eq!(parse("0o34->& || "), vec![Pair::new(0o34, b"&")]);
+
         assert_eq!(parse(" ->- || "), vec![Pair::new(b' ', b"-")]);
         assert_eq!(
             parse("<->& || >->- || "),
