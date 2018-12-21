@@ -8,6 +8,7 @@ use criterion::{Bencher, Benchmark, Criterion, Throughput};
 use std::fmt::Write;
 use std::str;
 
+mod askama_escape;
 #[cfg(all(v_escape_benches_nightly, feature = "with-rocket"))]
 mod rocket;
 mod v_escape;
@@ -86,7 +87,7 @@ macro_rules! groups {
 
 macro_rules! v_escape {
     ($c:ident) => {
-        use crate::v_escape::{escaping as v_e, size_escaping as v_se, sized};
+        use crate::v_escape::{escaping as v_e, size_escaping as v_se, sized as v_s};
         let group = "v_escape/Escaping";
         groups!($c, group, v_e);
 
@@ -94,7 +95,21 @@ macro_rules! v_escape {
         groups!($c, group, v_se);
 
         let group = "v_escape/Sizing";
-        groups!($c, group, sized);
+        groups!($c, group, v_s);
+    };
+}
+
+macro_rules! askama_escape {
+    ($c:ident) => {
+        use crate::askama_escape::{escaping as a_e, size_escaping as a_se, sized as a_s};
+        let group = "askama_escape/Escaping";
+        groups!($c, group, a_e);
+
+        let group = "askama_escape/Sized Escaping";
+        groups!($c, group, a_se);
+
+        let group = "askama_escape/Sizing";
+        groups!($c, group, a_s);
     };
 }
 
@@ -118,18 +133,23 @@ macro_rules! std_writing {
 cfg_if! {
     if #[cfg(all(v_escape_benches_nightly, feature = "with-rocket"))] {
         fn functions(c: &mut Criterion) {
-            use crate::rocket::{escaping as r_e, size_escaping as r_se};
+            use crate::rocket::{escaping as r_e, size_escaping as r_se, sized as r_s};
             let group = "rocket/Escaping";
             groups!(c, group, r_e);
 
             let group = "rocket/Sized Escaping";
             groups!(c, group, r_se);
 
+            let group = "v_escape/Sizing";
+            groups!($c, group, v_s);
+
+            askama_escape!(c);
             v_escape!(c);
             std_writing!(c);
         }
     } else {
         fn functions(c: &mut Criterion) {
+            askama_escape!(c);
             v_escape!(c);
             std_writing!(c);
         }
