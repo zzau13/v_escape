@@ -31,7 +31,7 @@ macro_rules! is_digit {
     ($name:ident, $base:expr) => {
         fn $name(s: Input) -> Result<u8, nom::Err<Input>> {
             if s.is_empty() {
-                Err(nom::Err::Incomplete(Needed::Size(1)))
+                Err(nom::Err::Incomplete(Needed::Unknown))
             } else {
                 Ok(
                     i8::from_str_radix(str::from_utf8(&s.as_bytes()).unwrap(), $base)
@@ -49,7 +49,7 @@ is_digit!(is_digit_16, 16);
 fn try_into_i8(s: Input) -> Result<u8, nom::Err<Input>> {
     let b = s.as_bytes();
     if b.len() == 1 {
-        Ok(i8::from_str_radix(&b.first().unwrap().to_string(), 10).unwrap() as u8)
+        Ok(*b.first().unwrap() as i8 as u8)
     } else {
         Err(nom::Err::Incomplete(Needed::Size(1)))
     }
