@@ -20,14 +20,10 @@ impl<'a> Pair<'a> {
     }
 }
 
-named!(parse_syntax<Input, Vec<Pair>>, many1!(do_parse!(
-    pair: parse_pair >>
-    tag!(" || ") >>
-    (pair)
-)));
+named!(parse_syntax<Input, Vec<Pair>>, many1!(parse_pair));
 
 named!(parse_pair<Input, Pair>, map!(
-    separated_pair!(is_char, tag!("->"), take_until!(" || ")),
+    separated_pair!(is_char, tag!("->"), alt!(take_until_and_consume!(" || ") | nom::rest)),
     |s| Pair::new(s.0, &s.1)
 ));
 
@@ -103,6 +99,7 @@ mod test {
     #[test]
     fn test_syntax() {
         assert_eq!(parse("b->& || "), vec![Pair::new(b'b', b"&")]);
+        assert_eq!(parse("b->&"), vec![Pair::new(b'b', b"&")]);
         assert_eq!(parse("#->& || "), vec![Pair::new(b'#', b"&")]);
 
         assert_eq!(parse("#6->& || "), vec![Pair::new(b'6', b"&")]);
@@ -123,7 +120,7 @@ mod test {
     #[should_panic]
     #[test]
     fn test_panic_bad_syntax_a() {
-        parse("1->f");
+        parse("-f");
     }
 
     #[should_panic]
