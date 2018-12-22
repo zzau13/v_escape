@@ -9,9 +9,14 @@ struct Generator<'a> {
     avx: bool,
 }
 
+type Ranges = Vec<u8>;
+
 pub fn generate(pairs: &[Pair], sized: bool, simd: bool, avx: bool) -> String {
     Generator::new(pairs, sized, simd, avx).build()
 }
+
+// End flag for indicate more escapes than ranges
+const FLAG: u8 = 128;
 
 impl<'a> Generator<'a> {
     pub fn new<'n>(pairs: &'n [Pair<'n>], sized: bool, simd: bool, avx: bool) -> Generator<'n> {
@@ -165,12 +170,9 @@ impl<'a> Generator<'a> {
         }
     }
 
-    fn calculate_ranges(&self) -> Vec<u8> {
-        // End flag for indicate more escapes than ranges
-        const FLAG: u8 = 128;
-
+    fn calculate_ranges(&self) -> Ranges {
         let len = self.pairs.len();
-        let mut ranges: Vec<u8> = vec![];
+        let mut ranges: Ranges = vec![];
 
         assert_ne!(len, 0);
 
@@ -240,67 +242,88 @@ impl<'a> Generator<'a> {
 
                 if first + 1 == last {
                     if first == 0 {
-                        // 1 ranges and 2 escape
-                        ranges.push(self.pairs.get(last + 1).unwrap().char);
-                        ranges.push(self.pairs.last().unwrap().char);
-                        ranges.push(self.pairs.first().unwrap().char);
-                        ranges.push(self.pairs.get(first + 1).unwrap().char);
-                        ranges.push(FLAG);
+                        self.push_1_ranges_2_escape_at_first(&mut ranges, first, last);
                     } else {
                         if last + 2 == len {
-                            // 1 ranges and 2 escape
-                            ranges.push(self.pairs.first().unwrap().char);
-                            ranges.push(self.pairs.get(first).unwrap().char);
-                            ranges.push(self.pairs.get(last).unwrap().char);
-                            ranges.push(self.pairs.last().unwrap().char);
-                            ranges.push(FLAG);
+                            self.push_1_ranges_2_escape_at_last(&mut ranges, first, last);
                         } else {
-                            // 2 ranges and 1 escape
-                            ranges.push(self.pairs.first().unwrap().char);
-                            ranges.push(self.pairs.get(first).unwrap().char);
-                            ranges.push(self.pairs.get(last + 1).unwrap().char);
-                            ranges.push(self.pairs.last().unwrap().char);
-                            ranges.push(self.pairs.get(first + 1).unwrap().char);
+                            self.push_2_ranges_1_escape(&mut ranges, first, last);
                         }
                     }
                 } else {
                     if first == 0 {
                         if last + 2 == len {
-                            // 1 ranges and 2 escape
-                            ranges.push(self.pairs.get(first + 1).unwrap().char);
-                            ranges.push(self.pairs.get(last).unwrap().char);
-                            ranges.push(self.pairs.first().unwrap().char);
-                            ranges.push(self.pairs.last().unwrap().char);
-                            ranges.push(FLAG);
+                            self.push_1_ranges_2_escape_at_first_last(&mut ranges, first, last);
                         } else {
-                            // 2 ranges and 1 escape
-                            ranges.push(self.pairs.get(first + 1).unwrap().char);
-                            ranges.push(self.pairs.get(last).unwrap().char);
-                            ranges.push(self.pairs.get(last + 1).unwrap().char);
-                            ranges.push(self.pairs.last().unwrap().char);
-                            ranges.push(self.pairs.first().unwrap().char);
+                            self.push_2_ranges_1_escape_at_first(&mut ranges, first, last);
                         }
                     } else if last + 2 == len {
-                        // 2 ranges and 1 escape
-                        ranges.push(self.pairs.first().unwrap().char);
-                        ranges.push(self.pairs.get(first).unwrap().char);
-                        ranges.push(self.pairs.get(first + 1).unwrap().char);
-                        ranges.push(self.pairs.get(last).unwrap().char);
-                        ranges.push(self.pairs.last().unwrap().char);
+                        self.push_2_ranges_1_escape_at_last(&mut ranges, first, last);
                     } else {
-                        // 3 ranges
-                        ranges.push(self.pairs.first().unwrap().char);
-                        ranges.push(self.pairs.get(first).unwrap().char);
-                        ranges.push(self.pairs.get(first + 1).unwrap().char);
-                        ranges.push(self.pairs.get(last).unwrap().char);
-                        ranges.push(self.pairs.get(last + 1).unwrap().char);
-                        ranges.push(self.pairs.last().unwrap().char);
+                        self.push_3_ranges(&mut ranges, first, last);
                     }
                 }
             }
         };
 
         ranges
+    }
+
+    fn push_1_ranges_2_escape_at_first(&self, r: &mut Ranges, first: usize, last: usize) {
+        r.push(self.pairs.get(last + 1).unwrap().char);
+        r.push(self.pairs.last().unwrap().char);
+        r.push(self.pairs.first().unwrap().char);
+        r.push(self.pairs.get(first + 1).unwrap().char);
+        r.push(FLAG);
+    }
+
+    fn push_1_ranges_2_escape_at_last(&self, r: &mut Ranges, first: usize, last: usize) {
+        r.push(self.pairs.first().unwrap().char);
+        r.push(self.pairs.get(first).unwrap().char);
+        r.push(self.pairs.get(last).unwrap().char);
+        r.push(self.pairs.last().unwrap().char);
+        r.push(FLAG);
+    }
+
+    fn push_1_ranges_2_escape_at_first_last(&self, r: &mut Ranges, first: usize, last: usize) {
+        r.push(self.pairs.get(first + 1).unwrap().char);
+        r.push(self.pairs.get(last).unwrap().char);
+        r.push(self.pairs.first().unwrap().char);
+        r.push(self.pairs.last().unwrap().char);
+        r.push(FLAG);
+    }
+
+    fn push_2_ranges_1_escape(&self, r: &mut Ranges, first: usize, last: usize) {
+        r.push(self.pairs.first().unwrap().char);
+        r.push(self.pairs.get(first).unwrap().char);
+        r.push(self.pairs.get(last + 1).unwrap().char);
+        r.push(self.pairs.last().unwrap().char);
+        r.push(self.pairs.get(first + 1).unwrap().char);
+    }
+
+    fn push_2_ranges_1_escape_at_first(&self, r: &mut Ranges, first: usize, last: usize) {
+        r.push(self.pairs.get(first + 1).unwrap().char);
+        r.push(self.pairs.get(last).unwrap().char);
+        r.push(self.pairs.get(last + 1).unwrap().char);
+        r.push(self.pairs.last().unwrap().char);
+        r.push(self.pairs.first().unwrap().char);
+    }
+
+    fn push_2_ranges_1_escape_at_last(&self, r: &mut Ranges, first: usize, last: usize) {
+        r.push(self.pairs.first().unwrap().char);
+        r.push(self.pairs.get(first).unwrap().char);
+        r.push(self.pairs.get(first + 1).unwrap().char);
+        r.push(self.pairs.get(last).unwrap().char);
+        r.push(self.pairs.last().unwrap().char);
+    }
+
+    fn push_3_ranges(&self, r: &mut Ranges, first: usize, last: usize) {
+        r.push(self.pairs.first().unwrap().char);
+        r.push(self.pairs.get(first).unwrap().char);
+        r.push(self.pairs.get(first + 1).unwrap().char);
+        r.push(self.pairs.get(last).unwrap().char);
+        r.push(self.pairs.get(last + 1).unwrap().char);
+        r.push(self.pairs.last().unwrap().char);
     }
 }
 
