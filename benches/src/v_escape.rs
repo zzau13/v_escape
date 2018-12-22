@@ -22,14 +22,3 @@ pub fn escaping(corpus: &'static [u8]) -> impl FnMut(&mut Bencher) + 'static {
         });
     }
 }
-
-pub fn size_escaping(corpus: &'static [u8]) -> impl FnMut(&mut Bencher) + 'static {
-    move |b: &mut Bencher| {
-        let e = Escape::new(corpus);
-        let mut writer = String::with_capacity(e.size());
-
-        b.iter(|| {
-            write!(writer, "{}", e);
-        });
-    }
-}
