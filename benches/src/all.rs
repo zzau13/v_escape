@@ -1,13 +1,15 @@
 #![allow(unused_must_use)]
+#![allow(unused_macros)]
+
 #[macro_use]
 extern crate cfg_if;
 #[macro_use]
 extern crate criterion;
 use criterion::{Bencher, Benchmark, Criterion, Throughput};
 
-use std::fmt::Write;
 use std::str;
 
+#[cfg(feature = "with-askama")]
 mod askama_escape;
 #[cfg(all(v_escape_benches_nightly, feature = "with-rocket"))]
 mod rocket;
@@ -91,6 +93,8 @@ macro_rules! askama_escape {
 
 macro_rules! std_writing {
     ($c:ident) => {
+        use std::fmt::Write;
+
         fn writing(corpus: &'static [u8]) -> impl FnMut(&mut Bencher) + 'static {
             move |b: &mut Bencher| {
                 let mut writer = String::new();
@@ -117,11 +121,15 @@ cfg_if! {
             v_escape!(c);
             std_writing!(c);
         }
-    } else {
+    } else if #[cfg(feature = "with-askama")] {
         fn functions(c: &mut Criterion) {
             askama_escape!(c);
             v_escape!(c);
             std_writing!(c);
+        }
+    } else {
+        fn functions(c: &mut Criterion) {
+            v_escape!(c);
         }
     }
 }

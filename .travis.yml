@@ -10,6 +10,7 @@ env:
 matrix:
   allow_failures:
     - rust: nightly
+    - env: STAGE=benches
   include:
     - rust: nightly
       env: STAGE=coverage
@@ -49,17 +50,6 @@ after_success:
     fi
   - |
     if [[ "$STAGE" == "benches" ]] && [[ "$TRAVIS_RUST_VERSION" == "nightly" ]]; then
-    REMOTE_URL="$(git config --get remote.origin.url)";
-    cd ${TRAVIS_BUILD_DIR}/.. && \
-    git clone ${REMOTE_URL} "${TRAVIS_REPO_SLUG}-bench" && \
-    cd  "${TRAVIS_REPO_SLUG}-bench" && \
-    # Bench master
-    git checkout master && \
-    cd benches &&
-    cargo bench --features with-rocket && \
-    cd .. &&
-    # Bench pull request
-    git checkout ${TRAVIS_COMMIT} && \
-    cd benches &&
-    cargo bench --features with-rocket
+    cd benches && \
+    cargo bench --features with-rocket,with-askama;
     fi
