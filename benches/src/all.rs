@@ -126,7 +126,7 @@ cfg_if! {
             groups!(c, group, r_se);
 
             let group = "rocket/Sizing";
-            groups!(c, group, v_s);
+            groups!(c, group, r_s);
 
             askama_escape!(c);
             v_escape!(c);
