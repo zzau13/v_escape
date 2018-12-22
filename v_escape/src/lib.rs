@@ -1,14 +1,18 @@
-//! When using v_escape two macros can be used: `new_escape!` and `new_escape_sized!`.
-//! These macros generate a `struct` implementing trait `Display`.
-//! Simd was used to optimize.
+//! Crate v_escape provides two macros, `new_escape!` and `new_escape_sized!`,
+//! that define a `struct` with escaping functionalities. These macros are
+//! optimized using simd by default, but this can be alter using sub-attributes.
 //!
 //! # Quick start
-//!
+//! In order to use v_escape you will have to call one of the two macros
+//! to create a escape `struct`. In this example, when using the macro
+//! `new_escape_sized!(MyEscape, "62->bar");` a new a `struct` `MyEscape`
+//! will be created that every time its method `MyEscape::from` is called
+//! will replace all characters ">" with "bar".
 //! ```
 //! #[macro_use]
 //! extern crate v_escape;
 //!
-//! new_escape_sized!(MyEscape, "62->bar || ");
+//! new_escape_sized!(MyEscape, "62->bar");
 //!
 //! # fn main() {
 //! # let s = "foo>bar";
@@ -18,7 +22,9 @@
 //! # }
 //! ```
 //!
-//! > build.rs
+//! To check if rust version has simd functionality. The following code
+//! has to be added to file `build.rs`.
+//!
 //! ```ignore
 //! use version_check::is_min_version;
 //!
@@ -36,36 +42,56 @@
 //! ## Pairs syntax
 //! v_escape uses a simple syntax to replace charaters
 //! with their respective quotes. The tuple is named `Pair`,
-//! and several can be defined `Pairs`. The syntax to define
-//! (`Pairs`) consists of a character `i8+` or `0`, followed
+//! and several can be defined, refered as `Pairs`. The syntax to define
+//! `Pairs` consists of a character, followed
 //! by the delimiter `->`, followed by the substitution quote
-//! and the delimiter ` || ` as follows:
-//!     `( [character]->[quote] || )*`
-//! Note: Numbers are read in ASCII for example:
-//!      `#6->foo ||`
+//! and the delimiter ` || ` (last delimiter is optional):
+//!
+//!    `( [character]->[quote] || )*`
+//!
+//! * `character` :   Character to substitute. Accepts`i8+` from `0` to `i8::MAX` and
+//!                 accepts the following formats: decimal (49), hexadecimal (0x31),
+//!                 octa-decimal (0o61) or character (#1).
+//!                 Note: Numbers are read in ASCII: `#6->foo ||`.
+//!
+//! * `quote` :   Characters that will replace `character`.
 //!
 //! ```
 //! # #[macro_use]
 //! # extern crate v_escape;
-//! new_escape_sized!(MyEscape, ">->bar || ");
-//!
+//! new_escape_sized!(MyEscape, "49->bar");
 //! # fn main() {
-//! assert_eq!(MyEscape::from("foo>bar").to_string(), "foobarbar");
+//! assert_eq!(MyEscape::from("foo 1").to_string(), "foo bar");
 //! # }
 //! ```
 //! ```
 //! # #[macro_use]
 //! # extern crate v_escape;
-//! new_escape_sized!(MyEscape, ">->bar || <->foo || ");
-//!
+//! new_escape_sized!(MyEscape, "0x31->bar");
 //! # fn main() {
-//! assert_eq!(MyEscape::from("foo>bar<").to_string(), "foobarbarfoo");
+//! assert_eq!(MyEscape::from("foo 1").to_string(), "foo bar");
+//! # }
+//! ```
+//! ```
+//! # #[macro_use]
+//! # extern crate v_escape;
+//! new_escape_sized!(MyEscape, "0o61->bar");
+//! # fn main() {
+//! assert_eq!(MyEscape::from("foo 1").to_string(), "foo bar");
+//! # }
+//! ```
+//! ```
+//! # #[macro_use]
+//! # extern crate v_escape;
+//! new_escape_sized!(MyEscape, "#1->bar");
+//! # fn main() {
+//! assert_eq!(MyEscape::from("foo 1").to_string(), "foo bar");
 //! # }
 //! ```
 //!
-//! The maximum number of `Pairs` with activated simd is 16.
-//! If more `Pairs`are needed simd optimizations can be deactivated
-//! using sub-attribute `simd = false`
+//! The sub-attribute `simd`, true by default, can process a maximum
+//! of 16 `Pairs`. If more `Pairs` are needed, simd optimizations has
+//! to be deactivated using sub-attribute `simd = false`
 //!
 //! ```
 //! # #[macro_use]
@@ -74,36 +100,34 @@
 //!     MyEscape,
 //!     "62->b || 60->f || 63->b || 65->f || 67->b || 66->f || 68->b || \
 //!     71->f || 72->b || 73->f || 74->b || 75->f || 76->b || 77->f || \
-//!     78->b || 79->f || 1->f || ",
+//!     78->b || 79->f || 1->f ",
 //!     simd = false
 //! );
-//!
 //! # fn main() {
 //! assert_eq!(MyEscape::from("foo>bar<").to_string(), "foobbarf");
 //! # }
 //! ```
 //!
 //! Optimization for avx requires the creation of ranges. If the
-//! distance between your characters is very large, sub-attribute
-//! `avx = false` should be disabled
+//! distance between the escaped characters is very large,
+//! sub-attribute `avx = false` should be disabled
 //!
 //! ```
 //! # #[macro_use]
 //! # extern crate v_escape;
-//! new_escape!(MyEscape, "0-> || 33->foo || 66->bar || 127-> || ", avx = false);
-//!
+//! new_escape!(MyEscape, "0-> || 33->foo || 66->bar || 127->", avx = false);
 //! # fn main() {
 //! assert_eq!(MyEscape::from("fooBbar").to_string(), "foobarbar");
 //! # }
 //! ```
 //!
-//! For debug purposes, sub-attribute `print = true`, can be used
+//! For debugging purposes, sub-attribute `print`, can be set to `true`
 //! to print generated code
 //!
 //! ```
 //! # #[macro_use]
 //! # extern crate v_escape;
-//! new_escape_sized!(MyEscape, "o->bar || ", print = true);
+//! new_escape_sized!(MyEscape, "o->bar", print = true);
 //! # fn main() {
 //! # assert_eq!(MyEscape::from("foo").to_string(), "fbarbar");
 //! # }
@@ -125,15 +149,105 @@ mod sse;
 mod avx;
 
 #[macro_export]
+/// Macro new_escape generates struct `$name` with escaping functionality.
+///
+/// It will get as input:
+///
+/// * $__name__: Name of escape class.
+///
+/// * $__pairs__: Pairs of `[character]->[quote] || [character]->[quote]` or
+///              `[character]->[quote]`.
+///
+/// * $__t__: Optional boolean parameters (simd, avx, print).
+///     * __simd__:  If true (by default), simd optimizations are enabled. When false,
+///          no matter value of avx, `sse4.2` will be used,
+///     * __avx__:   If true (by default), avx optimization are enabled. When false,
+///          `sse4.2`(if `simd=true`) or `scalar`(if `simd=false`) will be used.
+///     * __print__: If true (false by default), prints out generated code to console.
+///
+/// and will:
+///
+/// 1. Import fmt, Display and Formatter.
+///
+/// 2. Define basic struct with attribute `bytes` and escaping
+///    derive functionality (by calling itself).
+///
+/// 3. Implements a constructor `new` and traits `Display` and
+///    `From<&'a str>` to struct `$name` (using `_v_escape_escape_new` macro).
+///
+/// The generated struct `$name` can escape a string using function `from`
+/// and can be displayed as in the example.
+///
+/// #### Example
+///
+/// ```
+/// #[macro_use]
+/// extern crate v_escape;
+///
+/// new_escape_sized!(MyEscape, "o->bar", print=true);
+///
+/// # fn main() {
+/// # let s = "foobar";
+/// let escaped = MyEscape::from(s);
+///
+/// print!("{}", escaped);
+/// # }
+/// ```
+///
+macro_rules! new_escape {
+    // Macro called without attributes
+    ($name:ident, $pairs:expr) => {
+        use std::fmt::{self, Display, Formatter};
+        // Calling itself implementing struct $name
+        // to generate code from Derive
+        new_escape!(imp $name, $pairs);
+        // Implementing function new and traits Display and From
+        _v_escape_escape_new!($name);
+    };
+    // Macro called with attributes
+    ($name:ident, $pairs:expr, $($t:tt)+) => {
+        use std::fmt::{self, Display, Formatter};
+        // Calling itself implementing struct $name
+        // to generate code from Derive, with attributes
+        new_escape!(imp $name, $pairs, $($t)+);
+        // Implementing function new and traits Display and From
+        _v_escape_escape_new!($name);
+    };
+    // Implementation of Derive to struct $name.
+    // Macro called without attributes
+    (imp $name:ident, $pairs:expr) => {
+        // Adding code generated by Derive  with Escape and escape
+        #[derive(Escape)]
+        #[escape(pairs = $pairs)]
+        pub struct $name<'a> {
+            bytes: &'a [u8],
+        }
+    };
+    // Implementation of Derive to struct $name.
+    // Macro called with attributes
+    (imp $name:ident, $pairs:expr, $($t:tt)+) => {
+        // Adding code generated by Derive  with Escape and escape
+        // passing attributes to function escape
+        #[derive(Escape)]
+        #[escape(pairs = $pairs, $($t)+)]
+        pub struct $name<'a> {
+            bytes: &'a [u8],
+        }
+    };
+}
+
+#[macro_export]
+/// Generates function new, and traits From and Display, for class `$name`
 macro_rules! _v_escape_escape_new {
     ($name:ident) => {
+        // Constructor
         #[allow(dead_code)]
         impl<'a> $name<'a> {
             pub fn new(bytes: &[u8]) -> $name {
                 $name { bytes }
             }
         }
-
+        // Casting
         impl<'a> From<&'a str> for $name<'a> {
             fn from(s: &str) -> $name {
                 $name {
@@ -141,7 +255,7 @@ macro_rules! _v_escape_escape_new {
                 }
             }
         }
-
+        // Formatting
         impl<'a> Display for $name<'a> {
             fn fmt(&self, fmt: &mut Formatter) -> fmt::Result {
                 #[allow(unused_unsafe)]
@@ -154,54 +268,41 @@ macro_rules! _v_escape_escape_new {
 }
 
 #[macro_export]
-/// Generate code for new escape struct
-///
-/// #### Example
-///
-/// ```
-/// #[macro_use]
-/// extern crate v_escape;
-///
-/// new_escape_sized!(MyEscape, "o->bar || ");
-///
-/// # fn main() {
-/// # let s = "foobar";
-/// let escaped = MyEscape::from(s);
-///
-/// print!("{}", escaped);
-/// # }
-/// ```
-///
-macro_rules! new_escape {
-    ($name:ident, $pairs:expr) => {
-        use std::fmt::{self, Display, Formatter};
-        new_escape!(imp $name, $pairs);
-        _v_escape_escape_new!($name);
-    };
-    ($name:ident, $pairs:expr, $($t:tt)+) => {
-        use std::fmt::{self, Display, Formatter};
-        new_escape!(imp $name, $pairs, $($t)+);
-        _v_escape_escape_new!($name);
-    };
-    (imp $name:ident, $pairs:expr) => {
-        #[derive(Escape)]
-        #[escape(pairs = $pairs)]
-        pub struct $name<'a> {
-            bytes: &'a [u8],
-        }
-    };
-    (imp $name:ident, $pairs:expr, $($t:tt)+) => {
-        #[derive(Escape)]
-        #[escape(pairs = $pairs, $($t)+)]
-        pub struct $name<'a> {
-            bytes: &'a [u8],
-        }
-    };
-}
-
-#[macro_export]
 /// Generate code for new escape struct with size method
-/// Not use with empty quote `"i8-> || "`
+///
+/// Not use with empty quote `"i8->"`
+///
+/// Follows same process as new_escape, but with a function
+/// called size implemented at the end of the defined struct.
+///
+/// It will get as input:
+///
+/// * $__name__: Name of escape class.
+///
+/// * $__pairs__: Pairs of `[character]->[quote] || [character]->[quote]` or
+///              `[character]->[quote]`.
+///
+/// * $__t__: Optional boolean parameters (simd, avx, print).
+///     * __simd__:  If true (by default), simd optimizations are enabled. When false,
+///          no matter value of avx, `sse4.2` will be used,
+///     * __avx__:   If true (by default), avx optimization are enabled. When false,
+///          `sse4.2`(if `simd=true`) or `scalar`(if `simd=false`) will be used.
+///     * __print__: If true (false by default), prints out generated code to console.
+///
+/// and will:
+///
+/// 1. Import `fmt`, `Display` and `Formatter`.
+///
+/// 2. Define basic struct with attribute `bytes` and escaping
+///    derive functionality (by calling itself).
+///
+/// 3. Implements a constructor `new` and traits `Display` and
+///    `From<&'a str>` to struct `$name` (using `_v_escape_escape_new` macro).
+///
+/// The generated struct `$name` can escape a string using function
+/// `from` and the escaped string can be displayed as well as the
+/// size of it as in the example:
+///
 ///
 /// ```
 /// #[macro_use]
@@ -218,12 +319,16 @@ macro_rules! new_escape {
 /// ```
 ///
 macro_rules! new_escape_sized {
+    // Macro called without attributes
     ($name:ident, $pairs:expr) => {
         use std::fmt::{self, Display, Formatter};
-
+        // Calling itself implementing struct `$name`
+        // to generate code from Derive
         new_escape_sized!(imp $name, $pairs);
+        // Implementing function new and traits Display and From
         _v_escape_escape_new!($name);
 
+        // Implenting function size
         impl<'a> $name<'a> {
             pub fn size(&self) -> usize {
                 #[allow(unused_unsafe)]
@@ -233,12 +338,16 @@ macro_rules! new_escape_sized {
             }
         }
     };
+    // Macro called with attributes
     ($name:ident, $pairs:expr, $($t:tt)+) => {
         use std::fmt::{self, Display, Formatter};
-
+        // Calling itself implementing struct `$name`
+        // to generate code from Derive, with attributes
         new_escape_sized!(imp $name, $pairs, $($t)+);
+        // Implementing function new and traits Display and From
         _v_escape_escape_new!($name);
 
+        // Implenting function size
         impl<'a> $name<'a> {
             pub fn size(&self) -> usize {
                 #[allow(unused_unsafe)]
@@ -248,14 +357,21 @@ macro_rules! new_escape_sized {
             }
         }
     };
+    // Implementation of Derive to struct $name.
+    // Macro called without attributes
     (imp $name:ident, $pairs:expr) => {
+        // Adding code generated by Derive  with Escape and escape
         #[derive(Escape)]
         #[escape(pairs = $pairs, sized = true)]
         pub struct $name<'a> {
             bytes: &'a [u8],
         }
     };
+    // Implementation of Derive to struct $name.
+    // Macro called with attributes
     (imp $name:ident, $pairs:expr, $($t:tt)+) => {
+        // Adding code generated by Derive  with Escape and escape
+        // passing attributes to function escape
         #[derive(Escape)]
         #[escape(pairs = $pairs, sized = true, $($t)+)]
         pub struct $name<'a> {
