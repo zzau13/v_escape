@@ -67,17 +67,17 @@ pub fn parse(src: &str) -> Vec<Pair> {
         Ok((left, res)) => {
             if !left.is_empty() {
                 let s = str::from_utf8(left.0).unwrap();
-                panic!("unable to parse syntax:\n\n{:?}", s);
+                panic!("Unable to parse syntax:\n\n{:?}", s);
             } else {
                 res
             }
         }
-        Err(nom::Err::Error(err)) => panic!("problems parsing pairs source: {:?}", err),
+        Err(nom::Err::Error(err)) => panic!("Unable to parse pairs parameter:\n\n{:?}", err),
         Err(nom::Err::Failure(err)) => match err.clone().into_error_kind() {
-            nom::ErrorKind::Custom(0) => panic!("overflow at character: {:?}", err),
-            _ => panic!("problems parsing pairs source: {:?}", err),
+            nom::ErrorKind::Custom(0) => panic!("Number has to be between 0 and 127.\nOverflow at character:\n\n{:?}", err),
+            _ => panic!("Unable to parse pairs parameter:\n\n{:?}", err),
         },
-        Err(nom::Err::Incomplete(err)) => panic!("parsing incomplete: {:?}", err),
+        Err(nom::Err::Incomplete(err)) => panic!("Parsing incomplete: {:?}", err),
     };
 
     // need order for calculate ranges
