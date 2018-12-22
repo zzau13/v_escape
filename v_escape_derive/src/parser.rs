@@ -33,10 +33,9 @@ macro_rules! is_digit {
             if s.is_empty() {
                 Err(nom::Err::Incomplete(Needed::Unknown))
             } else {
-                Ok(
-                    i8::from_str_radix(str::from_utf8(&s.as_bytes()).unwrap(), $base)
-                        .expect("overflow at i8") as u8,
-                )
+                i8::from_str_radix(str::from_utf8(&s.as_bytes()).unwrap(), $base)
+                    .map_err(|_| nom::Err::Failure(error_position!(s, nom::ErrorKind::Custom(0))))
+                    .map(|n| n as u8)
             }
         }
     };
@@ -73,9 +72,12 @@ pub fn parse(src: &str) -> Vec<Pair> {
                 res
             }
         }
-        Err(nom::Err::Error(err)) => panic!("problems parsing syntax source: {:?}", err),
-        Err(nom::Err::Failure(err)) => panic!("problems parsing syntax source: {:?}", err),
-        Err(nom::Err::Incomplete(_)) => panic!("parsing incomplete"),
+        Err(nom::Err::Error(err)) => panic!("problems parsing pairs source: {:?}", err),
+        Err(nom::Err::Failure(err)) => match err.clone().into_error_kind() {
+            nom::ErrorKind::Custom(0) => panic!("overflow at character: {:?}", err),
+            _ => panic!("problems parsing pairs source: {:?}", err),
+        },
+        Err(nom::Err::Incomplete(err)) => panic!("parsing incomplete: {:?}", err),
     };
 
     // need order for calculate ranges
