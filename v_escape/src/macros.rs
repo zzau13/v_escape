@@ -1,12 +1,12 @@
-// Returns subtraction of two pointers `b` and `a` as usize,
-// checks if value in `a` is larger or equal to the one in `b`
-//
-// # Arguments
-//
-// * `a` - *const u8 representing a pointer to u8
-// * `b` - *const u8 representing a pointer to u8
-//
 #[macro_export]
+/// Returns subtraction of two pointers `b` and `a` as usize,
+/// checks if value in `a` is larger or equal to the one in `b`
+///
+/// # Arguments
+///
+/// * `a` - *const u8 representing a pointer to u8
+/// * `b` - *const u8 representing a pointer to u8
+///
 macro_rules! _v_escape_sub {
     ($a:ident, $b:ident) => {{
         debug_assert!($b <= $a);
@@ -14,10 +14,10 @@ macro_rules! _v_escape_sub {
     }};
 }
 
-// Writes str in formatter `$fmt` from position `start` to `i`-1
-// and substitutes escaped character in position `i` with quote
-// and update de index `start`
 #[macro_export]
+/// Writes str in formatter `$fmt` from position `start` to `i`-1
+/// and substitutes escaped character in position `i` with quote
+/// and update de index `start`
 macro_rules! _v_escape_escape_body {
     ($i:expr, $start:ident, $fmt:ident, $bytes:ident, $quote:expr) => {{
         // Test if `start` index is in current position `i`
@@ -33,8 +33,8 @@ macro_rules! _v_escape_escape_body {
     }};
 }
 
-// Wrap the body of the escape over the body of the mask
 #[macro_export]
+/// Wrap the body of the escape over the body of the mask
 macro_rules! _v_escape_mask_body {
     ($i:expr, $start:ident, $fmt:ident, $bytes:ident, $quote:expr) => {{
         // Resolve expression `$i`
@@ -44,9 +44,9 @@ macro_rules! _v_escape_mask_body {
     }};
 }
 
-// Calls macro `$callback!` passing string representation of a valid
-// escaped byte as `$quotes`, only if current value has to be escaped
 #[macro_export]
+/// Calls macro `$callback!` passing string representation of a valid
+/// escaped byte as `$quotes`, only if current value has to be escaped
 macro_rules! _v_escape_bodies {
     ($T:ident, $Q:ident, $Q_LEN:ident, $i:expr, $b:expr, $start:ident, $fmt:ident, $bytes:ident, $callback:ident) => {
         // Get usize from 0 to 6 for a given escape character in byte `$b`
@@ -61,8 +61,8 @@ macro_rules! _v_escape_bodies {
     };
 }
 
-// Accumulate current escaping byte size
 #[macro_export]
+/// Accumulate current escaping byte size
 macro_rules! _v_escape_size_bodies {
     ($S:ident, $acc:ident, $b:expr) => {
         $acc += $S[$b as usize] as usize;
