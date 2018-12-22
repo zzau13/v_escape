@@ -74,7 +74,10 @@ pub fn parse(src: &str) -> Vec<Pair> {
         }
         Err(nom::Err::Error(err)) => panic!("Unable to parse pairs parameter:\n\n{:?}", err),
         Err(nom::Err::Failure(err)) => match err.clone().into_error_kind() {
-            nom::ErrorKind::Custom(0) => panic!("Number has to be between 0 and 127.\nOverflow at character:\n\n{:?}", err),
+            nom::ErrorKind::Custom(0) => panic!(
+                "Number has to be between 0 and 127.\nOverflow at character:\n\n{:?}",
+                err
+            ),
             _ => panic!("Unable to parse pairs parameter:\n\n{:?}", err),
         },
         Err(nom::Err::Incomplete(err)) => panic!("Parsing incomplete: {:?}", err),
