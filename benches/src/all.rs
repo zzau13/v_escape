@@ -29,19 +29,10 @@ static VERY_TINY: &[u8] = b"ab>cdefghijklmnopqrstuvw<xyz";
 // escapeable characters replaced by '.'
 static VERY_TINY_ED: &[u8] = b"ab.cdefghijklmnopqrstuvw.xyz";
 
-static VV_TINY: &[u8] = b"abcd<efghijklm";
-// escapeable characters replaced by '.'
-static VV_TINY_ED: &[u8] = b"abcd.efghijklm";
-
-// Avx 11 characters limit performance
-static ULTRA_TINY: &[u8] = b"abcd<efghij";
-// escapeable characters replaced by '.'
-static ULTRA_TINY_ED: &[u8] = b"abcd.efghij";
-
 // Bad cases
-static ULTRA_V_TINY: &[u8] = b"abcd<ef";
+static ULTRA_TINY: &[u8] = b"abcd<ef";
 // escapeable characters replaced by '.'
-static ULTRA_V_TINY_ED: &[u8] = b"abcd.ef";
+static ULTRA_TINY_ED: &[u8] = b"abcd.ef";
 
 static EMPTY: &[u8] = &[];
 
@@ -72,14 +63,8 @@ macro_rules! groups {
         define($c, $group, "very tiny", VERY_TINY, $fun(VERY_TINY));
         define($c, $group, "very tiny escaped", VERY_TINY_ED, $fun(VERY_TINY_ED));
 
-        define($c, $group, "very very tiny", VV_TINY, $fun(VV_TINY));
-        define($c, $group, "very very tiny escaped", VV_TINY_ED, $fun(VV_TINY_ED));
-
         define($c, $group, "ultra tiny", ULTRA_TINY, $fun(ULTRA_TINY));
         define($c, $group, "ultra tiny escaped", ULTRA_TINY_ED, $fun(ULTRA_TINY_ED));
-
-        define($c, $group, "ultra very tiny", ULTRA_V_TINY, $fun(ULTRA_V_TINY));
-        define($c, $group, "ultra very tiny escaped", ULTRA_V_TINY_ED, $fun(ULTRA_V_TINY_ED));
 
         define($c, $group, "empty", EMPTY, $fun(EMPTY));
     }};
