@@ -1,3 +1,5 @@
+/// Generate translations
+///
 /// Defining character interval from ASCII table to create bit masks from slice to be escaped
 /// overflow above in addition
 #[macro_export]

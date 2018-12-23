@@ -1,4 +1,6 @@
 #[macro_export]
+/// Assert and subtraction
+///
 /// Returns subtraction of two pointers `b` and `a` as usize,
 /// checks if value in `a` is larger or equal to the one in `b`
 ///
@@ -15,6 +17,8 @@ macro_rules! _v_escape_sub {
 }
 
 #[macro_export]
+/// Escape body
+///
 /// Writes str in formatter `$fmt` from position `start` to `i`-1
 /// and substitutes escaped character in position `i` with quote
 /// and update de index `start`
@@ -34,6 +38,8 @@ macro_rules! _v_escape_escape_body {
 }
 
 #[macro_export]
+/// Mask body
+///
 /// Wrap the body of the escape over the body of the mask
 macro_rules! _v_escape_mask_body {
     ($i:expr, $start:ident, $fmt:ident, $bytes:ident, $quote:expr) => {{
@@ -45,12 +51,14 @@ macro_rules! _v_escape_mask_body {
 }
 
 #[macro_export]
+/// Escape bodies
+///
 /// Calls macro `$callback!` passing string representation of a valid
 /// escaped byte as `$quotes`, only if current value has to be escaped
 macro_rules! _v_escape_bodies {
     ($T:ident, $Q:ident, $Q_LEN:ident, $i:expr, $b:expr, $start:ident, $fmt:ident, $bytes:ident, $callback:ident) => {
         // Get usize from 0 to 6 for a given escape character in byte `$b`
-        // where 6 is a inescapable character and (0,...,5) are escapeable
+        // where 6 is a inescapable character and (0,...,5) are escapable
         let c = $T[$b as usize] as usize;
         // Check if escape character is valid
         if c < $Q_LEN {
