@@ -47,7 +47,7 @@
 //! by the delimiter `->`, followed by the substitution quote
 //! and the delimiter ` || ` (last delimiter is optional):
 //!
-//!    `( [character]->[quote] || )*`
+//!    `([character]->[quote] || )*`
 //!
 //! * `character` :   Character to substitute. Accepts`i8+` from `0` to `i8::MAX` and
 //!                 accepts the following formats: decimal (49), hexadecimal (0x31),

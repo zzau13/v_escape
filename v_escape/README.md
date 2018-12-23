@@ -6,7 +6,7 @@
 #[macro_use]
 extern crate v_escape;
 
-new_escape_sized!(MyEscape, "62->bar || ");
+new_escape_sized!(MyEscape, "62->bar");
 
 fn main() {
     let s = "foo<bar";
