@@ -1,6 +1,9 @@
-/// Main loop searches in byte slice with bit mask
+#[macro_export]
+/// Macro `loop_m128` is the main loop that searches in byte slice with a bit mask
+/// using `sse4.2` optimizations.
 ///
 /// ## The following macros must be defined:
+///
 /// * `write_mask(mask: {integer})` do operation at mask
 ///
 /// * `masking(a: __m128i, len: {integer}) -> {integer}` make a mask from __m128i
@@ -52,8 +55,6 @@
 /// assert_eq!(unsafe { memchr4(b'a', b'b', b'c', b'd', b"abcd") }, Some(0));
 /// # }
 /// ```
-// TODO: document in detail
-#[macro_export]
 macro_rules! loop_m128 {
     ($len:ident, $ptr:ident, $start_ptr:ident, $bytes:ident) => {{
         #[allow(unused_imports)]
@@ -63,6 +64,8 @@ macro_rules! loop_m128 {
         const VECTOR_ALIGN: usize = VECTOR_SIZE - 1;
 
         if $len < VECTOR_SIZE {
+            // If the string length is less than VECTOR_SIZE
+            // unaligned function _mm_loadu_si128 is used
             #[allow(unused_mut)]
             let mut mask = {
                 let a = _mm_loadu_si128($ptr as *const __m128i);
@@ -71,9 +74,15 @@ macro_rules! loop_m128 {
 
             write_mask!(mask);
         } else {
+            // If string length is larger than VECTOR_SIZE,
+            // then it can be sliced into more than one set
+            // of VECTOR_SIZE elements and processed
             let end_ptr = $bytes[$len..].as_ptr();
 
+            // Write mask for unaligned elements from the start
+            // of the vector and aligning pointer
             {
+                // Calculating index of aligned pointer
                 let align = VECTOR_SIZE - ($start_ptr as usize & VECTOR_ALIGN);
                 if align < VECTOR_SIZE {
                     #[allow(unused_mut)]
@@ -81,12 +90,13 @@ macro_rules! loop_m128 {
                         let a = _mm_loadu_si128($ptr as *const __m128i);
                         masking!(a, align)
                     };
-
+                    // Writing mask for unaligned elements
                     write_mask!(mask);
+                    // Aligning pointer
                     $ptr = $ptr.add(align);
                 }
             }
-
+            // Process all aligned slices with at least one set of length `VECTOR_SIZE`
             while $ptr <= end_ptr.sub(VECTOR_SIZE) {
                 debug_assert_eq!(0, ($ptr as usize) % VECTOR_SIZE);
 
@@ -102,6 +112,8 @@ macro_rules! loop_m128 {
 
             debug_assert!(end_ptr.sub(VECTOR_SIZE) < $ptr);
 
+            // At this point at most there is less than `VECTOR_SIZE` elements
+            // so the macro `write_mask` is used to the last elements
             if $ptr < end_ptr {
                 debug_assert_eq!(0, ($ptr as usize) % VECTOR_SIZE);
 
