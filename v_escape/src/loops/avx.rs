@@ -36,9 +36,9 @@
 ///         ($mask: ident, $align:ident) => {{
 ///             let cur = $mask.trailing_zeros() as usize;
 ///
-///                 if cur < $align {
-///                    return Some(_v_escape_sub!(ptr, start_ptr) + cur);
-///                 }
+///             if cur < $align {
+///                 return Some(_v_escape_sub!(ptr, start_ptr) + cur);
+///             }
 ///         }};
 ///     }
 ///
