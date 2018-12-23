@@ -85,14 +85,12 @@ macro_rules! loop_m256_128 {
             if mask != 0 {
                 write_forward!(mask, $len);
             }
-        // If string length is larger than VECTOR_SIZE,
-        // then it can be sliced into more than one set
-        // of VECTOR_SIZE elements and processed
+        // If string length is larger than VECTOR_SIZE, then it can be sliced into more than one
+        // set of VECTOR_SIZE elements and processed
         } else {
             let end_ptr = $bytes[$len..].as_ptr();
 
-            // Aligning pointer by using `_mm256_loadu_si256`
-            // on disaligned bytes.
+            // Aligning pointer by using `_mm256_loadu_si256` on disaligned bytes.
             {
                 let align = VECTOR_SIZE - ($start_ptr as usize & VECTOR_ALIGN);
                 if align < VECTOR_SIZE {
@@ -139,10 +137,9 @@ macro_rules! loop_m256_128 {
                         masking!(a)
                     };
 
-                    // Combining the 4 sets using `or` logic operator by pairs.
-                    // Then we write the mask for the 4 sets of `VECTOR_SIZE`
-                    // elements each, and make the pointer point to the next
-                    // `LOOP_SIZE` elements
+                    // Combining the 4 sets using `or` logic operator by pairs. Then we write the
+                    // mask for the 4 sets of `VECTOR_SIZE` elements each, and make the pointer
+                    // point to the next `LOOP_SIZE` elements
                     if _mm256_movemask_epi8(_mm256_or_si256(
                         _mm256_or_si256(cmp_a, cmp_b),
                         _mm256_or_si256(cmp_c, cmp_d),
@@ -177,7 +174,7 @@ macro_rules! loop_m256_128 {
             }
 
             // When the rest of string has a length greater then `VECTOR_SIZE`
-            // but less then `LOOP_SIZE`, we process it `VECTOR_SIZE` bits at
+            // but less than `LOOP_SIZE`, we process it `VECTOR_SIZE` bits at
             // a time until there are left less then `VECTOR_SIZE` elements
             while $ptr <= end_ptr.sub(VECTOR_SIZE) {
                 debug_assert_eq!(0, ($ptr as usize) % VECTOR_SIZE);
