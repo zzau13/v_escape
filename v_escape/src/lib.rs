@@ -7,7 +7,7 @@
 //! to create a escape `struct`. In this example, when using the macro
 //! `new_escape_sized!(MyEscape, "62->bar");` a new a `struct` `MyEscape`
 //! will be created that every time its method `MyEscape::from` is called
-//! will replace all characters ">" with "bar".
+//! will replace all characters `">"` with `"bar"`.
 //! ```
 //! #[macro_use]
 //! extern crate v_escape;
@@ -40,7 +40,7 @@
 //! ```
 //!
 //! ## Pairs syntax
-//! v_escape uses a simple syntax to replace charaters
+//! v_escape uses a simple syntax to replace characters
 //! with their respective quotes. The tuple is named `Pair`,
 //! and several can be defined, refered as `Pairs`. The syntax to define
 //! `Pairs` consists of a character, followed
@@ -51,10 +51,10 @@
 //!
 //! * `character` :   Character to substitute. Accepts`i8+` from `0` to `i8::MAX` and
 //!                 accepts the following formats: decimal (49), hexadecimal (0x31),
-//!                 octa-decimal (0o61) or character (#1).
-//!                 Note: Numbers are read in ASCII: `#6->foo ||`.
+//!                 octal (0o61) or character (#1).
+//!                 Note: Numbers are read in ASCII: `#6->foo`
 //!
-//! * `quote` :   Characters that will replace `character`.
+//! * `quote` :   Characters that will replace `character`
 //!
 //! ```
 //! # #[macro_use]
@@ -98,9 +98,9 @@
 //! # extern crate v_escape;
 //! new_escape_sized!(
 //!     MyEscape,
-//!     "62->b || 60->f || 63->b || 65->f || 67->b || 66->f || 68->b || \
+//!     "62->b || 60->f || A->b || 65->f || 0o67->b || #6->f || 68->b || \
 //!     71->f || 72->b || 73->f || 74->b || 75->f || 76->b || 77->f || \
-//!     78->b || 79->f || 1->f ",
+//!     78->b || 79->f || 0x1A->f",
 //!     simd = false
 //! );
 //! # fn main() {
@@ -227,6 +227,8 @@ macro_rules! new_escape {
 }
 
 #[macro_export]
+/// Escape implementation
+///
 /// Generates function new, and traits From and Display, for class `$name`
 macro_rules! _v_escape_escape_new {
     ($name:ident) => {
@@ -325,7 +327,7 @@ macro_rules! new_escape_sized {
         // Implementing function new and traits Display and From
         _v_escape_escape_new!($name);
 
-        // Implenting function size
+        // Implementing function size
         impl<'a> $name<'a> {
             pub fn size(&self) -> usize {
                 #[allow(unused_unsafe)]
@@ -350,7 +352,7 @@ macro_rules! new_escape_sized {
         // Implementing function new and traits Display and From
         _v_escape_escape_new!($name);
 
-        // Implenting function size
+        // Implementing function size
         impl<'a> $name<'a> {
             pub fn size(&self) -> usize {
                 #[allow(unused_unsafe)]
@@ -363,6 +365,7 @@ macro_rules! new_escape_sized {
 }
 
 #[macro_export]
+/// cfg_if for escape function
 macro_rules! _v_escape_cfg_escape {
     (true, $avx:expr) => {
         #[cfg(all(
@@ -418,6 +421,7 @@ macro_rules! _v_escape_cfg_escape {
 }
 
 #[macro_export]
+/// cfg_if for size function
 macro_rules! _v_escape_cfg_sized {
     (true, $avx:expr) => {
         #[cfg(all(

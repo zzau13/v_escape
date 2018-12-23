@@ -1,6 +1,6 @@
 #[macro_export]
 /// Macro `loop_m256_128` is the main loop that searches in byte slice with a bit mask
-/// using adcanced vector extension (avx) optimizations.
+/// using `avx2` optimizations.
 ///
 /// ## The following macros must be defined
 ///
@@ -90,7 +90,7 @@ macro_rules! loop_m256_128 {
         } else {
             let end_ptr = $bytes[$len..].as_ptr();
 
-            // Aligning pointer by using `_mm256_loadu_si256` on disaligned bytes.
+            // Aligning pointer by using `_mm256_loadu_si256` on unaligned bytes.
             {
                 let align = VECTOR_SIZE - ($start_ptr as usize & VECTOR_ALIGN);
                 if align < VECTOR_SIZE {
@@ -115,7 +115,7 @@ macro_rules! loop_m256_128 {
                 while $ptr <= end_ptr.sub(LOOP_SIZE) {
                     debug_assert_eq!(0, ($ptr as usize) % VECTOR_SIZE);
 
-                    // Using function `_mm256_load_si256` for faster behavior on aligened bytes.
+                    // Using function `_mm256_load_si256` for faster behavior on aligned bytes.
                     // Getting 4 sets of length `VECTOR_SIZE` each (`LOOP_SIZE=4*VECTOR_SIZE`)
                     let cmp_a = {
                         let a = _mm256_load_si256($ptr as *const __m256i);
