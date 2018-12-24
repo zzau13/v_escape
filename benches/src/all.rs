@@ -16,11 +16,11 @@ mod rocket;
 mod v_escape;
 
 static HUGE: &[u8] = include_bytes!("../data/sherlock-holmes-huge.txt");
-// escapeable characters replaced by 'a'
+// escapable characters replaced by 'a'
 static HUGE_ED: &[u8] = include_bytes!("../data/sherlock-holmes-escaped-huge.txt");
 
 static SMALL: &[u8] = include_bytes!("../data/sherlock-holmes-small.txt");
-// escapeable characters replaced by 'a'
+// escapable characters replaced by 'a'
 static SMALL_ED: &[u8] = include_bytes!("../data/sherlock-holmes-escaped-small.txt");
 
 static TINY: &[u8] = include_bytes!("../data/sherlock-holmes-tiny.txt");
@@ -28,13 +28,17 @@ static TINY: &[u8] = include_bytes!("../data/sherlock-holmes-tiny.txt");
 static TINY_ED: &[u8] = include_bytes!("../data/sherlock-holmes-escaped-tiny.txt");
 
 static VERY_TINY: &[u8] = b"ab>cdefghijklmnopqrstuvw<xyz";
-// escapeable characters replaced by '.'
+// escapable characters replaced by '.'
 static VERY_TINY_ED: &[u8] = b"ab.cdefghijklmnopqrstuvw.xyz";
 
 // Bad cases
 static ULTRA_TINY: &[u8] = b"abcd<ef";
-// escapeable characters replaced by '.'
+// escapable characters replaced by '.'
 static ULTRA_TINY_ED: &[u8] = b"abcd.ef";
+
+static ONE: &[u8] = b"<";
+// escapable characters replaced by '1'
+static ONE_ED: &[u8] = b"1";
 
 static EMPTY: &[u8] = &[];
 
@@ -67,6 +71,9 @@ macro_rules! groups {
 
         define($c, $group, "ultra tiny", ULTRA_TINY, $fun(ULTRA_TINY));
         define($c, $group, "ultra tiny escaped", ULTRA_TINY_ED, $fun(ULTRA_TINY_ED));
+
+        define($c, $group, "one", ONE, $fun(ONE));
+        define($c, $group, "one escaped", ONE_ED, $fun(ONE_ED));
 
         define($c, $group, "empty", EMPTY, $fun(EMPTY));
     }};
