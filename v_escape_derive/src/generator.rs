@@ -91,15 +91,19 @@ impl<'a> Generator<'a> {
     }
 
     fn write_scalar(&self, buf: &mut Buffer) {
-        buf.writeln("mod scalar {");
-        buf.writeln("use super::*;");
-        buf.writeln(
-            " _v_escape_escape_scalar!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_QUOTES_LEN);",
+        let sized = if self.sized {
+            quote!(_v_escape_sized_scalar!(V_ESCAPE_SIZED);)
+        } else {
+            quote!()
+        };
+        let code = quote!(
+            mod scalar {
+                use super::*;
+               _v_escape_escape_scalar!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_QUOTES_LEN);
+               #sized
+            }
         );
-        if self.sized {
-            buf.writeln(" _v_escape_sized_scalar!(V_ESCAPE_SIZED);");
-        }
-        buf.writeln("}");
+        buf.writeln(&code.to_string());
     }
 
     fn write_sse(&self, buf: &mut Buffer) {

@@ -1,6 +1,8 @@
 extern crate proc_macro;
 #[macro_use]
 extern crate nom;
+#[macro_use]
+extern crate quote;
 
 use proc_macro::TokenStream;
 use quote::ToTokens;
