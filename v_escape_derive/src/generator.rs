@@ -1,4 +1,4 @@
-use std::str;
+use std::{fmt::Display, str};
 
 use crate::parser::Pair;
 
@@ -120,16 +120,12 @@ impl<'a> Generator<'a> {
         let chars: &[u8] = &chars;
 
         buf.write(" _v_escape_escape_sse!((V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_QUOTES_LEN) ");
-        for c in chars {
-            buf.write(&format!("{}, ", c))
-        }
+        self.write_macro_tt(buf, chars.iter());
         buf.writeln(");");
 
         if self.sized {
             buf.write(" _v_escape_sized_sse!((V_ESCAPE_SIZED, V_ESCAPE_QUOTES_LEN) ");
-            for c in chars {
-                buf.write(&format!("{}, ", c))
-            }
+            self.write_macro_tt(buf, chars.iter());
             buf.writeln(");");
         }
 
@@ -146,16 +142,12 @@ impl<'a> Generator<'a> {
         let ranges: &[u8] = &self.calculate_ranges();
 
         buf.write("_v_escape_escape_avx!((V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_QUOTES_LEN) ");
-        for c in ranges {
-            buf.write(&format!("{}, ", c))
-        }
+        self.write_macro_tt(buf, ranges.iter());
         buf.writeln(");");
 
         if self.sized {
             buf.write("_v_escape_sized_avx!((V_ESCAPE_SIZED) ");
-            for c in ranges {
-                buf.write(&format!("{}, ", c))
-            }
+            self.write_macro_tt(buf, ranges.iter());
             buf.writeln(");");
         }
         buf.writeln("}");
@@ -171,6 +163,16 @@ impl<'a> Generator<'a> {
                 "_v_escape_cfg_sized!({}, {});",
                 self.simd, self.avx
             ));
+        }
+    }
+
+    fn write_macro_tt<T, I>(&self, buf: &mut Buffer, iter: I)
+    where
+        T: Display,
+        I: Iterator<Item = T>,
+    {
+        for c in iter {
+            buf.write(&format!("{}, ", c))
         }
     }
 
