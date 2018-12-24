@@ -1,4 +1,5 @@
 #[macro_export]
+#[doc(hidden)]
 macro_rules!  _v_escape_escape_sse {
     (($T:ident, $Q:ident, $needle_len:ident) $($needle:tt, )+) => {
         #[inline]
@@ -66,6 +67,7 @@ macro_rules!  _v_escape_escape_sse {
 }
 
 #[macro_export]
+#[doc(hidden)]
 macro_rules!  _v_escape_sized_sse {
     (($S:ident, $needle_len:ident) $($needle:tt, )+) => {
         #[inline]
