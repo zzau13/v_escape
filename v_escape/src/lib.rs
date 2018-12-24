@@ -149,7 +149,7 @@ mod sse;
 mod avx;
 
 #[macro_export]
-/// Macro new_escape generates struct `$name` with escaping functionality.
+/// Generates struct `$name` with escaping functionality at `fmt`
 ///
 /// It will get as input:
 ///
@@ -227,38 +227,7 @@ macro_rules! new_escape {
 }
 
 #[macro_export]
-#[doc(hidden)]
-/// Escape implementation
-///
-/// Generates function new, and traits From and Display, for class `$name`
-macro_rules! _v_escape_escape_new {
-    ($name:ident) => {
-        #[allow(dead_code)]
-        impl<'a> $name<'a> {
-            pub fn new(bytes: &[u8]) -> $name {
-                $name { bytes }
-            }
-        }
-        impl<'a> From<&'a str> for $name<'a> {
-            fn from(s: &str) -> $name {
-                $name {
-                    bytes: s.as_bytes(),
-                }
-            }
-        }
-        impl<'a> Display for $name<'a> {
-            fn fmt(&self, fmt: &mut Formatter) -> fmt::Result {
-                #[allow(unused_unsafe)]
-                unsafe {
-                    _escape(self.bytes, fmt)
-                }
-            }
-        }
-    };
-}
-
-#[macro_export]
-/// Generate code for new escape struct with size method
+/// Generates struct `$name` with escaping functionality at `fmt` and `size` method
 ///
 /// Not use with empty quote `"i8->"`
 ///
@@ -359,6 +328,37 @@ macro_rules! new_escape_sized {
                 #[allow(unused_unsafe)]
                 unsafe {
                     _size(self.bytes)
+                }
+            }
+        }
+    };
+}
+
+#[macro_export]
+#[doc(hidden)]
+/// Escape implementation
+///
+/// Generates function new, and traits From and Display, for class `$name`
+macro_rules! _v_escape_escape_new {
+    ($name:ident) => {
+        #[allow(dead_code)]
+        impl<'a> $name<'a> {
+            pub fn new(bytes: &[u8]) -> $name {
+                $name { bytes }
+            }
+        }
+        impl<'a> From<&'a str> for $name<'a> {
+            fn from(s: &str) -> $name {
+                $name {
+                    bytes: s.as_bytes(),
+                }
+            }
+        }
+        impl<'a> Display for $name<'a> {
+            fn fmt(&self, fmt: &mut Formatter) -> fmt::Result {
+                #[allow(unused_unsafe)]
+                unsafe {
+                    _escape(self.bytes, fmt)
                 }
             }
         }
