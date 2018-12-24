@@ -1,4 +1,5 @@
 #[macro_export]
+#[doc(hidden)]
 macro_rules! _v_escape_escape_scalar {
     ($T:ident, $Q:ident, $Q_LEN:ident) => {
         #[inline]
@@ -28,6 +29,7 @@ macro_rules! _v_escape_escape_scalar {
 }
 
 #[macro_export]
+#[doc(hidden)]
 macro_rules! _v_escape_sized_scalar {
     ($S:ident) => {
         #[inline]

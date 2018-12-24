@@ -1,8 +1,9 @@
+#[macro_export]
+#[doc(hidden)]
 /// Generate translations
 ///
 /// Defining character interval from ASCII table to create bit masks from slice to be escaped
 /// overflow above in addition
-#[macro_export]
 macro_rules! _v_escape_translations {
     ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
         use std::arch::x86_64::{
@@ -194,6 +195,7 @@ macro_rules! _v_escape_translations {
 }
 
 #[macro_export]
+#[doc(hidden)]
 macro_rules! _v_escape_escape_avx {
     (($T:ident, $Q:ident, $Q_LEN:ident) $($t:tt ,)+) => {
         #[inline]
@@ -273,6 +275,7 @@ macro_rules! _v_escape_escape_avx {
 }
 
 #[macro_export]
+#[doc(hidden)]
 macro_rules! _v_escape_sized_avx {
     (($S:ident) $($t:tt ,)+) => {
         #[inline]

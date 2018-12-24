@@ -227,6 +227,7 @@ macro_rules! new_escape {
 }
 
 #[macro_export]
+#[doc(hidden)]
 /// Escape implementation
 ///
 /// Generates function new, and traits From and Display, for class `$name`
@@ -365,6 +366,7 @@ macro_rules! new_escape_sized {
 }
 
 #[macro_export]
+#[doc(hidden)]
 /// cfg_if for escape function
 macro_rules! _v_escape_cfg_escape {
     (true, $avx:expr) => {
@@ -421,6 +423,7 @@ macro_rules! _v_escape_cfg_escape {
 }
 
 #[macro_export]
+#[doc(hidden)]
 /// cfg_if for size function
 macro_rules! _v_escape_cfg_sized {
     (true, $avx:expr) => {

@@ -1,4 +1,5 @@
 #[macro_export]
+#[doc(hidden)]
 /// Assert and subtraction
 ///
 /// Returns subtraction of two pointers `b` and `a` as usize,
@@ -17,6 +18,7 @@ macro_rules! _v_escape_sub {
 }
 
 #[macro_export]
+#[doc(hidden)]
 /// Escape body
 ///
 /// Writes str in formatter `$fmt` from position `start` to `i`-1
@@ -38,6 +40,7 @@ macro_rules! _v_escape_escape_body {
 }
 
 #[macro_export]
+#[doc(hidden)]
 /// Mask body
 ///
 /// Wrap the body of the escape over the body of the mask
@@ -51,6 +54,7 @@ macro_rules! _v_escape_mask_body {
 }
 
 #[macro_export]
+#[doc(hidden)]
 /// Escape bodies
 ///
 /// Calls macro `$callback!` passing string representation of a valid
@@ -70,6 +74,7 @@ macro_rules! _v_escape_bodies {
 }
 
 #[macro_export]
+#[doc(hidden)]
 /// Accumulate current escaping byte size
 macro_rules! _v_escape_size_bodies {
     ($S:ident, $acc:ident, $b:expr) => {
