@@ -2,7 +2,7 @@
 #[macro_use]
 extern crate v_escape;
 
-new_escape_sized!(MyEscape, "60->foo || ");
+new_escape_sized!(MyEscape, "60->foo");
 
 macro_rules! test {
     ($name:ident, $escapes:expr, $escaped:expr) => {
@@ -75,7 +75,7 @@ mod no_simd {
     mod a {
         new_escape!(
             MyE,
-            "65->a || 60->b || 61->c || 66->d || 80->e || 81->f || ",
+            "65->a || 60->b || 61->c || 66->d || 80->e || 81->f",
             simd = false
         );
         #[test]
@@ -87,7 +87,7 @@ mod no_simd {
     mod b {
         new_escape_sized!(
             MyE,
-            "65->a || 60->b || 61->c || 66->d || 80->e || 81->f || ",
+            "65->a || 60->b || 61->c || 66->d || 80->e || 81->f",
             simd = false
         );
         #[test]
@@ -107,7 +107,7 @@ mod no_avx {
     mod a {
         new_escape!(
             MyE,
-            "65->a || 60->b || 61->c || 66->d || 80->e || 81->f || ",
+            "65->a || 60->b || 61->c || 66->d || 80->e || 81->f",
             avx = false
         );
         #[test]
@@ -119,7 +119,7 @@ mod no_avx {
     mod b {
         new_escape_sized!(
             MyE,
-            "65->a || 60->b || 61->c || 66->d || 80->e || 81->f || ",
+            "65->a || 60->b || 61->c || 66->d || 80->e || 81->f",
             avx = false
         );
         #[test]
@@ -135,7 +135,7 @@ mod no_avx {
 }
 
 mod empty {
-    new_escape!(MyE, "65-> || ");
+    new_escape!(MyE, "65->");
 
     #[test]
     fn test_escape() {
@@ -147,10 +147,7 @@ mod empty {
 mod test_avx {
     mod a {
         // 3 ranges
-        new_escape_sized!(
-            MyE,
-            "65->a || 60->b || 61->c || 66->d || 80->e || 81->f || "
-        );
+        new_escape_sized!(MyE, "65->a || 60->b || 61->c || 66->d || 80->e || 81->f");
 
         #[test]
         fn test_escape() {
@@ -165,7 +162,7 @@ mod test_avx {
 
     mod b {
         // 2 ranges and 1 escape
-        new_escape_sized!(MyE, "60->a || 61->b || 65->c || 80->d || 81->e || ");
+        new_escape_sized!(MyE, "60->a || 61->b || 65->c || 80->d || 81->e");
 
         #[test]
         fn test_escape() {
@@ -180,7 +177,7 @@ mod test_avx {
 
     mod c {
         // 1 range and 2 escapes
-        new_escape_sized!(MyE, "60->a || 61->b || 65->c || 80->d || 62->e || ");
+        new_escape_sized!(MyE, "60->a || 61->b || 65->c || 80->d || 62->e");
 
         #[test]
         fn test_escape() {
@@ -195,7 +192,7 @@ mod test_avx {
 
     mod d {
         // 3 escapes
-        new_escape_sized!(MyE, "60->a || 80->b || 65->c || ");
+        new_escape_sized!(MyE, "60->a || 80->b || 65->c");
 
         #[test]
         fn test_escape() {
@@ -210,7 +207,7 @@ mod test_avx {
 
     mod e {
         // 2 ranges
-        new_escape_sized!(MyE, "60->a || 61->b || 81->c || 80->d || 62->e || ");
+        new_escape_sized!(MyE, "60->a || 61->b || 81->c || 80->d || 62->e");
 
         #[test]
         fn test_escape() {
@@ -225,7 +222,7 @@ mod test_avx {
 
     mod f {
         // 1 range and 1 escape
-        new_escape_sized!(MyE, "60->a || 61->b || 80->c || 62->d || ");
+        new_escape_sized!(MyE, "60->a || 61->b || 80->c || 62->d");
 
         #[test]
         fn test_escape() {
@@ -240,7 +237,7 @@ mod test_avx {
 
     mod g {
         // 2 escapes
-        new_escape_sized!(MyE, "60->a || 80->b || ");
+        new_escape_sized!(MyE, "60->a || 80->b");
 
         #[test]
         fn test_escape() {
@@ -255,7 +252,7 @@ mod test_avx {
 
     mod h {
         // 1 range
-        new_escape_sized!(MyE, "60->a || 61->b || ");
+        new_escape_sized!(MyE, "60->a || 61->b");
 
         #[test]
         fn test_escape() {
@@ -270,7 +267,7 @@ mod test_avx {
 
     mod i {
         // 1 escapes
-        new_escape_sized!(MyE, "60->f || ");
+        new_escape_sized!(MyE, "60->f");
 
         #[test]
         fn test_escape() {
@@ -286,7 +283,7 @@ mod test_avx {
 
 mod char_syntax {
     mod a {
-        new_escape_sized!(MyE, " ->f || ");
+        new_escape_sized!(MyE, " ->f");
 
         #[test]
         fn test_escape() {
