@@ -1,6 +1,6 @@
 [package]
 name = "v_htmlescape"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["Rust-iendo Barcelona <riendocontributions@gmail.com>"]
 description = "The simd optimized HTML escaping code"
 documentation = "https://docs.rs/v_htmlescape"
@@ -24,7 +24,7 @@ path = "src/lib.rs"
 bench = false
 
 [dependencies]
-v_escape = { version = "0.3.1", path = "../v_escape" }
+v_escape = { version = "0.3.2", path = "../v_escape" }
 cfg-if = "0.1"
 
 [build-dependencies]
