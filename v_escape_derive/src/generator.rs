@@ -7,24 +7,32 @@ struct Generator<'a> {
     sized: bool,
     simd: bool,
     avx: bool,
+    sse: bool,
 }
 
 type Ranges = Vec<u8>;
 
-pub fn generate(pairs: &[Pair], sized: bool, simd: bool, avx: bool) -> String {
-    Generator::new(pairs, sized, simd, avx).build()
+pub fn generate(pairs: &[Pair], sized: bool, simd: bool, avx: bool, sse: bool) -> String {
+    Generator::new(pairs, sized, simd, avx, sse).build()
 }
 
 // End flag for indicate more escapes than ranges
 const FLAG: u8 = 128;
 
 impl<'a> Generator<'a> {
-    pub fn new<'n>(pairs: &'n [Pair<'n>], sized: bool, simd: bool, avx: bool) -> Generator<'n> {
+    pub fn new<'n>(
+        pairs: &'n [Pair<'n>],
+        sized: bool,
+        simd: bool,
+        avx: bool,
+        sse: bool,
+    ) -> Generator<'n> {
         Generator {
             pairs,
             sized,
             simd,
             avx,
+            sse,
         }
     }
 
@@ -85,8 +93,12 @@ impl<'a> Generator<'a> {
     fn write_functions(&self, buf: &mut Buffer) {
         self.write_scalar(buf);
         if self.simd {
-            self.write_sse(buf);
-            self.write_avx(buf);
+            if self.sse {
+                self.write_sse(buf);
+            }
+            if self.avx {
+                self.write_avx(buf);
+            }
         }
     }
 
@@ -155,13 +167,13 @@ impl<'a> Generator<'a> {
 
     fn write_cfg_if(&self, buf: &mut Buffer) {
         buf.writeln(&format!(
-            "_v_escape_cfg_escape!({}, {});",
-            self.simd, self.avx
+            "_v_escape_cfg_escape!({}, {}, {});",
+            self.simd, self.avx, self.sse
         ));
         if self.sized {
             buf.writeln(&format!(
-                "_v_escape_cfg_sized!({}, {});",
-                self.simd, self.avx
+                "_v_escape_cfg_sized!({}, {}, {});",
+                self.simd, self.avx, self.sse
             ));
         }
     }
@@ -397,7 +409,7 @@ mod test {
     #[test]
     fn test_1_escape() {
         let pairs = &[Pair::new(0, E)];
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![0, 128])
     }
@@ -405,7 +417,7 @@ mod test {
     #[test]
     fn test_2_escape() {
         let pairs = &[Pair::new(0, E), Pair::new(2, E)];
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![0, 2, 128])
     }
@@ -413,7 +425,7 @@ mod test {
     #[test]
     fn test_3_escape() {
         let pairs = &[Pair::new(0, E), Pair::new(2, E), Pair::new(4, E)];
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![0, 2, 4, 128])
     }
@@ -421,7 +433,7 @@ mod test {
     #[test]
     fn test_1_range() {
         let pairs = &[Pair::new(0, E), Pair::new(1, E)];
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![0, 1])
     }
@@ -434,7 +446,7 @@ mod test {
             Pair::new(3, E),
             Pair::new(4, E),
         ];
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![0, 1, 3, 4])
     }
@@ -449,7 +461,7 @@ mod test {
             Pair::new(6, E),
             Pair::new(7, E),
         ];
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![0, 1, 3, 4, 6, 7]);
         let pairs = &[
@@ -470,7 +482,7 @@ mod test {
             Pair::new(126, E),
             Pair::new(127, E),
         ];
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![0, 9, 50, 64, 126, 127])
     }
@@ -478,12 +490,12 @@ mod test {
     #[test]
     fn test_1_range_1_escape() {
         let pairs = &[Pair::new(0, E), Pair::new(1, E), Pair::new(3, E)];
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![0, 1, 3]);
 
         let pairs = &[Pair::new(0, E), Pair::new(2, E), Pair::new(3, E)];
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![2, 3, 0]);
 
@@ -493,7 +505,7 @@ mod test {
             Pair::new(2, E),
             Pair::new(4, E),
         ];
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![0, 2, 4]);
 
@@ -506,7 +518,7 @@ mod test {
             Pair::new(55, E),
             Pair::new(67, E),
         ];
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![50, 55, 67]);
     }
@@ -520,7 +532,7 @@ mod test {
             Pair::new(4, E),
             Pair::new(6, E),
         ];
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![0, 1, 3, 4, 6]);
     }
@@ -534,7 +546,7 @@ mod test {
             Pair::new(7, E),
             Pair::new(8, E),
         ];
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![4, 5, 7, 8, 0]);
     }
@@ -550,7 +562,7 @@ mod test {
             Pair::new(52, E),
             Pair::new(98, E),
         ];
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![14, 16, 50, 52, 98]);
     }
@@ -567,7 +579,7 @@ mod test {
             Pair::new(98, E),
         ];
 
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![14, 16, 50, 52, 98]);
         let pairs = &[
@@ -588,7 +600,7 @@ mod test {
             Pair::new(58, E),
             Pair::new(98, E),
         ];
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![14, 19, 50, 58, 98]);
     }
@@ -604,7 +616,7 @@ mod test {
             Pair::new(98, E),
         ];
 
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![14, 16, 50, 52, 98]);
         let pairs = &[
@@ -621,7 +633,7 @@ mod test {
             Pair::new(58, E),
             Pair::new(98, E),
         ];
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![14, 19, 50, 58, 98]);
     }
@@ -636,7 +648,7 @@ mod test {
             Pair::new(81, E),
         ];
 
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![60, 61, 80, 81, 65]);
 
@@ -659,7 +671,7 @@ mod test {
             Pair::new(120, E),
         ];
 
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![52, 62, 101, 120, 80]);
     }
@@ -672,7 +684,7 @@ mod test {
             Pair::new(4, E),
             Pair::new(6, E),
         ];
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![0, 1, 4, 6, 128]);
 
@@ -695,7 +707,7 @@ mod test {
             Pair::new(73, E),
             Pair::new(127, E),
         ];
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![0, 14, 73, 127, 128]);
     }
@@ -708,7 +720,7 @@ mod test {
             Pair::new(5, E),
             Pair::new(6, E),
         ];
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![5, 6, 0, 2, 128]);
 
@@ -730,7 +742,7 @@ mod test {
             Pair::new(17, E),
             Pair::new(18, E),
         ];
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![5, 18, 0, 2, 128]);
     }
@@ -743,7 +755,7 @@ mod test {
             Pair::new(3, E),
             Pair::new(8, E),
         ];
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![2, 3, 0, 8, 128]);
 
@@ -767,7 +779,7 @@ mod test {
             Pair::new(17, E),
             Pair::new(127, E),
         ];
-        let g = Generator::new(pairs, false, false, false);
+        let g = Generator::new(pairs, false, false, false, false);
 
         assert_eq!(g.calculate_ranges(), vec![2, 17, 0, 127, 128]);
     }

@@ -89,9 +89,9 @@
 //! # }
 //! ```
 //!
-//! The sub-attribute `simd`, true by default, can process a maximum
-//! of 16 `Pairs`. If more `Pairs` are needed, simd optimizations has
-//! to be deactivated using sub-attribute `simd = false`
+//! The sub-attribute `sse`, true by default, can process a maximum
+//! of 16 `Pairs`. If more `Pairs` are needed, sse optimizations has
+//! to be deactivated using sub-attribute `sse = false`
 //!
 //! ```
 //! # #[macro_use]
@@ -101,7 +101,7 @@
 //!     "62->b || 60->f || A->b || 65->f || 0o67->b || #6->f || 68->b || \
 //!     71->f || 72->b || 73->f || 74->b || 75->f || 76->b || 77->f || \
 //!     78->b || 79->f || 0x1A->f",
-//!     simd = false
+//!     sse = false
 //! );
 //! # fn main() {
 //! assert_eq!(MyEscape::from("foo>bar<").to_string(), "foobbarf");
@@ -246,6 +246,7 @@ macro_rules! new_escape {
 ///                 (if `avx=true`) or `sse4.2` (if `avx=false`). When false,
 ///                 `scalar` will be used.
 ///     * __avx__:  Disabling `avx` optimizations (`true` by default).
+///     * __sse__:  Disabling `sse` optimizations (`true` by default).
 ///     * __print__: If `true` (`false` by default), prints out generated code to console.
 ///
 /// |  | `avx=true` | `avx=false` |
@@ -369,7 +370,13 @@ macro_rules! _v_escape_escape_new {
 #[doc(hidden)]
 /// cfg_if for escape function
 macro_rules! _v_escape_cfg_escape {
-    (true, $avx:expr) => {
+    (false, $a:expr, $b:expr) => {
+        _v_escape_cfg_escape!(fn);
+    };
+    (true, false, false) => {
+        _v_escape_cfg_escape!(fn);
+    };
+    (true, $($t:tt)+) => {
         #[cfg(all(
             target_arch = "x86_64",
             not(all(target_os = "windows", v_escape_nosimd))
@@ -382,13 +389,7 @@ macro_rules! _v_escape_cfg_escape {
             static mut FN: fn(&[u8], &mut Formatter) -> fmt::Result = detect;
 
             fn detect(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
-                let fun = if $avx && is_x86_feature_detected!("avx2") {
-                    avx::escape as usize
-                } else if is_x86_feature_detected!("sse4.2") {
-                    sse::escape as usize
-                } else {
-                    scalar::escape as usize
-                };
+                let fun = _v_escape_cfg_escape!(if $($t)+);
 
                 let slot = unsafe { &*(&FN as *const _ as *const AtomicUsize) };
                 slot.store(fun as usize, Ordering::Relaxed);
@@ -411,13 +412,33 @@ macro_rules! _v_escape_cfg_escape {
         )))]
         _v_escape_cfg_escape!(fn);
     };
-    (false, $avx:expr) => {
-        _v_escape_cfg_escape!(fn);
-    };
     (fn) => {
         #[inline(always)]
         fn _escape(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
             scalar::escape(bytes, fmt)
+        }
+    };
+    (if false, true) => {
+        if is_x86_feature_detected!("sse4.2") {
+            sse::escape as usize
+        } else {
+            scalar::escape as usize
+        }
+    };
+    (if true, true) => {
+        if is_x86_feature_detected!("avx2") {
+            avx::escape as usize
+        } else if is_x86_feature_detected!("sse4.2") {
+            sse::escape as usize
+        } else {
+            scalar::escape as usize
+        }
+    };
+    (if true, false) => {
+        if is_x86_feature_detected!("avx2") {
+            avx::escape as usize
+        } else {
+            scalar::escape as usize
         }
     };
 }
@@ -426,7 +447,13 @@ macro_rules! _v_escape_cfg_escape {
 #[doc(hidden)]
 /// cfg_if for size function
 macro_rules! _v_escape_cfg_sized {
-    (true, $avx:expr) => {
+    (false, $a:expr, $b:expr) => {
+        _v_escape_cfg_sized!(fn);
+    };
+    (true, false, false) => {
+        _v_escape_cfg_sized!(fn);
+    };
+    (true, $($t:tt)+) => {
         #[cfg(all(
             target_arch = "x86_64",
             not(all(target_os = "windows", v_escape_nosimd))
@@ -439,13 +466,7 @@ macro_rules! _v_escape_cfg_sized {
             static mut FN: fn(&[u8]) -> usize = detect;
 
             fn detect(bytes: &[u8]) -> usize {
-                let fun = if $avx && is_x86_feature_detected!("avx2") {
-                    avx::size as usize
-                } else if is_x86_feature_detected!("sse4.2") {
-                    sse::size as usize
-                } else {
-                    scalar::size as usize
-                };
+                let fun = _v_escape_cfg_sized!(if $($t)+);
 
                 let slot = unsafe { &*(&FN as *const _ as *const AtomicUsize) };
                 slot.store(fun as usize, Ordering::Relaxed);
@@ -465,13 +486,33 @@ macro_rules! _v_escape_cfg_sized {
         )))]
         _v_escape_cfg_sized!(fn);
     };
-    (false, $avx:expr) => {
-        _v_escape_cfg_sized!(fn);
-    };
     (fn) => {
         #[inline(always)]
         fn _size(bytes: &[u8]) -> usize {
             scalar::size(bytes)
+        }
+    };
+    (if false, true) => {
+        if is_x86_feature_detected!("sse4.2") {
+            sse::size as usize
+        } else {
+            scalar::size as usize
+        }
+    };
+    (if true, true) => {
+        if is_x86_feature_detected!("avx2") {
+            avx::size as usize
+        } else if is_x86_feature_detected!("sse4.2") {
+            sse::size as usize
+        } else {
+            scalar::size as usize
+        }
+    };
+    (if true, false) => {
+        if is_x86_feature_detected!("avx2") {
+            avx::size as usize
+        } else {
+            scalar::size as usize
         }
     };
 }
