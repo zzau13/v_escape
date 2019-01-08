@@ -177,16 +177,16 @@ mod test_avx {
 
     mod c {
         // 1 range and 2 escapes
-        new_escape_sized!(MyE, "60->a || 61->b || 65->c || 80->d || 62->e");
+        new_escape_sized!(MyE, "60->a || 65->c || 80->d || 62->e");
 
         #[test]
         fn test_escape() {
-            test!(MyE, "<=>AP", "abecd");
+            test!(MyE, "<>AP", "aecd");
         }
 
         #[test]
         fn test_sized() {
-            test_sized!(MyE, "<=>AP", "abecd");
+            test_sized!(MyE, "<>AP", "aecd");
         }
     }
 
