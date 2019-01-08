@@ -196,6 +196,44 @@ macro_rules! _v_escape_translations {
 
 #[macro_export]
 #[doc(hidden)]
+/// Generate mask bodies callback
+///
+/// Defining exact match or false positive
+/// ## The following macros must be defined
+/// * `mask_bodies_callback($callback:ident)`
+///
+macro_rules! _v_escape_mask_bodies_escaping {
+    ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
+        mask_bodies_callback!(_v_escape_bodies);
+    };
+    ($fa:expr, $fb:expr, $fc:expr, 128, ) => {
+        mask_bodies_callback!(_v_escape_bodies_exact);
+    };
+    ($fa:expr, $fb:expr, 128, ) => {
+        mask_bodies_callback!(_v_escape_bodies_exact);
+    };
+    ($fa:expr, 128, ) => {
+        mask_bodies_callback!(_v_escape_bodies_exact);
+    };
+    ($la:expr, $ra:expr, $lb:expr, $rb:expr, $lc:expr, $rc:expr, ) => {
+        mask_bodies_callback!(_v_escape_bodies);
+    };
+    ($la:expr, $ra:expr, $lb:expr, $rb:expr, $c:expr, ) => {
+        mask_bodies_callback!(_v_escape_bodies);
+    };
+    ($la:expr, $ra:expr, $lb:expr, $rb:expr, ) => {
+        mask_bodies_callback!(_v_escape_bodies_exact);
+    };
+    ($la:expr, $ra:expr, $b:expr, ) => {
+        mask_bodies_callback!(_v_escape_bodies_exact);
+    };
+    ($la:expr, $ra:expr, ) => {
+        mask_bodies_callback!(_v_escape_bodies_exact);
+    };
+}
+
+#[macro_export]
+#[doc(hidden)]
 macro_rules! _v_escape_escape_avx {
     (($T:ident, $Q:ident, $Q_LEN:ident) $($t:tt ,)+) => {
         #[inline]
@@ -207,25 +245,31 @@ macro_rules! _v_escape_escape_avx {
             let mut ptr = start_ptr;
             let mut start = 0;
 
-            // Format bytes in the mask that starts in the current pointer
-            macro_rules! mask_bodies {
-                ($mask:ident, $at:ident, $cur:ident, $ptr:ident) => {
-                    // Calls macro `bodies!` at position `$at + $cur`
-                    // of byte `*$ptr` + `$curr` with macro `_v_escape_mask_body!`
-                    _v_escape_bodies!($T, $Q, $Q_LEN, $at + $cur, *$ptr.add($cur), start, fmt, bytes, _v_escape_mask_body);
+            macro_rules! mask_bodies_callback {
+                ($callback:ident) => {
+                    // Format bytes in the mask that starts in the current pointer
+                    macro_rules! mask_bodies {
+                        ($mask:ident, $at:ident, $cur:ident, $ptr:ident) => {
+                            // Calls macro `bodies!` at position `$at + $cur`
+                            // of byte `*$ptr` + `$curr` with macro `_v_escape_mask_body!`
+                            $callback!($T, $Q, $Q_LEN, $at + $cur, *$ptr.add($cur), start, fmt, bytes, _v_escape_mask_body);
 
-                    // Create binary vector of all zeros except
-                    // position `$curr` and xor operation with `$mask`
-                    $mask ^= 1 << $cur;
-                    // Test vs Check  if `$mask` is empty
-                    if $mask == 0 {
-                        break;
+                            // Create binary vector of all zeros except
+                            // position `$curr` and xor operation with `$mask`
+                            $mask ^= 1 << $cur;
+                            // Test vs Check  if `$mask` is empty
+                            if $mask == 0 {
+                                break;
+                            }
+
+                            // Get to the next possible escape character avoiding zeros
+                            $cur = $mask.trailing_zeros() as usize;
+                        };
                     }
-
-                    // Get to the next possible escape character avoiding zeros
-                    $cur = $mask.trailing_zeros() as usize;
                 };
             }
+
+            _v_escape_mask_bodies_escaping!($($t, )+);
 
             // Macro to write with mask
             macro_rules! write_mask {
