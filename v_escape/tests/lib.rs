@@ -365,6 +365,50 @@ mod simd_loops {
         None
     }
 
+    mod avx {
+        pub unsafe fn memchr4(n0: u8, n1: u8, n2: u8, n3: u8, bytes: &[u8]) -> Option<usize> {
+            use std::arch::x86_64::{_mm256_cmpeq_epi8, _mm256_set1_epi8};
+
+            let v_a = _mm256_set1_epi8(n0 as i8);
+            let v_b = _mm256_set1_epi8(n1 as i8);
+            let v_c = _mm256_set1_epi8(n2 as i8);
+            let v_d = _mm256_set1_epi8(n3 as i8);
+
+            let len = bytes.len();
+            let start_ptr = bytes.as_ptr();
+            let mut ptr = start_ptr;
+
+            macro_rules! write_mask {
+                ($mask:ident, $ptr:ident) => {{
+                    return Some(_v_escape_sub!($ptr, start_ptr) + $mask.trailing_zeros() as usize);
+                }};
+            }
+
+            macro_rules! write_forward {
+                ($mask: ident, $align:ident) => {{
+                    let cur = $mask.trailing_zeros() as usize;
+
+                    if cur < $align {
+                        return Some(_v_escape_sub!(ptr, start_ptr) + cur);
+                    }
+                }};
+            }
+
+            macro_rules! masking {
+                ($a:ident) => {{
+                    _mm256_or_si256(
+                        _mm256_or_si256(_mm256_cmpeq_epi8($a, v_a), _mm256_cmpeq_epi8($a, v_b)),
+                        _mm256_or_si256(_mm256_cmpeq_epi8($a, v_c), _mm256_cmpeq_epi8($a, v_d)),
+                    )
+                }};
+            }
+
+            loop_m256_64!(len, ptr, start_ptr, bytes);
+
+            None
+        }
+    }
+
     #[test]
     fn test_loops() {
         assert_eq!(unsafe { memchr(b'a', b"b") }, None);
@@ -378,6 +422,23 @@ mod simd_loops {
         assert_eq!(
             unsafe {
                 memchr4(
+                    b'a',
+                    b'b',
+                    b'c',
+                    b'd',
+                    &[&"e".repeat(1024), "b"].join("").as_bytes(),
+                )
+            },
+            Some(1024)
+        );
+        assert_eq!(unsafe { avx::memchr4(b'a', b'b', b'c', b'd', b"e") }, None);
+        assert_eq!(
+            unsafe { avx::memchr4(b'a', b'b', b'c', b'd', b"abcd") },
+            Some(0)
+        );
+        assert_eq!(
+            unsafe {
+                avx::memchr4(
                     b'a',
                     b'b',
                     b'c',
