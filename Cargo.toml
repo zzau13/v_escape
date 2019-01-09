@@ -4,4 +4,5 @@ members = [
     "v_escape",
     "v_escape_derive",
     "v_htmlescape",
+    "v_latexescape",
 ]
