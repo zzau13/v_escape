@@ -6,7 +6,9 @@ rust:
 env:
   -
   - CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_AVX=
+    CARGO_CFG_LATEXESCAPE_DISABLE_AUTO_AVX=
   - CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_SIMD=
+    CARGO_CFG_LATEXESCAPE_DISABLE_AUTO_SIMD=
 matrix:
   allow_failures:
     - rust: nightly
@@ -20,11 +22,12 @@ matrix:
       env:
         - STAGE=benches
         - CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_AVX=
+        - CARGO_CFG_LATEXESCAPE_DISABLE_AUTO_AVX=
     - rust: nightly
       env:
         - STAGE=benches
         - CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_SIMD=
-
+        - CARGO_CFG_LATEXESCAPE_DISABLE_AUTO_SIMD=
 cache: cargo
 
 before_script:
