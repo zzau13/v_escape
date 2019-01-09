@@ -16,32 +16,56 @@ extern crate v_escape;
 
 cfg_if! {
     if #[cfg(all(v_htmlescape_simd, v_htmlescape_avx))] {
-        new_escape_sized!(
+        new_escape!(
             HTMLEscape,
             "60->&lt; || 62->&gt; || 38->&amp; || 34->&quot; || 39->&#x27; || 47->&#x2f;",
             avx = true, simd = true
         );
+
+        pub mod sized {
+            new_escape_sized!(
+                HTMLEscape,
+                "60->&lt; || 62->&gt; || 38->&amp; || 34->&quot; || 39->&#x27; || 47->&#x2f;",
+                avx = true, simd = true
+            );
+        }
     } else if #[cfg(all(v_htmlescape_simd, v_htmlescape_sse))] {
-        new_escape_sized!(
+        new_escape!(
             HTMLEscape,
             "60->&lt; || 62->&gt; || 38->&amp; || 34->&quot; || 39->&#x27; || 47->&#x2f;",
             avx = false, simd = true
         );
+
+        pub mod sized {
+            new_escape_sized!(
+                HTMLEscape,
+                "60->&lt; || 62->&gt; || 38->&amp; || 34->&quot; || 39->&#x27; || 47->&#x2f;",
+                avx = false, simd = true
+            );
+        }
     } else {
-        new_escape_sized!(
+        new_escape!(
             HTMLEscape,
             "60->&lt; || 62->&gt; || 38->&amp; || 34->&quot; || 39->&#x27; || 47->&#x2f;",
             avx = false, simd = false
         );
+
+        pub mod sized {
+            new_escape_sized!(
+                HTMLEscape,
+                "60->&lt; || 62->&gt; || 38->&amp; || 34->&quot; || 39->&#x27; || 47->&#x2f;",
+                avx = false, simd = false
+            );
+        }
     }
 }
 
 #[cfg(test)]
 mod test {
-    use super::*;
-
     #[test]
     fn test_escape() {
+        use super::HTMLEscape;
+
         let empty = "";
         assert_eq!(HTMLEscape::from(empty).to_string(), empty);
 
@@ -70,6 +94,8 @@ mod test {
 
     #[test]
     fn test_size() {
+        use super::sized::HTMLEscape;
+
         let empty = "";
         assert_eq!(HTMLEscape::from(empty).size(), empty.len());
 

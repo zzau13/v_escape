@@ -1,4 +1,4 @@
-use v_htmlescape::HTMLEscape;
+use v_htmlescape::sized::HTMLEscape;
 
 #[test]
 fn test_escape() {
