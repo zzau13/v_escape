@@ -1,4 +1,4 @@
-use v_latexescape::LatexEscape;
+use v_latexescape::sized::LatexEscape;
 
 #[test]
 fn test_escape() {
