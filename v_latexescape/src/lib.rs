@@ -16,35 +16,63 @@ extern crate v_escape;
 
 cfg_if! {
     if #[cfg(all(v_latexescape_simd, v_latexescape_avx))] {
-        new_escape_sized!(
+        new_escape!(
             LatexEscape,
             "35->\\# || 36->\\$ || 37->\\% || 38->\\& || 92->\\textbackslash{} || \
             94->\\textasciicircum{} || 95->\\_ || 123->\\{ || 125->\\} || 126->\\textasciitilde{}",
             avx = true, simd = true
         );
+
+        pub mod sized {
+            new_escape_sized!(
+                LatexEscape,
+                "35->\\# || 36->\\$ || 37->\\% || 38->\\& || 92->\\textbackslash{} || \
+                94->\\textasciicircum{} || 95->\\_ || 123->\\{ || 125->\\} || 126->\\textasciitilde{}",
+                avx = true, simd = true
+            );
+        }
     } else if #[cfg(all(v_latexescape_simd, v_latexescape_sse))] {
-        new_escape_sized!(
+        new_escape!(
             LatexEscape,
             "35->\\# || 36->\\$ || 37->\\% || 38->\\& || 92->\\textbackslash{} || \
             94->\\textasciicircum{} || 95->\\_ || 123->\\{ || 125->\\} || 126->\\textasciitilde{}",
             avx = false, simd = true
         );
+
+        pub mod sized {
+            new_escape_sized!(
+                LatexEscape,
+                "35->\\# || 36->\\$ || 37->\\% || 38->\\& || 92->\\textbackslash{} || \
+                94->\\textasciicircum{} || 95->\\_ || 123->\\{ || 125->\\} || 126->\\textasciitilde{}",
+                avx = false, simd = true
+            );
+        }
     } else {
-        new_escape_sized!(
+        new_escape!(
             LatexEscape,
             "35->\\# || 36->\\$ || 37->\\% || 38->\\& || 92->\\textbackslash{} || \
             94->\\textasciicircum{} || 95->\\_ || 123->\\{ || 125->\\} || 126->\\textasciitilde{}",
             avx = false, simd = false
         );
+
+        pub mod sized {
+            new_escape_sized!(
+                LatexEscape,
+                "35->\\# || 36->\\$ || 37->\\% || 38->\\& || 92->\\textbackslash{} || \
+                94->\\textasciicircum{} || 95->\\_ || 123->\\{ || 125->\\} || 126->\\textasciitilde{}",
+                avx = false, simd = false
+            );
+        }
     }
 }
 
 #[cfg(test)]
 mod test {
-    use super::*;
 
     #[test]
     fn test_escape() {
+        use super::LatexEscape;
+
         let empty = "";
         assert_eq!(LatexEscape::from(empty).to_string(), empty);
 
@@ -79,6 +107,8 @@ mod test {
 
     #[test]
     fn test_size() {
+        use super::sized::LatexEscape;
+
         let empty = "";
         assert_eq!(LatexEscape::from(empty).size(), empty.len());
 
