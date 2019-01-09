@@ -30,13 +30,9 @@ named!(parse_pair<Input, Pair>, map!(
 macro_rules! is_digit {
     ($name:ident, $base:expr) => {
         fn $name(s: Input) -> Result<u8, nom::Err<Input>> {
-            if s.is_empty() {
-                Err(nom::Err::Incomplete(Needed::Unknown))
-            } else {
-                i8::from_str_radix(str::from_utf8(&s.as_bytes()).unwrap(), $base)
-                    .map_err(|_| nom::Err::Failure(error_position!(s, nom::ErrorKind::Custom(0))))
-                    .map(|n| n as u8)
-            }
+            i8::from_str_radix(str::from_utf8(&s.as_bytes()).unwrap(), $base)
+                .map_err(|_| nom::Err::Failure(error_position!(s, nom::ErrorKind::Custom(0))))
+                .map(|n| n as u8)
         }
     };
 }
@@ -55,10 +51,10 @@ fn try_into_i8(s: Input) -> Result<u8, nom::Err<Input>> {
 }
 
 named!(is_char<Input, u8>, alt!(
-    map_res!(preceded!(tag!("0x"), take_while!(nom::is_hex_digit)), is_digit_16) |
-    map_res!(preceded!(tag!("0o"), take_while!(nom::is_oct_digit)), is_digit_8) |
-    map_res!(preceded!(tag!("#"), take_while!(nom::is_digit)), try_into_i8) |
-    map_res!(take_while!(nom::is_digit), is_digit_10) |
+    map_res!(preceded!(tag!("0x"), take_while1!(nom::is_hex_digit)), is_digit_16) |
+    map_res!(preceded!(tag!("0o"), take_while1!(nom::is_oct_digit)), is_digit_8) |
+    map_res!(preceded!(tag!("#"), take_while1!(nom::is_digit)), try_into_i8) |
+    map_res!(take_while1!(nom::is_digit), is_digit_10) |
     map_res!(take!(1), try_into_i8)
 ));
 
