@@ -20,18 +20,22 @@ environment:
     - TARGET: x86_64-pc-windows-gnu
       CHANNEL: stable
       CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_SIMD:
+      CARGO_CFG_LATEXESCAPE_DISABLE_AUTO_SIMD:
     # Nightly channel
     - TARGET: x86_64-pc-windows-gnu
       CHANNEL: nightly
       CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_SIMD:
+      CARGO_CFG_LATEXESCAPE_DISABLE_AUTO_SIMD:
     # Stable channel
     - TARGET: x86_64-pc-windows-gnu
       CHANNEL: stable
       CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_AVX:
+      CARGO_CFG_LATEXESCAPE_DISABLE_AUTO_AVX:
     # Nightly channel
     - TARGET: x86_64-pc-windows-gnu
       CHANNEL: nightly
       CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_AVX:
+      CARGO_CFG_LATEXESCAPE_DISABLE_AUTO_AVX:
 
 # Install Rust and Cargo
 # (Based on from https://github.com/rust-lang/libc/blob/master/appveyor.yml)
