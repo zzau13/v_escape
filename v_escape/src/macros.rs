@@ -61,8 +61,8 @@ macro_rules! _v_escape_mask_body {
 /// escaped byte as `$quotes`, only if current value has to be escaped
 macro_rules! _v_escape_bodies {
     ($T:ident, $Q:ident, $Q_LEN:ident, $i:expr, $b:expr, $start:ident, $fmt:ident, $bytes:ident, $callback:ident) => {
-        // Get usize from 0 to 6 for a given escape character in byte `$b`
-        // where 6 is a inescapable character and (0,...,5) are escapable
+        // Get usize from 0 to $Q_LEN for a given escape character in byte `$b`
+        // where $Q_LEN is a inescapable character and (0,...,$Q_LEN - 1) are escapable
         let c = $T[$b as usize] as usize;
         // Check if escape character is valid
         if c < $Q_LEN {
@@ -81,13 +81,12 @@ macro_rules! _v_escape_bodies {
 /// escaped byte as `$quotes`, only if current value has to be escaped
 macro_rules! _v_escape_bodies_exact {
     ($T:ident, $Q:ident, $Q_LEN:ident, $i:expr, $b:expr, $start:ident, $fmt:ident, $bytes:ident, $callback:ident) => {
-        // Get usize from 0 to 6 for a given escape character in byte `$b`
-        // where 6 is a inescapable character and (0,...,5) are escapable
-        let c = $T[$b as usize] as usize;
-        debug_assert_ne!(c, $Q_LEN as usize);
+        // Get usize from 0 to $Q_LEN for a given escape character in byte `$b`
+        // where $Q_LEN is a inescapable character and (0,...,$Q_LEN - 1) are escapable
+        debug_assert_ne!($T[$b as usize] as usize, $Q_LEN as usize);
         // Call macro `$callback!` passing `QUOTES[c]` as `$quote` argument
         // `QUOTES[c]` is the string representation of the escaped character
-        $callback!($i, $start, $fmt, $bytes, $Q[c]);
+        $callback!($i, $start, $fmt, $bytes, $Q[$T[$b as usize] as usize]);
     };
 }
 
