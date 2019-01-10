@@ -8,8 +8,8 @@ optimized using simd by default, but this can be alter using sub-attributes.
 # Quick start
 In order to use v_escape you will have to call one of the two macros
 to create a escape `struct`. In this example, when using the macro
-`new_escape_sized!(MyEscape, "62->bar");` a new a `struct` `MyEscape`
-will be created that every time its method `MyEscape::from` is called
+`new_escape!(MyEscape, "62->bar");` a new a `struct` `MyEscape`
+will be created that every time its method `MyEscape::fmt` is called
 will replace all characters `">"` with `"bar"`.
  
 ```rust
