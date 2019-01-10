@@ -6,13 +6,19 @@ new_escape_sized!(MyEscape, "60->foo");
 
 macro_rules! test {
     ($name:ident, $escapes:expr, $escaped:expr) => {
+        use std::borrow::Cow;
+
         let empty = "";
         let escapes = $escapes;
         let escaped = $escaped;
         let string_long: &str = &"foobar".repeat(1024);
+        let string = $escapes.to_string();
+        let cow = Cow::Owned($escapes.to_string());
 
         assert_eq!($name::from(empty).to_string(), empty);
         assert_eq!($name::from(escapes).to_string(), escaped);
+        assert_eq!(escape(&cow).to_string(), escaped);
+        assert_eq!(escape(&string).to_string(), escaped);
         assert_eq!($name::from(string_long).to_string(), string_long);
         assert_eq!(
             $name::from(escapes.repeat(1024).as_ref()).to_string(),

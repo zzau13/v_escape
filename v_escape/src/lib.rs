@@ -348,6 +348,7 @@ macro_rules! _v_escape_escape_new {
                 $name { bytes }
             }
         }
+
         impl<'a> From<&'a str> for $name<'a> {
             fn from(s: &str) -> $name {
                 $name {
@@ -355,6 +356,12 @@ macro_rules! _v_escape_escape_new {
                 }
             }
         }
+
+        #[inline]
+        pub fn escape(s: &str) -> $name {
+            $name::from(s)
+        }
+
         impl<'a> Display for $name<'a> {
             fn fmt(&self, fmt: &mut Formatter) -> fmt::Result {
                 #[allow(unused_unsafe)]
