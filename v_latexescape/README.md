@@ -4,7 +4,7 @@
  
 ```rust
 extern crate v_latexescape;
-use v_latexescape::LatexEscape;
+use v_latexescape::LateXEscape;
 
-print!("{}", LatexEscape::from("# Header"));
+print!("{}", LateXEscape::from("# Header"));
 ```
