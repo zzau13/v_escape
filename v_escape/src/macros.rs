@@ -98,3 +98,12 @@ macro_rules! _v_escape_size_bodies {
         $acc += $S[$b as usize] as usize;
     };
 }
+
+#[macro_export]
+#[doc(hidden)]
+/// https://github.com/seanmonstar/httparse/blob/master/src/macros.rs#L33
+macro_rules! byte_map {
+    ($($flag:expr,)*) => ([
+        $($flag != 0,)*
+    ])
+}
