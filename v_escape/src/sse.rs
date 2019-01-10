@@ -27,8 +27,7 @@ macro_rules!  _v_escape_escape_sse {
                         loop {
                             // Writing in `$fmt` with `$mask`
                             // The main loop will break when mask == 0
-                            debug_assert_ne!($T[*ptr.add(cur) as usize], NEEDLE_LEN as u8);
-                            _v_escape_mask_body!(at + cur, start, fmt, bytes, $Q[$T[*ptr.add(cur) as usize] as usize]);
+                            _v_escape_bodies_exact!($T, $Q, NEEDLE_LEN, at + cur, *ptr.add(cur), start, fmt, bytes, _v_escape_mask_body);
 
                             // Create binary vector of all zeros except
                             // position `$curr` and xor operation with `$mask`
