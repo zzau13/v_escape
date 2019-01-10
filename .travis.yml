@@ -14,6 +14,8 @@ matrix:
     - rust: nightly
     - env: STAGE=benches
   include:
+    - rust: stable
+      env: STAGE=benches
     - rust: nightly
       env: STAGE=coverage
     - rust: nightly
@@ -50,6 +52,11 @@ after_success:
     RUST_BACKTRACE=1 cargo tarpaulin --out Xml
     bash <(curl -s https://codecov.io/bash)
     echo "Uploaded code coverage"
+    fi
+  - |
+    if [[ "$STAGE" == "benches" ]] && [[ "$TRAVIS_RUST_VERSION" == "stable" ]]; then
+    cd benches && \
+    cargo bench;
     fi
   - |
     if [[ "$STAGE" == "benches" ]] && [[ "$TRAVIS_RUST_VERSION" == "nightly" ]]; then

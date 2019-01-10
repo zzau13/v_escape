@@ -14,6 +14,7 @@ mod askama_escape;
 #[cfg(all(v_escape_benches_nightly, feature = "with-rocket"))]
 mod rocket;
 mod v_escape;
+mod v_shellescape;
 
 static HUGE: &[u8] = include_bytes!("../data/sherlock-holmes-huge.txt");
 // escapable characters replaced by 'a'
@@ -79,8 +80,20 @@ macro_rules! groups {
     }};
 }
 
+macro_rules! v_shellescape {
+    ($c:ident) => {
+        use crate::v_shellescape::{unix_escaping as v_su, windows_escaping as v_sw};
+        let group = "v_shellescape/unix/Escaping";
+        groups!($c, group, v_su);
+
+        let group = "v_shellescape/windows/Escaping";
+        groups!($c, group, v_sw);
+    };
+}
 macro_rules! v_escape {
     ($c:ident) => {
+        v_shellescape!($c);
+
         use crate::v_escape::{escaping as v_e, sized as v_s};
         let group = "v_escape/Escaping";
         groups!($c, group, v_e);

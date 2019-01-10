@@ -1,0 +1,31 @@
+[package]
+name = "v_shellescape"
+version = "0.3.2"
+authors = ["Rust-iendo Barcelona <riendocontributions@gmail.com>"]
+description = "The simd optimized shell escaping code"
+documentation = "https://docs.rs/v_shellescape"
+keywords = ["shell", "escaping", "simd"]
+homepage = "https://github.com/rust-iendo/v_htmlescape"
+repository = "https://github.com/rust-iendo/v_htmlescape"
+license = "MIT/Apache-2.0"
+readme = "README.md"
+workspace = ".."
+edition = "2018"
+
+[badges]
+appveyor = { repository = "botika/v_htmlescape" }
+maintenance = { status = "actively-developed" }
+travis-ci = { repository =  "rust-iendo/v_htmlescape", branch = "master" }
+codecov = { repository = "rust-iendo/v_htmlescape", branch = "master", service = "github" }
+
+[lib]
+name = "v_shellescape"
+path = "src/lib.rs"
+bench = false
+
+[dependencies]
+v_escape = { version = "0.3.2", path = "../v_escape" }
+cfg-if = "0.1"
+
+[build-dependencies]
+version_check = "0.1"
