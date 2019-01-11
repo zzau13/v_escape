@@ -9,10 +9,13 @@ use criterion::{Bencher, Benchmark, Criterion, Throughput};
 
 use std::str;
 
-#[cfg(feature = "with-askama")]
+#[cfg(feature = "with-compare")]
 mod askama_escape;
 #[cfg(all(v_escape_benches_nightly, feature = "with-rocket"))]
 mod rocket;
+#[cfg(feature = "with-compare")]
+#[path = "shell-escape.rs"]
+mod shell_escape;
 mod v_escape;
 mod v_shellescape;
 
@@ -111,6 +114,17 @@ macro_rules! askama_escape {
     };
 }
 
+macro_rules! shell_escape {
+    ($c:ident) => {
+        use crate::shell_escape::{unix_escaping as se_su, windows_escaping as se_sw};
+        let group = "shell-escape/unix/Escaping";
+        groups!($c, group, se_su);
+
+        let group = "shell-escape/windows/Escaping";
+        groups!($c, group, se_sw);
+    };
+}
+
 macro_rules! std_writing {
     ($c:ident) => {
         use std::fmt::Write;
@@ -131,21 +145,24 @@ macro_rules! std_writing {
 }
 
 cfg_if! {
-    if #[cfg(all(v_escape_benches_nightly, feature = "with-rocket"))] {
+    if #[cfg(all(v_escape_benches_nightly, feature = "with-rocket", feature = "with-compare"))] {
         fn functions(c: &mut Criterion) {
             use crate::rocket::escaping as r_e;
             let group = "rocket/Escaping";
             groups!(c, group, r_e);
 
             askama_escape!(c);
-            v_escape!(c);
+            shell_escape!(c);
             std_writing!(c);
+            v_escape!(c);
+
         }
-    } else if #[cfg(feature = "with-askama")] {
+    } else if #[cfg(feature = "with-compare")] {
         fn functions(c: &mut Criterion) {
             askama_escape!(c);
-            v_escape!(c);
+            shell_escape!(c);
             std_writing!(c);
+            v_escape!(c);
         }
     } else {
         fn functions(c: &mut Criterion) {
