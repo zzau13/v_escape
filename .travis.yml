@@ -56,10 +56,10 @@ after_success:
   - |
     if [[ "$STAGE" == "benches" ]] && [[ "$TRAVIS_RUST_VERSION" == "stable" ]]; then
     cd benches && \
-    cargo bench;
+    cargo bench --features with-compare;
     fi
   - |
     if [[ "$STAGE" == "benches" ]] && [[ "$TRAVIS_RUST_VERSION" == "nightly" ]]; then
     cd benches && \
-    cargo bench --features with-rocket,with-askama;
+    cargo bench --features with-rocket,with-compare;
     fi
