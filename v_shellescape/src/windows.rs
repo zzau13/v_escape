@@ -70,30 +70,24 @@ pub mod scalar {
                 match *b {
                     b'"' => {
                         if start < i {
-                            fmt.write_fmt(format_args!(
-                                "{}{}\"",
-                                unsafe { from_utf8_unchecked(&bytes[start..i]) },
-                                "\\".repeat(nslashes * 2 + 1)
-                            ))?;
-                        } else {
-                            fmt.write_fmt(format_args!("{}\"", "\\".repeat(nslashes * 2 + 1)))?;
+                            fmt.write_str(unsafe { from_utf8_unchecked(&bytes[start..i]) })?;
                         }
+
+                        fmt.write_fmt(format_args!("{}\"", "\\".repeat(nslashes + 1)))?;
                         start = i + 1;
                     }
                     b'\\' => {
+                        if start < i {
+                            fmt.write_str(unsafe { from_utf8_unchecked(&bytes[start..i]) })?;
+                        }
+
+                        fmt.write_str(&"\\")?;
                         nslashes += 1;
+                        start = i + 1;
                     }
                     _ => {
                         if nslashes != 0 {
-                            if start < i {
-                                fmt.write_str(&"\\".repeat(nslashes))?;
-                                fmt.write_str(unsafe { from_utf8_unchecked(&bytes[start..i]) })?;
-                            } else {
-                                fmt.write_str(&"\\".repeat(nslashes))?;
-                            }
-
                             nslashes = 0;
-                            start = i;
                         }
                     }
                 }
