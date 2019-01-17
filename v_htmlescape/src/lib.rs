@@ -1,6 +1,6 @@
 //! # Quick start
 //!
-//! ```rust
+//! ```
 //! extern crate v_htmlescape;
 //! use v_htmlescape::HTMLEscape;
 //!
@@ -13,6 +13,22 @@ extern crate cfg_if;
 
 #[macro_use]
 extern crate v_escape;
+
+pub mod fallback {
+    new_escape!(
+        HTMLEscape,
+        "60->&lt; || 62->&gt; || 38->&amp; || 34->&quot; || 39->&#x27; || 47->&#x2f;",
+        simd = false
+    );
+
+    pub mod sized {
+        new_escape_sized!(
+            HTMLEscape,
+            "60->&lt; || 62->&gt; || 38->&amp; || 34->&quot; || 39->&#x27; || 47->&#x2f;",
+            simd = false
+        );
+    }
+}
 
 cfg_if! {
     if #[cfg(all(v_htmlescape_simd, v_htmlescape_avx))] {
@@ -44,19 +60,7 @@ cfg_if! {
             );
         }
     } else {
-        new_escape!(
-            HTMLEscape,
-            "60->&lt; || 62->&gt; || 38->&amp; || 34->&quot; || 39->&#x27; || 47->&#x2f;",
-            avx = false, simd = false
-        );
-
-        pub mod sized {
-            new_escape_sized!(
-                HTMLEscape,
-                "60->&lt; || 62->&gt; || 38->&amp; || 34->&quot; || 39->&#x27; || 47->&#x2f;",
-                avx = false, simd = false
-            );
-        }
+        pub use self::fallback::*;
     }
 }
 
