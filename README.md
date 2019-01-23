@@ -41,3 +41,7 @@ fn enable_simd_optimizations() {
     }
 }
 ```
+
+## Support
+
+[Patreon](https://www.patreon.com/r_iendo)
