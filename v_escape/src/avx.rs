@@ -508,7 +508,6 @@ macro_rules! _v_escape_escape_avx {
                 const M128_VECTOR_SIZE: usize = ::std::mem::size_of::<__m128i>();
                 const M128_VECTOR_ALIGN: usize = M128_VECTOR_SIZE - 1;
 
-
                 if len < M128_VECTOR_SIZE {
                      while ptr < end_ptr {
                          _v_escape_bodies!(

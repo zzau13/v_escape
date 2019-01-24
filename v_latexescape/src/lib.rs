@@ -14,12 +14,12 @@ extern crate cfg_if;
 #[macro_use]
 extern crate v_escape;
 
+/// Without simd optimizations
 mod fallback {
     new_escape!(
         LateXEscape,
         "35->\\# || 36->\\$ || 37->\\% || 38->\\& || 92->\\textbackslash{} || \
          94->\\textasciicircum{} || 95->\\_ || 123->\\{ || 125->\\} || 126->\\textasciitilde{}",
-        avx = false,
         simd = false
     );
 }

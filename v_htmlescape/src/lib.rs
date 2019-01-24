@@ -14,6 +14,7 @@ extern crate cfg_if;
 #[macro_use]
 extern crate v_escape;
 
+/// Without simd optimizations
 pub mod fallback {
     new_escape!(
         HTMLEscape,

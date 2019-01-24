@@ -1,5 +1,5 @@
 //! Crate v_escape provides a macro, `new_escape!` that define a `struct` with
-//! escaping functionalities. These macros are optimized using simd by default,
+//! escaping functionality. These macros are optimized using simd by default,
 //! but this can be alter using sub-attributes.
 //!
 //! # Quick start
@@ -8,6 +8,7 @@
 //! `new_escape!(MyEscape, "62->bar");` a new a `struct` `MyEscape`
 //! will be created that every time its method `MyEscape::fmt` is called
 //! will replace all characters `">"` with `"bar"`.
+//!
 //! ```
 //! #[macro_use]
 //! extern crate v_escape;
@@ -61,7 +62,7 @@
 //! # extern crate v_escape;
 //! new_escape!(MyEscape, "49->bar");
 //! # fn main() {
-//! assert_eq!(MyEscape::from("foo 1").to_string(), "foo bar");
+//! assert_eq!(escape("foo 1").to_string(), "foo bar");
 //! # }
 //! ```
 //! ```
@@ -69,7 +70,7 @@
 //! # extern crate v_escape;
 //! new_escape!(MyEscape, "0x31->bar");
 //! # fn main() {
-//! assert_eq!(MyEscape::from("foo 1").to_string(), "foo bar");
+//! assert_eq!(escape("foo 1").to_string(), "foo bar");
 //! # }
 //! ```
 //! ```
@@ -77,7 +78,7 @@
 //! # extern crate v_escape;
 //! new_escape!(MyEscape, "0o61->bar");
 //! # fn main() {
-//! assert_eq!(MyEscape::from("foo 1").to_string(), "foo bar");
+//! assert_eq!(escape("foo 1").to_string(), "foo bar");
 //! # }
 //! ```
 //! ```
@@ -85,7 +86,7 @@
 //! # extern crate v_escape;
 //! new_escape!(MyEscape, "#1->bar");
 //! # fn main() {
-//! assert_eq!(MyEscape::from("foo 1").to_string(), "foo bar");
+//! assert_eq!(escape("foo 1").to_string(), "foo bar");
 //! # }
 //! ```
 //!
@@ -104,7 +105,7 @@
 //!     sse = false
 //! );
 //! # fn main() {
-//! assert_eq!(MyEscape::from("foo>bar<").to_string(), "foobbarf");
+//! assert_eq!(escape("foo>bar<").to_string(), "foobbarf");
 //! # }
 //! ```
 //!
@@ -117,7 +118,7 @@
 //! # extern crate v_escape;
 //! new_escape!(MyEscape, "0-> || 33->foo || 66->bar || 127->", avx = false);
 //! # fn main() {
-//! assert_eq!(MyEscape::from("fooBbar").to_string(), "foobarbar");
+//! assert_eq!(escape("fooBbar").to_string(), "foobarbar");
 //! # }
 //! ```
 //!
@@ -129,7 +130,7 @@
 //! # extern crate v_escape;
 //! new_escape!(MyEscape, "o->bar", print = true);
 //! # fn main() {
-//! # assert_eq!(MyEscape::from("foo").to_string(), "fbarbar");
+//! # assert_eq!(escape("foo").to_string(), "fbarbar");
 //! # }
 //! ```
 //!
@@ -156,25 +157,26 @@ mod avx;
 /// * $__pairs__: Pairs of `[character]->[quote] || [character]->[quote]` or
 ///              `[character]->[quote]`.
 ///
-/// * $__t__: Optional boolean parameters (simd, avx, print).
+/// * $__t__: Optional boolean parameters (simd, avx, sse, print).
 ///     * __simd__:  If true (by default), simd optimizations are enabled. When false,
 ///          no matter value of avx, `sse4.2` will be used,
 ///     * __avx__:   If true (by default), avx optimization are enabled. When false,
 ///          `sse4.2`(if `simd=true`) or `scalar`(if `simd=false`) will be used.
+///     * __sse__:   If true (by default), sse optimization are enabled.
 ///     * __print__: If true (false by default), prints out generated code to console.
 ///
 /// and will:
 ///
-/// 1. Import fmt, Display and Formatter.
+/// 1. Import `std::fmt::{self, Display, Formatter}`
 ///
-/// 2. Define basic struct with attribute `bytes` and escaping
-///    derive functionality.
+/// 2. Define basic struct with attribute `bytes` and `Escape`
+///    derive functionality
 ///
-/// 3. Implements a constructor `new` and traits `Display` and
-///    `From<&'a str>` to struct `$name` (using `_v_escape_escape_new` macro).
+/// 3. Implements for `$name` constructors `new` and `From<&'a str>`
 ///
-/// The generated struct `$name` can escape a string using function `from`
-/// and can be displayed as in the example.
+/// 4. Implements trait `Display` for `$name` with escape functionality
+///
+/// 5. Implements function `escape(&str) -> $name`
 ///
 /// #### Example
 ///
@@ -182,13 +184,10 @@ mod avx;
 /// #[macro_use]
 /// extern crate v_escape;
 ///
-/// new_escape!(MyEscape, "o->bar", print=true);
+/// new_escape!(MyEscape, "o->bar");
 ///
 /// # fn main() {
-/// # let s = "foobar";
-/// let escaped = MyEscape::from(s);
-///
-/// print!("{}", escaped);
+/// assert_eq!(escape("foobar").to_string(), "fbarbarbar");
 /// # }
 /// ```
 ///
