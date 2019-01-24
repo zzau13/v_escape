@@ -87,9 +87,7 @@ impl<'a> Generator<'a> {
     }
 
     fn write_sse(&self, buf: &mut Buffer) {
-        buf.writeln(
-            r#"#[cfg(all(target_arch = "x86_64", not(all(target_os = "windows", v_escape_nosimd))))]"#,
-        );
+        buf.writeln(r#"#[cfg(all(target_arch = "x86_64", not(v_escape_nosimd)))]"#);
         buf.writeln("mod sse {");
         buf.writeln("use super::*;");
 
@@ -107,9 +105,7 @@ impl<'a> Generator<'a> {
     }
 
     fn write_avx(&self, buf: &mut Buffer) {
-        buf.writeln(
-            r#"#[cfg(all(target_arch = "x86_64", not(all(target_os = "windows", v_escape_nosimd))))]"#,
-        );
+        buf.writeln(r#"#[cfg(all(target_arch = "x86_64", not(v_escape_nosimd)))]"#);
         buf.writeln("mod avx {");
         buf.writeln("use super::*;");
 

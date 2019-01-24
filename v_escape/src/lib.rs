@@ -275,7 +275,7 @@ macro_rules! _v_escape_cfg_escape {
     (true, $($t:tt)+) => {
         #[cfg(all(
             target_arch = "x86_64",
-            not(all(target_os = "windows", v_escape_nosimd))
+            not(v_escape_nosimd)
         ))]
         #[inline(always)]
         // https://github.com/BurntSushi/rust-memchr/blob/master/src/x86/mod.rs#L9-L29
@@ -304,7 +304,7 @@ macro_rules! _v_escape_cfg_escape {
         }
         #[cfg(not(all(
             target_arch = "x86_64",
-            not(all(target_os = "windows", v_escape_nosimd))
+            not(v_escape_nosimd)
         )))]
         _v_escape_cfg_escape!(fn);
     };
