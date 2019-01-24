@@ -27,20 +27,3 @@ macro_rules! _v_escape_escape_scalar {
         }
     };
 }
-
-#[macro_export]
-#[doc(hidden)]
-macro_rules! _v_escape_sized_scalar {
-    ($S:ident) => {
-        #[inline]
-        pub fn size(bytes: &[u8]) -> usize {
-            let mut acc = bytes.len();
-
-            for b in bytes {
-                _v_escape_size_bodies!($S, acc, *b);
-            }
-
-            acc
-        }
-    };
-}

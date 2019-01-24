@@ -1,4 +1,4 @@
-use v_htmlescape::sized::HTMLEscape;
+use v_htmlescape::HTMLEscape;
 
 #[test]
 fn test_escape() {
@@ -163,68 +163,5 @@ quis lacus at, gravida maximus elit. Duis tristique, nisl nullam.
     assert_eq!(
         HTMLEscape::from(string_long.as_ref()).to_string(),
         string_long_escaped
-    );
-
-    // Size
-    assert_eq!(
-        HTMLEscape::from("<".repeat(16).as_ref()).size(),
-        "&lt;".repeat(16).len()
-    );
-    assert_eq!(
-        HTMLEscape::from("<".repeat(32).as_ref()).size(),
-        "&lt;".repeat(32).len()
-    );
-    assert_eq!(
-        HTMLEscape::from("<".repeat(64).as_ref()).size(),
-        "&lt;".repeat(64).len()
-    );
-    assert_eq!(
-        HTMLEscape::from("<".repeat(128).as_ref()).size(),
-        "&lt;".repeat(128).len()
-    );
-    assert_eq!(
-        HTMLEscape::from("<".repeat(1024).as_ref()).size(),
-        "&lt;".repeat(1024).len()
-    );
-    assert_eq!(
-        HTMLEscape::from("<".repeat(129).as_ref()).size(),
-        "&lt;".repeat(129).len()
-    );
-    assert_eq!(
-        HTMLEscape::from("<".repeat(128 * 2 - 1).as_ref()).size(),
-        "&lt;".repeat(128 * 2 - 1).len()
-    );
-    assert_eq!(
-        HTMLEscape::from("<".repeat(128 * 8 - 1).as_ref()).size(),
-        "&lt;".repeat(128 * 8 - 1).len()
-    );
-    assert_eq!(
-        HTMLEscape::from(string_long.as_ref()).size(),
-        string_long_escaped.len()
-    );
-    assert_eq!(
-        HTMLEscape::from([string_long, "<"].join("").as_ref()).size(),
-        [string_long_escaped, "&lt;"].join("").len()
-    );
-    assert_eq!(
-        HTMLEscape::from(["<", string_long].join("").as_ref()).size(),
-        ["&lt;", string_long_escaped].join("").len()
-    );
-    assert_eq!(
-        HTMLEscape::from(escapes.repeat(1024).as_ref()).size(),
-        escaped.repeat(1024).len()
-    );
-    assert_eq!(
-        HTMLEscape::from(
-            [string_long, &escapes.repeat(13)]
-                .join("")
-                .repeat(1024)
-                .as_ref()
-        )
-        .size(),
-        [string_long_escaped, &escaped.repeat(13)]
-            .join("")
-            .repeat(1024)
-            .len()
     );
 }

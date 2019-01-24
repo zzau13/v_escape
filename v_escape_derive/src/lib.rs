@@ -47,7 +47,6 @@ fn build(ast: &syn::DeriveInput) -> String {
     let mut pairs = None;
     let mut print = false;
     let mut simd = true;
-    let mut sized = false;
     let mut sse = true;
     for nm_item in meta_list.nested {
         if let syn::NestedMeta::Meta(ref item) = nm_item {
@@ -81,13 +80,6 @@ fn build(ast: &syn::DeriveInput) -> String {
                             panic!("simd value must be boolean literal")
                         }
                     }
-                    "sized" => {
-                        if let syn::Lit::Bool(ref s) = pair.lit {
-                            sized = s.value;
-                        } else {
-                            panic!("sized value must be boolean literal")
-                        }
-                    }
                     "sse" => {
                         if let syn::Lit::Bool(ref s) = pair.lit {
                             sse = s.value;
@@ -103,7 +95,6 @@ fn build(ast: &syn::DeriveInput) -> String {
 
     let code = generator::generate(
         &parser::parse(&pairs.expect("pairs not found in attributes")),
-        sized,
         simd,
         avx,
         sse,
