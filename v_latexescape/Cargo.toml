@@ -1,6 +1,6 @@
 [package]
 name = "v_latexescape"
-version = "0.3.2"
+version = "0.4.0"
 authors = ["Rust-iendo Barcelona <riendocontributions@gmail.com>"]
 description = "The simd optimized LaTeX escaping code"
 documentation = "https://docs.rs/v_latexescape"
@@ -24,7 +24,7 @@ path = "src/lib.rs"
 bench = false
 
 [dependencies]
-v_escape = { version = "0.4", path = "../v_escape" }
+v_escape = { version = "0.5", path = "../v_escape" }
 cfg-if = "0.1"
 
 [build-dependencies]
