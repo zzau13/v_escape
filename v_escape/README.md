@@ -2,7 +2,7 @@
 > The simd optimized escape code
 
 Crate v_escape provides a macro `new_escape!` that define a `struct` with 
-escaping functionalities. These macros are optimized using simd by default, 
+escaping functionality. These macros are optimized using simd by default, 
 but this can be alter using sub-attributes.
 
 # Quick start
