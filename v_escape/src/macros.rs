@@ -92,15 +92,6 @@ macro_rules! _v_escape_bodies_exact {
 
 #[macro_export]
 #[doc(hidden)]
-/// Accumulate current escaping byte size
-macro_rules! _v_escape_size_bodies {
-    ($S:ident, $acc:ident, $b:expr) => {
-        $acc += $S[$b as usize] as usize;
-    };
-}
-
-#[macro_export]
-#[doc(hidden)]
 /// https://github.com/seanmonstar/httparse/blob/master/src/macros.rs#L33
 macro_rules! byte_map {
     ($($flag:expr,)*) => ([

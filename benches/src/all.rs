@@ -97,12 +97,9 @@ macro_rules! v_escape {
     ($c:ident) => {
         v_shellescape!($c);
 
-        use crate::v_escape::{escaping as v_e, sized as v_s};
+        use crate::v_escape::escaping as v_e;
         let group = "v_escape/Escaping";
         groups!($c, group, v_e);
-
-        let group = "v_escape/Sizing";
-        groups!($c, group, v_s);
     };
 }
 
