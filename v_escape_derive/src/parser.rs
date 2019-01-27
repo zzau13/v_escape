@@ -89,8 +89,10 @@ pub fn parse(src: &str) -> Vec<Pair> {
 
     // check repeated
     for i in 0..len - 1 {
-        if pairs[i] == pairs[i + 1] {
-            panic!("{:?} and {:?} are repeated", pairs[i], pairs[i + i]);
+        let p1 = &pairs[i];
+        let p2 = &pairs[i + 1];
+        if p1.char == p2.char {
+            panic!("{:?} and {:?} are repeated", p1, p2);
         }
     }
 
@@ -146,7 +148,7 @@ mod test {
     #[should_panic]
     #[test]
     fn test_panic_repeated() {
-        parse("a->f || a->f");
+        parse("a->f || a->");
     }
 
     #[should_panic]
