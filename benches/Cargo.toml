@@ -7,8 +7,10 @@ description = "Criterion benchmark suite for v_htmlescape."
 homepage = "https://github.com/rust-iendo/v_htmlescape"
 repository = "https://github.com/rust-iendo/v_htmlescape"
 license = "MIT/Apache-2.0"
-workspace = '..'
 edition = "2018"
+
+[workspace]
+members = ["."]
 
 [lib]
 bench = false
