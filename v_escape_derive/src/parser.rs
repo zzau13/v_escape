@@ -79,8 +79,21 @@ pub fn parse(src: &str) -> Vec<Pair> {
         Err(nom::Err::Incomplete(err)) => panic!("Parsing incomplete: {:?}", err),
     };
 
+    let len = pairs.len();
+
+    // check minimum length
+    assert_ne!(len, 0);
+
     // need order for calculate ranges
-    pairs.sort_by(|a, b| a.char.cmp(&b.char));
+    pairs.sort_unstable_by_key(|p| p.char);
+
+    // check repeated
+    for i in 0..len - 1 {
+        if pairs[i] == pairs[i + 1] {
+            panic!("{:?} and {:?} are repeated", pairs[i], pairs[i + i]);
+        }
+    }
+
     pairs
 }
 
@@ -122,6 +135,18 @@ mod test {
     #[test]
     fn test_panic_bad_syntax_a() {
         parse("-f");
+    }
+
+    #[should_panic]
+    #[test]
+    fn test_panic_empty() {
+        parse("");
+    }
+
+    #[should_panic]
+    #[test]
+    fn test_panic_repeated() {
+        parse("a->f || a->f");
     }
 
     #[should_panic]
