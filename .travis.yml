@@ -38,8 +38,10 @@ before_script:
     fi
 
 script:
-  - if [[ -z "$STAGE" ]]; then
-      cargo test;
+  - |
+    if [[ -z "$STAGE" ]]; then
+    cargo test
+    cargo build --release --verbose
     fi
   - if [[ "${TRAVIS_RUST_VERSION}" == "stable" ]]; then
       cargo fmt -- --check;
