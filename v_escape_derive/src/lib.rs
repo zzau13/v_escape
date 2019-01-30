@@ -46,8 +46,8 @@ fn build(ast: &syn::DeriveInput) -> String {
     let mut avx = true;
     let mut pairs = None;
     let mut print = false;
+    let mut ranges = true;
     let mut simd = true;
-    let mut sse = true;
     for nm_item in meta_list.nested {
         if let syn::NestedMeta::Meta(ref item) = nm_item {
             if let syn::Meta::NameValue(ref pair) = item {
@@ -80,11 +80,11 @@ fn build(ast: &syn::DeriveInput) -> String {
                             panic!("simd value must be boolean literal")
                         }
                     }
-                    "sse" => {
+                    "ranges" => {
                         if let syn::Lit::Bool(ref s) = pair.lit {
-                            sse = s.value;
+                            ranges = s.value
                         } else {
-                            panic!("sse value must be boolean literal")
+                            panic!("avx value must be boolean literal")
                         }
                     }
                     attr => panic!("unsupported annotation key '{}' found", attr),
@@ -96,8 +96,8 @@ fn build(ast: &syn::DeriveInput) -> String {
     let code = generator::generate(
         &parser::parse(&pairs.expect("pairs not found in attributes")),
         simd,
+        ranges,
         avx,
-        sse,
     );
 
     if print {

@@ -90,10 +90,22 @@
 //! # }
 //! ```
 //!
-//! The sub-attribute `sse`, true by default, can process a maximum
-//! of 16 `Pairs`. If more `Pairs` are needed, sse optimizations has
-//! to be deactivated using sub-attribute `sse = false`
+//! // TODO
 //!
+//! Optimization for avx requires the creation of ranges. If the
+//! distance between the escaped characters is very large,
+//! sub-attribute `ranges = false` should be disabled
+//!
+//! ```
+//! # #[macro_use]
+//! # extern crate v_escape;
+//! new_escape!(MyEscape, "0-> || 33->foo || 66->bar || 127->", ranges = false);
+//! # fn main() {
+//! assert_eq!(escape("fooBbar").to_string(), "foobarbar");
+//! # }
+//! ```
+//!
+//! // TODO
 //! ```
 //! # #[macro_use]
 //! # extern crate v_escape;
@@ -101,24 +113,10 @@
 //!     MyEscape,
 //!     "62->b || 60->f || B->b || 65->f || 0o67->b || #6->f || 68->b || \
 //!     71->f || 72->b || 73->f || 74->b || 75->f || 76->b || 77->f || \
-//!     78->b || 79->f || 0x1A->f",
-//!     sse = false
+//!     78->b || 79->f || 0x1A->f"
 //! );
 //! # fn main() {
 //! assert_eq!(escape("foo>bar<").to_string(), "foobbarf");
-//! # }
-//! ```
-//!
-//! Optimization for avx requires the creation of ranges. If the
-//! distance between the escaped characters is very large,
-//! sub-attribute `avx = false` should be disabled
-//!
-//! ```
-//! # #[macro_use]
-//! # extern crate v_escape;
-//! new_escape!(MyEscape, "0-> || 33->foo || 66->bar || 127->", avx = false);
-//! # fn main() {
-//! assert_eq!(escape("fooBbar").to_string(), "foobarbar");
 //! # }
 //! ```
 //!
@@ -145,7 +143,7 @@ mod scalar;
 #[macro_use]
 mod sse;
 #[macro_use]
-mod avx;
+mod ranges;
 
 #[macro_export]
 /// Generates struct `$name` with escaping functionality at `fmt`
@@ -161,8 +159,8 @@ mod avx;
 ///     * __simd__:  If true (by default), simd optimizations are enabled. When false,
 ///          no matter value of avx, `sse4.2` will be used,
 ///     * __avx__:   If true (by default), avx optimization are enabled. When false,
-///          `sse4.2`(if `simd=true`) or `scalar`(if `simd=false`) will be used.
-///     * __sse__:   If true (by default), sse optimization are enabled.
+///          `sse2`(if `simd=true`) or `scalar`(if `simd=false`) will be used.
+///     * __ranges__:   If true (by default), TODO
 ///     * __print__: If true (false by default), prints out generated code to console.
 ///
 /// and will:
@@ -272,10 +270,7 @@ macro_rules! _v_escape_cfg_escape {
         _v_escape_cfg_escape!(fn);
     };
     (true, $($t:tt)+) => {
-        #[cfg(all(
-            target_arch = "x86_64",
-            not(v_escape_nosimd)
-        ))]
+        #[cfg(all(target_arch = "x86_64", not(v_escape_nosimd)))]
         #[inline(always)]
         // https://github.com/BurntSushi/rust-memchr/blob/master/src/x86/mod.rs#L9-L29
         fn _escape(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
@@ -301,10 +296,8 @@ macro_rules! _v_escape_cfg_escape {
                 mem::transmute::<usize, fn(&[u8], &mut Formatter) -> fmt::Result>(fun)(bytes, fmt)
             }
         }
-        #[cfg(not(all(
-            target_arch = "x86_64",
-            not(v_escape_nosimd)
-        )))]
+
+        #[cfg(not(all(target_arch = "x86_64", not(v_escape_nosimd))))]
         _v_escape_cfg_escape!(fn);
     };
     (fn) => {
@@ -313,7 +306,7 @@ macro_rules! _v_escape_cfg_escape {
             scalar::escape(bytes, fmt)
         }
     };
-    (if false, true) => {
+    (if false, $a:expr) => {
         if is_x86_feature_detected!("sse4.2") {
             sse::escape as usize
         } else {
@@ -322,16 +315,16 @@ macro_rules! _v_escape_cfg_escape {
     };
     (if true, true) => {
         if is_x86_feature_detected!("avx2") {
-            avx::escape as usize
-        } else if is_x86_feature_detected!("sse4.2") {
-            sse::escape as usize
+            ranges::avx::escape as usize
+        } else if is_x86_feature_detected!("sse2") {
+            ranges::sse::escape as usize
         } else {
             scalar::escape as usize
         }
     };
     (if true, false) => {
-        if is_x86_feature_detected!("avx2") {
-            avx::escape as usize
+        if is_x86_feature_detected!("sse2") {
+            ranges::sse::escape as usize
         } else {
             scalar::escape as usize
         }
