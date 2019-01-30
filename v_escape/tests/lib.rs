@@ -162,6 +162,35 @@ mod no_avx {
     }
 }
 
+#[cfg(target_arch = "x86_64")]
+mod no_ranges {
+    mod a {
+        new_escape!(
+            MyE,
+            "65->a || 60->b || 61->c || 66->d || 80->e || 81->f",
+            ranges = false
+        );
+
+        #[test]
+        fn test_escape() {
+            test!(MyE, "<=ABPQ", "bcadef");
+        }
+    }
+
+    mod b {
+        new_escape!(
+            MyE,
+            "65->a || 60->b || 61->c || 66->d || 80->e || 81->f",
+            ranges = false
+        );
+
+        #[test]
+        fn test_escape() {
+            test!(MyE, "<=ABPQ", "bcadef");
+        }
+    }
+}
+
 mod empty {
     new_escape!(MyE, "65->");
 

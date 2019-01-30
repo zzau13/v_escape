@@ -5,26 +5,26 @@ use crate::parser::Pair;
 struct Generator<'a> {
     pairs: &'a [Pair<'a>],
     simd: bool,
+    ranges: bool,
     avx: bool,
-    sse: bool,
 }
 
 type Ranges = Vec<u8>;
 
-pub fn generate(pairs: &[Pair], simd: bool, avx: bool, sse: bool) -> String {
-    Generator::new(pairs, simd, avx, sse).build()
+pub fn generate(pairs: &[Pair], simd: bool, ranges: bool, avx: bool) -> String {
+    Generator::new(pairs, simd, ranges, avx).build()
 }
 
 // End flag for indicate more escapes than ranges
 const FLAG: u8 = 128;
 
 impl<'a> Generator<'a> {
-    pub fn new<'n>(pairs: &'n [Pair<'n>], simd: bool, avx: bool, sse: bool) -> Generator<'n> {
+    pub fn new<'n>(pairs: &'n [Pair<'n>], simd: bool, ranges: bool, avx: bool) -> Generator<'n> {
         Generator {
             pairs,
             simd,
+            ranges,
             avx,
-            sse,
         }
     }
 
@@ -67,11 +67,10 @@ impl<'a> Generator<'a> {
     fn write_functions(&self, buf: &mut Buffer) {
         self.write_scalar(buf);
         if self.simd {
-            if self.sse {
-                self.write_sse(buf);
-            }
-            if self.avx {
-                self.write_avx(buf);
+            if self.ranges {
+                self.write_ranges(buf);
+            } else {
+                self.write_eq(buf);
             }
         }
     }
@@ -86,7 +85,7 @@ impl<'a> Generator<'a> {
         buf.writeln(&code.to_string());
     }
 
-    fn write_sse(&self, buf: &mut Buffer) {
+    fn write_eq(&self, buf: &mut Buffer) {
         buf.writeln(r#"#[cfg(all(target_arch = "x86_64", not(v_escape_nosimd)))]"#);
         buf.writeln("mod sse {");
         buf.writeln("use super::*;");
@@ -104,24 +103,33 @@ impl<'a> Generator<'a> {
         buf.writeln("}");
     }
 
-    fn write_avx(&self, buf: &mut Buffer) {
+    fn write_ranges(&self, buf: &mut Buffer) {
         buf.writeln(r#"#[cfg(all(target_arch = "x86_64", not(v_escape_nosimd)))]"#);
-        buf.writeln("mod avx {");
-        buf.writeln("use super::*;");
+        buf.writeln("mod ranges {");
 
         let ranges: &[u8] = &self.calculate_ranges();
 
-        buf.write("_v_escape_escape_avx!((V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_QUOTES_LEN) ");
-        self.write_macro_tt(buf, ranges.iter());
-        buf.writeln(");");
+        let t: &[&str] = if self.avx { &["avx", "sse"] } else { &["sse"] };
 
+        for i in t {
+            buf.write("pub mod ");
+            buf.write(i);
+            buf.writeln(" {");
+            buf.writeln("use super::super::*;");
+            buf.write("_v_escape_escape_ranges!(");
+            buf.write(i);
+            buf.write("2 (V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_QUOTES_LEN) ");
+            self.write_macro_tt(buf, ranges.iter());
+            buf.writeln(");");
+            buf.writeln("}");
+        }
         buf.writeln("}");
     }
 
     fn write_cfg_if(&self, buf: &mut Buffer) {
         buf.writeln(&format!(
             "_v_escape_cfg_escape!({}, {}, {});",
-            self.simd, self.avx, self.sse
+            self.simd, self.ranges, self.avx
         ));
     }
 
