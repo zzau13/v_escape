@@ -90,11 +90,13 @@
 //! # }
 //! ```
 //!
-//! // TODO
-//!
-//! Optimization for avx requires the creation of ranges. If the
-//! distance between the escaped characters is very large,
-//! sub-attribute `ranges = false` should be disabled
+//! `ranges` refers to a possible optimization that when given a number of pairs,
+//! an optimal number of ranges (with a maximum of three) are calculated and used
+//! to escape all bytes within each range. It is possible the existence of false
+//! positives, and will be discarded. If a lot of pairs have to be discarded
+//! sub-attribute `ranges` must be explicitly disabled. In the case that more than
+//! three bytes are used and the distance between the escaped characters is very
+//! large, then `ranges = false`.
 //!
 //! ```
 //! # #[macro_use]
@@ -105,7 +107,11 @@
 //! # }
 //! ```
 //!
-//! // TODO
+//! In the following example more than 16 pairs are given, this exceeds simd's
+//! boundary. If simd optimization is wanted, ranges must be enabled (deafult)
+//! or an error will be thrown. It is possible to not use ranges but simd
+//! optimization has to be disabled.
+//!
 //! ```
 //! # #[macro_use]
 //! # extern crate v_escape;
