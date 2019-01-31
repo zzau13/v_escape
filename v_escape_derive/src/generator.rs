@@ -1,4 +1,7 @@
-use std::{fmt::{Display, Write}, str};
+use std::{
+    fmt::{Display, Write},
+    str,
+};
 
 use crate::parser::Pair;
 
@@ -210,8 +213,8 @@ impl<'a> Generator<'a> {
                 let (d, _) = d.split_at_mut(2);
                 d.sort_unstable_by_key(|d| d.0);
 
-                let f= d[0].0;
-                let l= d[1].0;
+                let f = d[0].0;
+                let l = d[1].0;
 
                 if f + 1 == l {
                     if f == 0 {
