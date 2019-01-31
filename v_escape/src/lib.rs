@@ -43,7 +43,7 @@
 //! ## Pairs syntax
 //! v_escape uses a simple syntax to replace characters
 //! with their respective quotes. The tuple is named `Pair`,
-//! and several can be defined, refered as `Pairs`. The syntax to define
+//! and several can be defined, referred as `Pairs`. The syntax to define
 //! `Pairs` consists of a character, followed
 //! by the delimiter `->`, followed by the substitution quote
 //! and the delimiter ` || ` (last delimiter is optional):
@@ -108,7 +108,7 @@
 //! ```
 //!
 //! In the following example more than 16 pairs are given, this exceeds simd's
-//! boundary. If simd optimization is wanted, ranges must be enabled (deafult)
+//! boundary. If simd optimization is wanted, ranges must be enabled (default)
 //! or an error will be thrown. It is possible to not use ranges but simd
 //! optimization has to be disabled.
 //!
@@ -163,10 +163,11 @@ mod ranges;
 ///
 /// * $__t__: Optional boolean parameters (simd, avx, sse, print).
 ///     * __simd__:  If true (by default), simd optimizations are enabled. When false,
-///          no matter value of avx, `sse4.2` will be used,
+///         no matter value of avx, `sse4.2` will be used,
 ///     * __avx__:   If true (by default), avx optimization are enabled. When false,
-///          `sse2`(if `simd=true`) or `scalar`(if `simd=false`) will be used.
-///     * __ranges__:   If true (by default), TODO
+///         `sse2`(if `ranges=true` and `simd=true`) or `scalar`(if `simd=false`) will be used.
+///     * __ranges__:   If true (by default), ranges optimizations are enabled. When false,
+///         `sse4.2`(if `simd=true`) or `scalar`(if `simd=false`) will be used.
 ///     * __print__: If true (false by default), prints out generated code to console.
 ///
 /// and will:
