@@ -1,4 +1,4 @@
-use std::{fmt::Display, str};
+use std::{fmt::{Display, Write}, str};
 
 use crate::parser::Pair;
 
@@ -54,7 +54,7 @@ impl<'a> Generator<'a> {
         let quotes: Vec<&str> = self
             .pairs
             .iter()
-            .map(|s| str::from_utf8(s.quote).unwrap())
+            .map(|s| str::from_utf8(s.quote).expect("valid utf-8 quote"))
             .collect();
         buf.writeln(&format!(
             "static V_ESCAPE_QUOTES: [&str; {}] = {:#?};",
@@ -97,7 +97,7 @@ impl<'a> Generator<'a> {
         let chars: &[u8] = &chars;
 
         buf.write(" _v_escape_escape_sse!((V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_QUOTES_LEN) ");
-        self.write_macro_tt(buf, chars.iter());
+        self.write_macro_tt(buf, chars);
         buf.writeln(");");
 
         buf.writeln("}");
@@ -119,7 +119,7 @@ impl<'a> Generator<'a> {
             buf.write("_v_escape_escape_ranges!(");
             buf.write(i);
             buf.write("2 (V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_QUOTES_LEN) ");
-            self.write_macro_tt(buf, ranges.iter());
+            self.write_macro_tt(buf, ranges);
             buf.writeln(");");
             buf.writeln("}");
         }
@@ -133,13 +133,13 @@ impl<'a> Generator<'a> {
         ));
     }
 
-    fn write_macro_tt<T, I>(&self, buf: &mut Buffer, iter: I)
+    fn write_macro_tt<T, I>(&self, buf: &mut Buffer, i: I)
     where
         T: Display,
-        I: Iterator<Item = T>,
+        I: IntoIterator<Item = T>,
     {
-        for c in iter {
-            buf.write(&format!("{}, ", c))
+        for c in i.into_iter() {
+            buf.buf.write_fmt(format_args!("{}, ", c)).unwrap();
         }
     }
 
@@ -148,92 +148,93 @@ impl<'a> Generator<'a> {
         let mut ranges: Ranges = vec![];
 
         assert_ne!(len, 0);
-
         if len == 1 {
-            ranges.push(self.pairs.get(0).unwrap().char);
+            ranges.push(self.pairs[0].char);
             ranges.push(FLAG);
 
             return ranges;
         }
+        let len = len - 1;
 
         let mut d = vec![];
-        for i in 0..len - 1 {
-            let diff = self.pairs.get(i + 1).unwrap().char - self.pairs.get(i).unwrap().char;
+        for i in 0..len {
+            let diff = self.pairs[i + 1].char - self.pairs[i].char;
             if 1 < diff {
                 d.push((i, diff));
             }
         }
-        d.sort_by(|a, b| b.1.cmp(&a.1));
+        d.sort_unstable_by(|a, b| b.1.cmp(&a.1));
 
         match d.len() {
             0 => {
                 // 1 range
-                ranges.push(self.pairs.first().unwrap().char);
-                ranges.push(self.pairs.last().unwrap().char);
+                ranges.push(self.pairs[0].char);
+                ranges.push(self.pairs[len].char);
             }
             1 => {
-                if len == 2 {
+                if len == 1 {
                     // 2 escapes
-                    ranges.push(self.pairs.first().unwrap().char);
-                    ranges.push(self.pairs.last().unwrap().char);
+                    ranges.push(self.pairs[0].char);
+                    ranges.push(self.pairs[len].char);
                     ranges.push(FLAG);
                 } else {
-                    let i = d.first().unwrap().0;
+                    let i = d[0].0;
                     if i == 0 {
                         // 1 escape and 1 range
-                        ranges.push(self.pairs.get(i + 1).unwrap().char);
-                        ranges.push(self.pairs.last().unwrap().char);
-                        ranges.push(self.pairs.first().unwrap().char);
+                        ranges.push(self.pairs[i + 1].char);
+                        ranges.push(self.pairs[len].char);
+                        ranges.push(self.pairs[0].char);
                     } else {
                         // 1 escape and 1 range
-                        ranges.push(self.pairs.first().unwrap().char);
-                        ranges.push(self.pairs.get(i).unwrap().char);
-                        ranges.push(self.pairs.get(i + 1).unwrap().char);
-                        if i + 2 != len {
+                        ranges.push(self.pairs[0].char);
+                        ranges.push(self.pairs[i].char);
+                        ranges.push(self.pairs[i + 1].char);
+                        if i + 1 != len {
                             // 2 ranges
-                            ranges.push(self.pairs.last().unwrap().char);
+                            ranges.push(self.pairs[len].char);
                         }
                     }
                 }
             }
             _ => {
-                if self.pairs.len() <= 3 {
-                    assert_eq!(self.pairs.len(), 3);
+                if len <= 2 {
+                    assert_eq!(len, 2);
                     // 3 escapes
-                    let c: Vec<u8> = self.pairs.iter().map(|s| s.char).collect();
-                    ranges.extend(c);
+                    for Pair { char, .. } in self.pairs {
+                        ranges.push(*char);
+                    }
                     ranges.push(FLAG);
 
                     return ranges;
                 }
 
                 let (d, _) = d.split_at_mut(2);
-                d.sort_by(|a, b| a.0.cmp(&b.0));
+                d.sort_unstable_by_key(|d| d.0);
 
-                let first = d.first().unwrap().0;
-                let last = d.last().unwrap().0;
+                let first = d[0].0;
+                let last = d[1].0;
 
                 if first + 1 == last {
                     if first == 0 {
-                        self.push_1_ranges_2_escape_at_first(&mut ranges, first, last);
+                        self.push_1_ranges_2_escape_at_first(&mut ranges, first, last, len);
                     } else {
-                        if last + 2 == len {
-                            self.push_1_ranges_2_escape_at_last(&mut ranges, first, last);
+                        if last + 1 == len {
+                            self.push_1_ranges_2_escape_at_last(&mut ranges, first, last, len);
                         } else {
-                            self.push_2_ranges_1_escape(&mut ranges, first, last);
+                            self.push_2_ranges_1_escape(&mut ranges, first, last, len);
                         }
                     }
                 } else {
                     if first == 0 {
-                        if last + 2 == len {
-                            self.push_1_ranges_2_escape_at_first_last(&mut ranges, first, last);
+                        if last + 1 == len {
+                            self.push_1_ranges_2_escape_at_first_last(&mut ranges, first, last, len);
                         } else {
-                            self.push_2_ranges_1_escape_at_first(&mut ranges, first, last);
+                            self.push_2_ranges_1_escape_at_first(&mut ranges, first, last, len);
                         }
-                    } else if last + 2 == len {
-                        self.push_2_ranges_1_escape_at_last(&mut ranges, first, last);
+                    } else if last + 1 == len {
+                        self.push_2_ranges_1_escape_at_last(&mut ranges, first, last, len);
                     } else {
-                        self.push_3_ranges(&mut ranges, first, last);
+                        self.push_3_ranges(&mut ranges, first, last, len);
                     }
                 }
             }
@@ -242,61 +243,68 @@ impl<'a> Generator<'a> {
         ranges
     }
 
-    fn push_1_ranges_2_escape_at_first(&self, r: &mut Ranges, first: usize, last: usize) {
-        r.push(self.pairs.get(last + 1).unwrap().char);
-        r.push(self.pairs.last().unwrap().char);
-        r.push(self.pairs.first().unwrap().char);
-        r.push(self.pairs.get(first + 1).unwrap().char);
+    #[inline]
+    fn push_1_ranges_2_escape_at_first(&self, r: &mut Ranges, first: usize, last: usize, len: usize) {
+        r.push(self.pairs[last + 1].char);
+        r.push(self.pairs[len].char);
+        r.push(self.pairs[0].char);
+        r.push(self.pairs[first + 1].char);
         r.push(FLAG);
     }
 
-    fn push_1_ranges_2_escape_at_last(&self, r: &mut Ranges, first: usize, last: usize) {
-        r.push(self.pairs.first().unwrap().char);
-        r.push(self.pairs.get(first).unwrap().char);
-        r.push(self.pairs.get(last).unwrap().char);
-        r.push(self.pairs.last().unwrap().char);
+    #[inline]
+    fn push_1_ranges_2_escape_at_last(&self, r: &mut Ranges, first: usize, last: usize, len: usize) {
+        r.push(self.pairs[0].char);
+        r.push(self.pairs[first].char);
+        r.push(self.pairs[last].char);
+        r.push(self.pairs[len].char);
         r.push(FLAG);
     }
 
-    fn push_1_ranges_2_escape_at_first_last(&self, r: &mut Ranges, first: usize, last: usize) {
-        r.push(self.pairs.get(first + 1).unwrap().char);
-        r.push(self.pairs.get(last).unwrap().char);
-        r.push(self.pairs.first().unwrap().char);
-        r.push(self.pairs.last().unwrap().char);
+    #[inline]
+    fn push_1_ranges_2_escape_at_first_last(&self, r: &mut Ranges, first: usize, last: usize, len: usize) {
+        r.push(self.pairs[first + 1].char);
+        r.push(self.pairs[last].char);
+        r.push(self.pairs[0].char);
+        r.push(self.pairs[len].char);
         r.push(FLAG);
     }
 
-    fn push_2_ranges_1_escape(&self, r: &mut Ranges, first: usize, last: usize) {
-        r.push(self.pairs.first().unwrap().char);
-        r.push(self.pairs.get(first).unwrap().char);
-        r.push(self.pairs.get(last + 1).unwrap().char);
-        r.push(self.pairs.last().unwrap().char);
-        r.push(self.pairs.get(first + 1).unwrap().char);
+    #[inline]
+    fn push_2_ranges_1_escape(&self, r: &mut Ranges, first: usize, last: usize, len: usize) {
+        r.push(self.pairs[0].char);
+        r.push(self.pairs[first].char);
+        r.push(self.pairs[last + 1].char);
+        r.push(self.pairs[len].char);
+        r.push(self.pairs[first + 1].char);
     }
 
-    fn push_2_ranges_1_escape_at_first(&self, r: &mut Ranges, first: usize, last: usize) {
-        r.push(self.pairs.get(first + 1).unwrap().char);
-        r.push(self.pairs.get(last).unwrap().char);
-        r.push(self.pairs.get(last + 1).unwrap().char);
-        r.push(self.pairs.last().unwrap().char);
-        r.push(self.pairs.first().unwrap().char);
+    #[inline]
+    fn push_2_ranges_1_escape_at_first(&self, r: &mut Ranges, first: usize, last: usize, len: usize) {
+        r.push(self.pairs[first + 1].char);
+        r.push(self.pairs[last].char);
+        r.push(self.pairs[last + 1].char);
+        r.push(self.pairs[len].char);
+        r.push(self.pairs[0].char);
     }
 
-    fn push_2_ranges_1_escape_at_last(&self, r: &mut Ranges, first: usize, last: usize) {
-        r.push(self.pairs.first().unwrap().char);
-        r.push(self.pairs.get(first).unwrap().char);
-        r.push(self.pairs.get(first + 1).unwrap().char);
-        r.push(self.pairs.get(last).unwrap().char);
-        r.push(self.pairs.last().unwrap().char);
+    #[inline]
+    fn push_2_ranges_1_escape_at_last(&self, r: &mut Ranges, first: usize, last: usize, len: usize) {
+        r.push(self.pairs[0].char);
+        r.push(self.pairs[first].char);
+        r.push(self.pairs[first + 1].char);
+        r.push(self.pairs[last].char);
+        r.push(self.pairs[len].char);
     }
 
-    fn push_3_ranges(&self, r: &mut Ranges, first: usize, last: usize) {
-        r.push(self.pairs.first().unwrap().char);
-        r.push(self.pairs.get(first).unwrap().char);
-        r.push(self.pairs.get(first + 1).unwrap().char);
-        r.push(self.pairs.get(last).unwrap().char);
-        r.push(self.pairs.get(last + 1).unwrap().char);
-        r.push(self.pairs.last().unwrap().char);
+    #[inline]
+    fn push_3_ranges(&self, r: &mut Ranges, first: usize, last: usize, len: usize) {
+        r.push(self.pairs[0].char);
+        r.push(self.pairs[first].char);
+        r.push(self.pairs[first + 1].char);
+        r.push(self.pairs[last].char);
+        r.push(self.pairs[last + 1].char);
+        r.push(self.pairs[len].char);
     }
 }
 
