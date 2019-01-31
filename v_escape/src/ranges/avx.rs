@@ -3,6 +3,10 @@
 macro_rules! _v_escape_loop_avx2  {
     (($len:ident, $ptr:ident, $start_ptr:ident, $end_ptr:ident, $start:ident, $fmt:ident, $bytes:ident)
     ($T:ident, $Q:ident, $Q_LEN:ident) $($t:tt ,)+) => {
+        use std::arch::x86_64::{
+            __m256i, _mm256_load_si256, _mm256_loadu_si256, _mm256_movemask_epi8, _mm256_or_si256,
+        };
+
         const M256_VECTOR_SIZE: usize = ::std::mem::size_of::<__m256i>();
         const M256_VECTOR_ALIGN: usize = M256_VECTOR_SIZE - 1;
         const LOOP_SIZE: usize = 4 * M256_VECTOR_SIZE;

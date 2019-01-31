@@ -20,10 +20,6 @@ macro_rules! _v_escape_escape_ranges {
     };
     (impl $loops:ident for ($T:ident, $Q:ident, $Q_LEN:ident) $($t:tt ,)+) => {
         pub unsafe fn escape(bytes: &[u8], fmt: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-            #[allow(unused_imports)]
-            use std::arch::x86_64::{
-                __m256i, _mm256_load_si256, _mm256_loadu_si256, _mm256_movemask_epi8, _mm256_or_si256,
-            };
 
             let len = bytes.len();
             let start_ptr = bytes.as_ptr();
