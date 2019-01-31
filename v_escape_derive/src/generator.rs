@@ -144,20 +144,19 @@ impl<'a> Generator<'a> {
     }
 
     fn calculate_ranges(&self) -> Ranges {
-        let len = self.pairs.len();
-        let mut ranges: Ranges = vec![];
+        assert_ne!(self.pairs.len(), 0);
+        let mut r: Ranges = vec![];
 
-        assert_ne!(len, 0);
-        if len == 1 {
-            ranges.push(self.pairs[0].char);
-            ranges.push(FLAG);
+        if self.pairs.len() == 1 {
+            r.push(self.pairs[0].char);
+            r.push(FLAG);
 
-            return ranges;
+            return r;
         }
-        let len = len - 1;
+        let e = self.pairs.len() - 1;
 
         let mut d = vec![];
-        for i in 0..len {
+        for i in 0..e {
             let diff = self.pairs[i + 1].char - self.pairs[i].char;
             if 1 < diff {
                 d.push((i, diff));
@@ -168,143 +167,143 @@ impl<'a> Generator<'a> {
         match d.len() {
             0 => {
                 // 1 range
-                ranges.push(self.pairs[0].char);
-                ranges.push(self.pairs[len].char);
+                r.push(self.pairs[0].char);
+                r.push(self.pairs[e].char);
             }
             1 => {
-                if len == 1 {
-                    // 2 escapes
-                    ranges.push(self.pairs[0].char);
-                    ranges.push(self.pairs[len].char);
-                    ranges.push(FLAG);
+                if e == 1 {
+                    // 2 equals
+                    r.push(self.pairs[0].char);
+                    r.push(self.pairs[e].char);
+                    r.push(FLAG);
                 } else {
                     let i = d[0].0;
                     if i == 0 {
-                        // 1 escape and 1 range
-                        ranges.push(self.pairs[i + 1].char);
-                        ranges.push(self.pairs[len].char);
-                        ranges.push(self.pairs[0].char);
+                        // 1 equal and 1 range
+                        r.push(self.pairs[i + 1].char);
+                        r.push(self.pairs[e].char);
+                        r.push(self.pairs[0].char);
                     } else {
-                        // 1 escape and 1 range
-                        ranges.push(self.pairs[0].char);
-                        ranges.push(self.pairs[i].char);
-                        ranges.push(self.pairs[i + 1].char);
-                        if i + 1 != len {
+                        // 1 equal and 1 range
+                        r.push(self.pairs[0].char);
+                        r.push(self.pairs[i].char);
+                        r.push(self.pairs[i + 1].char);
+                        if i + 1 != e {
                             // 2 ranges
-                            ranges.push(self.pairs[len].char);
+                            r.push(self.pairs[e].char);
                         }
                     }
                 }
             }
             _ => {
-                if len <= 2 {
-                    assert_eq!(len, 2);
+                if e <= 2 {
+                    assert_eq!(e, 2);
                     // 3 escapes
                     for Pair { char, .. } in self.pairs {
-                        ranges.push(*char);
+                        r.push(*char);
                     }
-                    ranges.push(FLAG);
+                    r.push(FLAG);
 
-                    return ranges;
+                    return r;
                 }
 
                 let (d, _) = d.split_at_mut(2);
                 d.sort_unstable_by_key(|d| d.0);
 
-                let first = d[0].0;
-                let last = d[1].0;
+                let f= d[0].0;
+                let l= d[1].0;
 
-                if first + 1 == last {
-                    if first == 0 {
-                        self.push_1_ranges_2_escape_at_first(&mut ranges, first, last, len);
+                if f + 1 == l {
+                    if f == 0 {
+                        self.push_1_ranges_2_equals_at_first(&mut r, f, l, e);
                     } else {
-                        if last + 1 == len {
-                            self.push_1_ranges_2_escape_at_last(&mut ranges, first, last, len);
+                        if l + 1 == e {
+                            self.push_1_ranges_2_equals_at_last(&mut r, f, l, e);
                         } else {
-                            self.push_2_ranges_1_escape(&mut ranges, first, last, len);
+                            self.push_2_ranges_1_equals(&mut r, f, l, e);
                         }
                     }
                 } else {
-                    if first == 0 {
-                        if last + 1 == len {
-                            self.push_1_ranges_2_escape_at_first_last(&mut ranges, first, last, len);
+                    if f == 0 {
+                        if l + 1 == e {
+                            self.push_1_ranges_2_equals_at_first_last(&mut r, f, l, e);
                         } else {
-                            self.push_2_ranges_1_escape_at_first(&mut ranges, first, last, len);
+                            self.push_2_ranges_1_equals_at_first(&mut r, f, l, e);
                         }
-                    } else if last + 1 == len {
-                        self.push_2_ranges_1_escape_at_last(&mut ranges, first, last, len);
+                    } else if l + 1 == e {
+                        self.push_2_ranges_1_equals_at_last(&mut r, f, l, e);
                     } else {
-                        self.push_3_ranges(&mut ranges, first, last, len);
+                        self.push_3_ranges(&mut r, f, l, e);
                     }
                 }
             }
         };
 
-        ranges
+        r
     }
 
     #[inline]
-    fn push_1_ranges_2_escape_at_first(&self, r: &mut Ranges, first: usize, last: usize, len: usize) {
-        r.push(self.pairs[last + 1].char);
-        r.push(self.pairs[len].char);
+    fn push_1_ranges_2_equals_at_first(&self, r: &mut Ranges, f: usize, l: usize, e: usize) {
+        r.push(self.pairs[l + 1].char);
+        r.push(self.pairs[e].char);
         r.push(self.pairs[0].char);
-        r.push(self.pairs[first + 1].char);
+        r.push(self.pairs[f + 1].char);
         r.push(FLAG);
     }
 
     #[inline]
-    fn push_1_ranges_2_escape_at_last(&self, r: &mut Ranges, first: usize, last: usize, len: usize) {
+    fn push_1_ranges_2_equals_at_last(&self, r: &mut Ranges, f: usize, l: usize, e: usize) {
         r.push(self.pairs[0].char);
-        r.push(self.pairs[first].char);
-        r.push(self.pairs[last].char);
-        r.push(self.pairs[len].char);
+        r.push(self.pairs[f].char);
+        r.push(self.pairs[l].char);
+        r.push(self.pairs[e].char);
         r.push(FLAG);
     }
 
     #[inline]
-    fn push_1_ranges_2_escape_at_first_last(&self, r: &mut Ranges, first: usize, last: usize, len: usize) {
-        r.push(self.pairs[first + 1].char);
-        r.push(self.pairs[last].char);
+    fn push_1_ranges_2_equals_at_first_last(&self, r: &mut Ranges, f: usize, l: usize, e: usize) {
+        r.push(self.pairs[f + 1].char);
+        r.push(self.pairs[l].char);
         r.push(self.pairs[0].char);
-        r.push(self.pairs[len].char);
+        r.push(self.pairs[e].char);
         r.push(FLAG);
     }
 
     #[inline]
-    fn push_2_ranges_1_escape(&self, r: &mut Ranges, first: usize, last: usize, len: usize) {
+    fn push_2_ranges_1_equals(&self, r: &mut Ranges, f: usize, l: usize, e: usize) {
         r.push(self.pairs[0].char);
-        r.push(self.pairs[first].char);
-        r.push(self.pairs[last + 1].char);
-        r.push(self.pairs[len].char);
-        r.push(self.pairs[first + 1].char);
+        r.push(self.pairs[f].char);
+        r.push(self.pairs[l + 1].char);
+        r.push(self.pairs[e].char);
+        r.push(self.pairs[f + 1].char);
     }
 
     #[inline]
-    fn push_2_ranges_1_escape_at_first(&self, r: &mut Ranges, first: usize, last: usize, len: usize) {
-        r.push(self.pairs[first + 1].char);
-        r.push(self.pairs[last].char);
-        r.push(self.pairs[last + 1].char);
-        r.push(self.pairs[len].char);
+    fn push_2_ranges_1_equals_at_first(&self, r: &mut Ranges, f: usize, l: usize, e: usize) {
+        r.push(self.pairs[f + 1].char);
+        r.push(self.pairs[l].char);
+        r.push(self.pairs[l + 1].char);
+        r.push(self.pairs[e].char);
         r.push(self.pairs[0].char);
     }
 
     #[inline]
-    fn push_2_ranges_1_escape_at_last(&self, r: &mut Ranges, first: usize, last: usize, len: usize) {
+    fn push_2_ranges_1_equals_at_last(&self, r: &mut Ranges, f: usize, l: usize, e: usize) {
         r.push(self.pairs[0].char);
-        r.push(self.pairs[first].char);
-        r.push(self.pairs[first + 1].char);
-        r.push(self.pairs[last].char);
-        r.push(self.pairs[len].char);
+        r.push(self.pairs[f].char);
+        r.push(self.pairs[f + 1].char);
+        r.push(self.pairs[l].char);
+        r.push(self.pairs[e].char);
     }
 
     #[inline]
-    fn push_3_ranges(&self, r: &mut Ranges, first: usize, last: usize, len: usize) {
+    fn push_3_ranges(&self, r: &mut Ranges, f: usize, l: usize, e: usize) {
         r.push(self.pairs[0].char);
-        r.push(self.pairs[first].char);
-        r.push(self.pairs[first + 1].char);
-        r.push(self.pairs[last].char);
-        r.push(self.pairs[last + 1].char);
-        r.push(self.pairs[len].char);
+        r.push(self.pairs[f].char);
+        r.push(self.pairs[f + 1].char);
+        r.push(self.pairs[l].char);
+        r.push(self.pairs[l + 1].char);
+        r.push(self.pairs[e].char);
     }
 }
 
