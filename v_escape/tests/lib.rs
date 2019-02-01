@@ -7,10 +7,33 @@ new_escape!(MyEscape, "60->foo");
 macro_rules! test {
     ($name:ident, $escapes:expr, $escaped:expr) => {
         use std::borrow::Cow;
+        use std::char::from_u32;
+
+        fn all_utf8_less(less: &str) -> String {
+            assert_eq!(less.len(), less.as_bytes().len());
+
+            let less = less.as_bytes();
+            let mut buf = String::with_capacity(204672 - less.len());
+
+            for i in 0..0x80u8 {
+                if !less.contains(&i) {
+                    buf.push(from_u32(i as u32).unwrap())
+                }
+            }
+            for i in 0x80..0xD800 {
+                buf.push(from_u32(i).unwrap());
+            }
+            for i in 0xE000..0x11000 {
+                buf.push(from_u32(i).unwrap());
+            }
+
+            buf
+        }
 
         let empty = "";
         let escapes = $escapes;
         let escaped = $escaped;
+        let utf8: &str = &all_utf8_less($escapes);
         let empty_heap = String::new();
         let short = "foobar";
         let string_long: &str = &short.repeat(1024);
@@ -22,6 +45,7 @@ macro_rules! test {
         assert_eq!(escape(&empty_heap).to_string(), empty);
         assert_eq!(escape(&cow).to_string(), escaped);
         assert_eq!(escape(&string).to_string(), escaped);
+        assert_eq!(escape(&utf8).to_string(), utf8);
         assert_eq!($name::from(string_long).to_string(), string_long);
         assert_eq!(
             $name::from(escapes.repeat(1024).as_ref()).to_string(),
@@ -96,6 +120,36 @@ macro_rules! test {
             )
             .to_string(),
             [string_long, &escaped.repeat(13)].join("").repeat(1024)
+        );
+        assert_eq!(
+            $name::from([utf8, escapes, short].join("").as_ref()).to_string(),
+            [utf8, escaped, short].join("")
+        );
+        assert_eq!(
+            $name::from([utf8, escapes, utf8].join("").as_ref()).to_string(),
+            [utf8, escaped, utf8].join("")
+        );
+        assert_eq!(
+            $name::from([&utf8.repeat(124), escapes, utf8].join("").as_ref()).to_string(),
+            [&utf8.repeat(124), escaped, utf8].join("")
+        );
+        assert_eq!(
+            $name::from(
+                [escapes, &utf8.repeat(124), escapes, utf8]
+                    .join("")
+                    .as_ref()
+            )
+            .to_string(),
+            [escaped, &utf8.repeat(124), escaped, utf8].join("")
+        );
+        assert_eq!(
+            $name::from(
+                [escapes, &utf8.repeat(124), escapes, utf8, escapes]
+                    .join("")
+                    .as_ref()
+            )
+            .to_string(),
+            [escaped, &utf8.repeat(124), escaped, utf8, escaped].join("")
         );
     };
 }
@@ -202,6 +256,32 @@ mod empty {
 
 #[cfg(target_arch = "x86_64")]
 mod test_avx {
+    mod numbers {
+        new_escape!(
+            MyE,
+            "#0->zero || #1->one || #2->two || #3->three || #4->four || #5->five || \
+             #6->six || #7->seven || #8->eight || #9->nine"
+        );
+
+        #[test]
+        fn test_escape_a() {
+            test!(
+                MyE,
+                "0123456789",
+                "zeroonetwothreefourfivesixseveneightnine"
+            );
+        }
+
+        #[test]
+        fn test_escape_b() {
+            test!(
+                MyE,
+                "0 1-2 3-4 56789",
+                "zero one-two three-four fivesixseveneightnine"
+            );
+        }
+    }
+
     mod a {
         // 3 ranges
         new_escape!(MyE, "65->a || 60->b || 61->c || 66->d || 80->e || 81->f");
