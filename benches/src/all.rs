@@ -5,19 +5,31 @@
 extern crate cfg_if;
 #[macro_use]
 extern crate criterion;
+#[macro_use]
+extern crate v_escape;
 use criterion::{Bencher, Benchmark, Criterion, Throughput};
 
 use std::str;
 
 #[cfg(feature = "with-compare")]
 mod askama_escape;
-#[cfg(all(v_escape_benches_nightly, feature = "with-rocket"))]
+#[cfg(all(
+    v_escape_benches_nightly,
+    feature = "with-rocket",
+    feature = "with-compare"
+))]
 mod rocket;
 #[cfg(feature = "with-compare")]
 #[path = "shell-escape.rs"]
 mod shell_escape;
-mod v_escape;
-mod v_shellescape;
+#[path = "v_escape.rs"]
+mod v;
+#[path = "v_htmlescape.rs"]
+mod v_html;
+#[path = "v_latexescape.rs"]
+mod v_latex;
+#[path = "v_shellescape.rs"]
+mod v_shell;
 
 static HUGE: &[u8] = include_bytes!("../data/sherlock-holmes-huge.txt");
 // escapable characters replaced by 'a'
@@ -85,7 +97,7 @@ macro_rules! groups {
 
 macro_rules! v_shellescape {
     ($c:ident) => {
-        use crate::v_shellescape::{unix_escaping as v_su, windows_escaping as v_sw};
+        use crate::v_shell::{unix_escaping as v_su, windows_escaping as v_sw};
         let group = "v_shellescape/unix/Escaping";
         groups!($c, group, v_su);
 
@@ -95,11 +107,20 @@ macro_rules! v_shellescape {
 }
 macro_rules! v_escape {
     ($c:ident) => {
-        v_shellescape!($c);
 
-        use crate::v_escape::escaping as v_e;
-        let group = "v_escape/Escaping";
+        use crate::v::escaping as v_e;
+        let group = "v_escape/ascii numbers RANGE/Escaping";
         groups!($c, group, v_e);
+
+        use crate::v_html::escaping as v_h;
+        let group = "v_htmlescape/Escaping";
+        groups!($c, group, v_h);
+
+        use crate::v_latex::escaping as v_l;
+        let group = "v_latexescape/Escaping";
+        groups!($c, group, v_l);
+
+        v_shellescape!($c);
     };
 }
 

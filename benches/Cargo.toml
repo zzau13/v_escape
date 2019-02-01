@@ -28,8 +28,10 @@ with-rocket = ["rocket"]
 [dependencies]
 cfg-if = "0.1"
 criterion = "0.2"
+v_escape = { version = "*", path = "../v_escape" }
 v_htmlescape = { version = "*", path = "../v_htmlescape" }
 v_shellescape = { version = "*", path = "../v_shellescape" }
+v_latexescape = { version = "*", path = "../v_latexescape" }
 askama_escape = {version = "0.1", optional = true }
 rocket = { version = "0.4", optional = true }
 shell-escape = { version = "0.1", optional = true }
