@@ -2,7 +2,7 @@
 #[doc(hidden)]
 macro_rules! _v_escape_loop_sse2  {
     (($len:ident, $ptr:ident, $start_ptr:ident, $end_ptr:ident, $start:ident, $fmt:ident, $bytes:ident)
-    ($T:ident, $Q:ident, $Q_LEN:ident) $($t:tt ,)+) => {
+    ($T:ident, $Q:ident, $Q_LEN:ident) $($t:tt, )+) => {
         use std::arch::x86_64::{__m128i, _mm_load_si128, _mm_loadu_si128, _mm_movemask_epi8};
 
         const M128_VECTOR_SIZE: usize = ::std::mem::size_of::<__m128i>();

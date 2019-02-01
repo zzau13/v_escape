@@ -273,9 +273,6 @@ macro_rules! _v_escape_cfg_escape {
     (false, $a:expr, $b:expr) => {
         _v_escape_cfg_escape!(fn);
     };
-    (true, false, false) => {
-        _v_escape_cfg_escape!(fn);
-    };
     (true, $($t:tt)+) => {
         #[cfg(all(target_arch = "x86_64", not(v_escape_nosimd)))]
         #[inline(always)]
