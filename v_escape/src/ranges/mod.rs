@@ -18,7 +18,7 @@ macro_rules! _v_escape_escape_ranges {
         #[target_feature(enable = "sse2")]
         _v_escape_escape_ranges!(impl _v_escape_loop_sse2 for $($t)+);
     };
-    (impl $loops:ident for ($T:ident, $Q:ident, $Q_LEN:ident) $($t:tt ,)+) => {
+    (impl $loops:ident for ($T:ident, $Q:ident, $Q_LEN:ident) $($t:tt)+) => {
         pub unsafe fn escape(bytes: &[u8], fmt: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
 
             let len = bytes.len();
@@ -52,7 +52,7 @@ macro_rules! _v_escape_escape_ranges {
                 };
             }
 
-            _v_escape_mask_bodies_escaping!($($t, )+);
+            _v_escape_mask_bodies_escaping!($($t)+);
 
             // Macro to write with mask
             macro_rules! write_mask {
@@ -88,7 +88,7 @@ macro_rules! _v_escape_escape_ranges {
 
             $loops!(
                 (len, ptr, start_ptr, end_ptr, start, fmt, bytes)
-                ($T, $Q, $Q_LEN) $($t ,)+
+                ($T, $Q, $Q_LEN) $($t)+
             );
 
             // Write since start to the end of the slice
