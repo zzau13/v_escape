@@ -27,4 +27,4 @@ bench = false
 proc-macro2 = "0.4"
 syn = "0.15"
 quote = "0.6"
-nom = "4.1"
+nom = "4.2"
