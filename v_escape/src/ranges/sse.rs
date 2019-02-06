@@ -34,7 +34,7 @@ macro_rules! _v_escape_loop_sse2  {
                 if align < M128_VECTOR_SIZE {
                     let mut mask = {
                         let a = _mm_loadu_si128($ptr as *const __m128i);
-                        _mm_movemask_epi8(masking_128!(a))
+                        _mm_movemask_epi8(masking!(a))
                     };
                     // Writing mask for unaligned elements
                     if mask != 0 {
@@ -49,7 +49,7 @@ macro_rules! _v_escape_loop_sse2  {
                 debug_assert_eq!(0, ($ptr as usize) % M128_VECTOR_SIZE);
                 let mut mask = {
                     let a = _mm_load_si128($ptr as *const __m128i);
-                    _mm_movemask_epi8(masking_128!(a))
+                    _mm_movemask_epi8(masking!(a))
                 };
 
                 if mask != 0 {
@@ -67,7 +67,7 @@ macro_rules! _v_escape_loop_sse2  {
 
                 let mut mask = {
                     let a = _mm_load_si128($ptr as *const __m128i);
-                    _mm_movemask_epi8(masking_128!(a))
+                    _mm_movemask_epi8(masking!(a))
                 };
 
                 if mask != 0 {

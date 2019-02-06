@@ -215,7 +215,7 @@ macro_rules! _v_escape_translations_128 {
         let v_b = _mm_set1_epi8(B);
         let v_c = _mm_set1_epi8(C);
 
-        macro_rules! masking_128 {
+        macro_rules! masking {
             ($a:expr) => {{
                 _mm_or_si128(
                     _mm_or_si128(_mm_cmpeq_epi8($a, v_b), _mm_cmpeq_epi8($a, v_c)),
@@ -234,7 +234,7 @@ macro_rules! _v_escape_translations_128 {
         let v_b = _mm_set1_epi8(B);
         let v_c = _mm_set1_epi8(C);
 
-        macro_rules! masking_128 {
+        macro_rules! masking {
             ($a:ident) => {{
                 _mm_or_si128(
                     _mm_or_si128(_mm_cmpeq_epi8($a, v_a), _mm_cmpeq_epi8($a, v_b)),
@@ -251,7 +251,7 @@ macro_rules! _v_escape_translations_128 {
         let v_a = _mm_set1_epi8(A);
         let v_b = _mm_set1_epi8(B);
 
-        macro_rules! masking_128 {
+        macro_rules! masking {
             ($a:ident) => {{
                 _mm_or_si128(_mm_cmpeq_epi8($a, v_a), _mm_cmpeq_epi8($a, v_b))
             }};
@@ -263,7 +263,7 @@ macro_rules! _v_escape_translations_128 {
 
         let v_a = _mm_set1_epi8(A);
 
-        macro_rules! masking_128 {
+        macro_rules! masking {
             ($a:ident) => {{
                 _mm_cmpeq_epi8($a, v_a)
             }};
@@ -285,7 +285,7 @@ macro_rules! _v_escape_translations_128 {
         let v_translation_c = _mm_set1_epi8(TRANSLATION_C);
         let v_below_c = _mm_set1_epi8(BELOW_C);
 
-        macro_rules! masking_128 {
+        macro_rules! masking {
             ($a:expr) => {{
                 _mm_or_si128(
                     _mm_or_si128(
@@ -313,7 +313,7 @@ macro_rules! _v_escape_translations_128 {
         let v_below_b = _mm_set1_epi8(BELOW_B);
         let v_c = _mm_set1_epi8(C);
 
-        macro_rules! masking_128 {
+        macro_rules! masking {
             ($a:expr) => {{
                 _mm_or_si128(
                     _mm_or_si128(
@@ -337,7 +337,7 @@ macro_rules! _v_escape_translations_128 {
         let v_translation_b = _mm_set1_epi8(TRANSLATION_B);
         let v_below_b = _mm_set1_epi8(BELOW_B);
 
-        macro_rules! masking_128 {
+        macro_rules! masking {
             ($a:expr) => {{
                 _mm_or_si128(
                     _mm_cmpgt_epi8(_mm_add_epi8($a, v_translation_a), v_below_a),
@@ -358,7 +358,7 @@ macro_rules! _v_escape_translations_128 {
         let v_below_a = _mm_set1_epi8(BELOW_A);
         let v_b = _mm_set1_epi8(B);
 
-        macro_rules! masking_128 {
+        macro_rules! masking {
             ($a:expr) => {{
                 _mm_or_si128(
                     _mm_cmpgt_epi8(_mm_add_epi8($a, v_translation_a), v_below_a),
@@ -375,7 +375,7 @@ macro_rules! _v_escape_translations_128 {
         let v_translation_a = _mm_set1_epi8(TRANSLATION_A);
         let v_below_a = _mm_set1_epi8(BELOW_A);
 
-        macro_rules! masking_128 {
+        macro_rules! masking {
             ($a:expr) => {{
                 _mm_cmpgt_epi8(_mm_add_epi8($a, v_translation_a), v_below_a)
             }};
