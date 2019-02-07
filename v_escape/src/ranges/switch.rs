@@ -4,7 +4,7 @@
 ///
 /// Defining character interval from ASCII table to create bit masks from slice to be escaped
 /// overflow above in addition
-macro_rules! _v_escape_translations {
+macro_rules! _v_escape_translations_256 {
     ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
         use std::arch::x86_64::{
             _mm256_add_epi8, _mm256_cmpeq_epi8, _mm256_cmpgt_epi8, _mm256_or_si256,
@@ -389,7 +389,9 @@ macro_rules! _v_escape_translations_128 {
 ///
 /// Defining exact match or false positive
 /// ## The following macros must be defined
+///
 /// * `mask_bodies_callback($callback:ident)`
+///     select between `mask_bodies`
 ///
 macro_rules! _v_escape_mask_bodies_escaping {
     ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
@@ -432,33 +434,30 @@ macro_rules! _v_escape_mask_bodies_escaping {
 /// Generate mask bodies callback
 ///
 /// Defining exact match or false positive
+///
 /// ## The following macros must be defined
+///
+///  * `_v_escape_switch_main_loop!(impl [024] for ($len:ident, $ptr:ident, $end_ptr:ident)`
+///    switch between main loops in avx
 ///
 macro_rules! _v_escape_avx_main_loop {
     (($len:ident, $ptr:ident, $end_ptr:ident) $($t:tt, )+) => {
         macro_rules! _inside {
             ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
-                _v_escape_switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));
-            };
+                _v_escape_switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
             ($fa:expr, $fb:expr, $fc:expr, 128, ) => {
-                _v_escape_switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));
-            };
+                _v_escape_switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
             ($fa:expr, $fb:expr, 128, ) => {
-                _v_escape_switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));
-            };
+                _v_escape_switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
             ($fa:expr, 128, ) => {
-                _v_escape_switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));
-            };
+                _v_escape_switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
             // TODO: https://github.com/rust-lang-nursery/stdsimd/issues/674
             ($la:expr, $ra:expr, $lb:expr, $rb:expr, $lc:expr, $rc:expr, ) => {
-                _v_escape_switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));
-            };
+                _v_escape_switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
             ($la:expr, $ra:expr, $lb:expr, $rb:expr, $c:expr, ) => {
-                _v_escape_switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));
-            };
+                _v_escape_switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
             ($la:expr, $ra:expr, $lb:expr, $rb:expr, ) => {
-                _v_escape_switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));
-            };
+                _v_escape_switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
             ($la:expr, $ra:expr, $b:expr, ) => {
                 _v_escape_switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));
             };

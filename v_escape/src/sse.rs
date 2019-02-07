@@ -24,7 +24,7 @@ macro_rules! _v_escape_escape_sse {
                     if $mask != 0 {
                         // Reference to the start of mask
                         let at = _v_escape_sub!(ptr, start_ptr);
-                        // Get to the first possible escape character avoiding zeros
+                        // Get to the first escape character avoiding zeros
                         let mut cur = $mask.trailing_zeros() as usize;
 
                         loop {
@@ -35,7 +35,7 @@ macro_rules! _v_escape_escape_sse {
                             // Create binary vector of all zeros except
                             // position `$curr` and xor operation with `$mask`
                             $mask ^= 1 << cur;
-                            // Test vs Check  if `$mask` is empty
+                            // Check if `$mask` is empty
                             if $mask == 0 {
                                 break;
                             }

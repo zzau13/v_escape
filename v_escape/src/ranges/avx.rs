@@ -15,7 +15,7 @@ macro_rules! _v_escape_loop_avx2  {
                 ($T, $Q, $Q_LEN) $($t ,)+
             );
         } else {
-            _v_escape_translations!($($t, )+);
+            _v_escape_translations_256!($($t, )+);
 
             // Aligning pointer by using `_mm256_loadu_si256` on unaligned bytes.
             {
