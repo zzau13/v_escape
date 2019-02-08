@@ -30,7 +30,7 @@ cfg_if! {
             LateXEscape,
             "35->\\# || 36->\\$ || 37->\\% || 38->\\& || 92->\\textbackslash{} || \
             94->\\textasciicircum{} || 95->\\_ || 123->\\{ || 125->\\} || 126->\\textasciitilde{}",
-            ranges = true, simd = true, avx = true
+            ranges = true, simd = true, avx = false
         );
     } else if #[cfg(all(v_latexescape_simd, v_latexescape_sse))] {
         new_escape!(
