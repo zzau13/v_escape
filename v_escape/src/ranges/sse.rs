@@ -1,28 +1,21 @@
+/// Generate ranges sse2 implementation
+///
+/// ## Following macros must be defined
+/// - `fallback!()`
+/// - `masking!($a: __m128i) -> __m128i`
+/// - `write_mask!(mut $mask: {integer}, $ptr: *const u8)`
+/// - `write_forward(mut $mask: {integer}, $until: usize)`
 #[macro_export]
 #[doc(hidden)]
 macro_rules! _v_escape_loop_sse2  {
-    (($len:ident, $ptr:ident, $start_ptr:ident, $end_ptr:ident, $start:ident, $fmt:ident, $bytes:ident)
-    ($T:ident, $Q:ident, $Q_LEN:ident) $($t:tt, )+) => {
+    (($len:ident, $ptr:ident, $start_ptr:ident, $end_ptr:ident) $($t:tt, )+) => {
         use std::arch::x86_64::{__m128i, _mm_load_si128, _mm_loadu_si128, _mm_movemask_epi8};
 
         const M128_VECTOR_SIZE: usize = ::std::mem::size_of::<__m128i>();
         const M128_VECTOR_ALIGN: usize = M128_VECTOR_SIZE - 1;
 
         if $len < M128_VECTOR_SIZE {
-             while $ptr < $end_ptr {
-                 _v_escape_bodies!(
-                    $T,
-                    $Q,
-                    $Q_LEN,
-                    _v_escape_sub!($ptr, $start_ptr),
-                    *$ptr,
-                    $start,
-                    $fmt,
-                    $bytes,
-                    _v_escape_mask_body
-                );
-                $ptr = $ptr.offset(1);
-             }
+            fallback!();
         } else {
             _v_escape_translations_128!($($t, )+);
 

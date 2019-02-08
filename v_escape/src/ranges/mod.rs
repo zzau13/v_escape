@@ -86,10 +86,26 @@ macro_rules! _v_escape_escape_ranges {
                 }};
             }
 
-            $loops!(
-                (len, ptr, start_ptr, end_ptr, start, fmt, bytes)
-                ($T, $Q, $Q_LEN) $($t)+
-            );
+            macro_rules! fallback {
+                () => {
+                    while ptr < end_ptr {
+                        _v_escape_bodies!(
+                            $T,
+                            $Q,
+                            $Q_LEN,
+                            _v_escape_sub!(ptr, start_ptr),
+                            *ptr,
+                            start,
+                            fmt,
+                            bytes,
+                            _v_escape_mask_body
+                        );
+                        ptr = ptr.offset(1);
+                    }
+                };
+            }
+
+            $loops!((len, ptr, start_ptr, end_ptr) $($t)+);
 
             // Write since start to the end of the slice
             debug_assert!(start <= len);
