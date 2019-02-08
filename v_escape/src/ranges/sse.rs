@@ -2,12 +2,14 @@
 ///
 /// ## Following macros must be defined
 /// - `fallback!()`
-/// - `masking!($a: __m128i) -> __m128i`
+///     when length is less than 16
 /// - `write_mask!(mut $mask: {integer}, $ptr: *const u8)`
+///     when bit mask is non equal 0
 /// - `write_forward(mut $mask: {integer}, $until: usize)`
+///     when bit mask is non equal 0  and valid bits until
+///
 #[macro_export]
-#[doc(hidden)]
-macro_rules! _v_escape_loop_sse2  {
+macro_rules! loop_range_switch_sse2  {
     (($len:ident, $ptr:ident, $start_ptr:ident, $end_ptr:ident) $($t:tt, )+) => {
         use std::arch::x86_64::{__m128i, _mm_load_si128, _mm_loadu_si128, _mm_movemask_epi8};
 

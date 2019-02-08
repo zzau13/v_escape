@@ -11,12 +11,12 @@ macro_rules! _v_escape_escape_ranges {
     (avx2 $($t:tt)+) => {
         #[inline]
         #[target_feature(enable = "avx2")]
-        _v_escape_escape_ranges!(impl _v_escape_loop_avx2 for $($t)+);
+        _v_escape_escape_ranges!(impl loop_range_switch_avx2 for $($t)+);
     };
     (sse2 $($t:tt)+) => {
         #[inline]
         #[target_feature(enable = "sse2")]
-        _v_escape_escape_ranges!(impl _v_escape_loop_sse2 for $($t)+);
+        _v_escape_escape_ranges!(impl loop_range_switch_sse2 for $($t)+);
     };
     (impl $loops:ident for ($T:ident, $Q:ident, $Q_LEN:ident) $($t:tt)+) => {
         pub unsafe fn escape(bytes: &[u8], fmt: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {

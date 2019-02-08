@@ -2,12 +2,14 @@
 ///
 /// ## Following macros must be defined
 /// - `fallback!()`
-/// - `masking!($a: __m128i) -> __m128i`
+///     when length is less than 32
 /// - `write_mask!(mut $mask: {integer}, $ptr: *const u8)`
+///     when bit mask is non equal 0
 /// - `write_forward(mut $mask: {integer}, $until: usize)`
+///     when bit mask is non equal 0  and valid bits until
+///
 #[macro_export]
-#[doc(hidden)]
-macro_rules! _v_escape_loop_avx2  {
+macro_rules! loop_range_switch_avx2  {
     (($len:ident, $ptr:ident, $start_ptr:ident, $end_ptr:ident) $($t:tt, )+) => {
         use std::arch::x86_64::{
             __m256i, _mm256_load_si256, _mm256_loadu_si256, _mm256_movemask_epi8, _mm256_or_si256,
@@ -16,7 +18,7 @@ macro_rules! _v_escape_loop_avx2  {
         const M256_VECTOR_SIZE: usize = ::std::mem::size_of::<__m256i>();
 
         if $len < M256_VECTOR_SIZE {
-            _v_escape_loop_sse2!(($len, $ptr, $start_ptr, $end_ptr) $($t, )+);
+            loop_range_switch_sse2!(($len, $ptr, $start_ptr, $end_ptr) $($t, )+);
         } else {
             _v_escape_translations_256!($($t, )+);
 

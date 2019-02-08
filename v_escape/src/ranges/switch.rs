@@ -519,9 +519,9 @@ macro_rules! _v_escape_switch_main_loop {
         }
     };
     (impl 4 for ($len:ident, $ptr:ident, $end_ptr:ident)) => {
-        // Process all aligned slices with at least one set of $length `LOOP_SIZE`
         const _ONSWITCH_M256_VECTOR_SIZE: usize = ::std::mem::size_of::<__m256i>();
         const LOOP_SIZE: usize = 4 * _ONSWITCH_M256_VECTOR_SIZE;
+
         if LOOP_SIZE <= $len {
             while $ptr <= $end_ptr.sub(LOOP_SIZE) {
                 debug_assert_eq!(0, ($ptr as usize) % _ONSWITCH_M256_VECTOR_SIZE);
