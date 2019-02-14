@@ -27,16 +27,10 @@
 //! has to be added to file `build.rs`.
 //!
 //! ```ignore
-//! use version_check::is_min_version;
+//! use v_escape::check_version;
 //!
 //! fn main() {
-//!     enable_simd_optimizations();
-//! }
-//!
-//! fn enable_simd_optimizations() {
-//!     if !is_min_version("1.27.0").map_or(false, |(yes, _)| yes) {
-//!         println!("cargo:rustc-cfg=v_escape_nosimd");
-//!     }
+//!     check_version();
 //! }
 //! ```
 //!
@@ -150,6 +144,9 @@ mod scalar;
 mod sse;
 #[macro_use]
 mod ranges;
+mod build_check;
+
+pub use self::build_check::check_version;
 
 #[macro_export]
 /// Generates struct `$name` with escaping functionality at `fmt`
@@ -318,7 +315,7 @@ macro_rules! _v_escape_cfg_escape {
         }
     };
     (if true, true) => {
-        if is_x86_feature_detected!("avx2") {
+        if cfg!(not(v_escape_noavx)) && is_x86_feature_detected!("avx2") {
             ranges::avx::escape as usize
         } else if is_x86_feature_detected!("sse2") {
             ranges::sse::escape as usize

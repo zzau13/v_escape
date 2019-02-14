@@ -5,7 +5,6 @@ rust:
   - nightly
 env:
   -
-  - STAGE=release
   - CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_AVX=
     CARGO_CFG_LATEXESCAPE_DISABLE_AUTO_AVX=
   - CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_SIMD=
@@ -14,7 +13,6 @@ matrix:
   allow_failures:
     - rust: nightly
     - env: STAGE=benches
-    - env: STAGE=release
   include:
     - rust: stable
       env: STAGE=benches
@@ -44,27 +42,6 @@ script:
     if [[ -z "$STAGE" ]]; then
     cargo build --release --verbose
     cargo test
-    fi
-  - |
-    if [[ -z "$STAGE" ]]; then
-    cd v_htmlescape
-    cargo test --release --verbose
-    cd ..
-    fi
-  - |
-    if [[ -z "$STAGE" ]]; then
-    cd v_latexescape
-    cargo test --release --verbose
-    cd ..
-    fi
-  - |
-    if [[ -z "$STAGE" ]]; then
-    cd v_shellescape
-    cargo test --release --verbose
-    cd ..
-    fi
-  - |
-    if [[ "$STAGE" == "release" ]]; then
     cargo test --release --verbose
     fi
   - if [[ "${TRAVIS_RUST_VERSION}" == "stable" ]]; then

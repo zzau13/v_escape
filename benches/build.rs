@@ -1,5 +1,6 @@
-use version_check::{is_min_version, is_nightly};
 use std::env;
+use v_escape::check_version;
+use version_check::is_nightly;
 
 fn main() {
     enable_nightly();
@@ -13,10 +14,8 @@ fn enable_nightly() {
 }
 
 fn enable_simd_optimizations() {
-    if is_env_set("CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_SIMD")
-        || !is_min_version("1.27.0").map_or(false, |(yes, _)| yes)
-    {
-        println!("cargo:rustc-cfg=v_escape_nosimd");
+    check_version();
+    if is_env_set("CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_SIMD") {
         return;
     }
 
