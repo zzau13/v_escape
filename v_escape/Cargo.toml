@@ -1,6 +1,6 @@
 [package]
 name = "v_escape"
-version = "0.6.0"
+version = "0.7.0"
 authors = ["Rust-iendo Barcelona <riendocontributions@gmail.com>"]
 description = "The simd optimized escaping code"
 documentation = "https://docs.rs/v_escape"
@@ -25,6 +25,7 @@ bench = false
 
 [dependencies]
 v_escape_derive = { version = "0.5", path = "../v_escape_derive" }
+version_check = "0.1"
 
 [build-dependencies]
 version_check = "0.1"

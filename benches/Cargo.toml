@@ -37,4 +37,5 @@ rocket = { version = "0.4", optional = true }
 shell-escape = { version = "0.1", optional = true }
 
 [build-dependencies]
+v_escape = { version = "*", path = "../v_escape" }
 version_check = "0.1"

@@ -26,8 +26,6 @@ cfg_if! {
     }
 }
 
-
-
 pub fn escaping(corpus: &'static [u8]) -> impl FnMut(&mut Bencher) + 'static {
     move |b: &mut Bencher| {
         let e = MyEscape::new(corpus);
