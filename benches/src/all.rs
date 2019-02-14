@@ -107,10 +107,6 @@ macro_rules! v_shellescape {
 }
 macro_rules! v_escape {
     ($c:ident) => {
-        use crate::v::escaping as v_e;
-        let group = "v_escape/ascii numbers RANGE/Escaping";
-        groups!($c, group, v_e);
-
         use crate::v_html::escaping as v_h;
         let group = "v_htmlescape/Escaping";
         groups!($c, group, v_h);
@@ -120,6 +116,10 @@ macro_rules! v_escape {
         groups!($c, group, v_l);
 
         v_shellescape!($c);
+
+        use crate::v::escaping as v_e;
+        let group = "v_escape/ascii numbers RANGE/Escaping";
+        groups!($c, group, v_e);
     };
 }
 
