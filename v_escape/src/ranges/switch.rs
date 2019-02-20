@@ -397,13 +397,11 @@ macro_rules! _v_escape_mask_bodies_escaping {
     ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
         mask_bodies_callback!(_v_escape_bodies);
     };
-    // TODO: exact
     ($fa:expr, $fb:expr, $fc:expr, 128, ) => {
-        mask_bodies_callback!(_v_escape_bodies);
+        mask_bodies_callback!(_v_escape_bodies_exact);
     };
-    // TODO: exact
     ($fa:expr, $fb:expr, 128, ) => {
-        mask_bodies_callback!(_v_escape_bodies);
+        mask_bodies_callback!(_v_escape_bodies_exact);
     };
     // TODO: exact
     ($fa:expr, 128, ) => {
@@ -415,17 +413,14 @@ macro_rules! _v_escape_mask_bodies_escaping {
     ($la:expr, $ra:expr, $lb:expr, $rb:expr, $c:expr, ) => {
         mask_bodies_callback!(_v_escape_bodies);
     };
-    // TODO: exact
     ($la:expr, $ra:expr, $lb:expr, $rb:expr, ) => {
-        mask_bodies_callback!(_v_escape_bodies);
+        mask_bodies_callback!(_v_escape_bodies_exact);
     };
-    // TODO: exact
     ($la:expr, $ra:expr, $b:expr, ) => {
-        mask_bodies_callback!(_v_escape_bodies);
+        mask_bodies_callback!(_v_escape_bodies_exact);
     };
-    // TODO: exact
     ($la:expr, $ra:expr, ) => {
-        mask_bodies_callback!(_v_escape_bodies);
+        mask_bodies_callback!(_v_escape_bodies_exact);
     };
 }
 
