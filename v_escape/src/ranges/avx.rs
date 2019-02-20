@@ -32,7 +32,9 @@ macro_rules! loop_range_switch_avx2  {
                         _mm256_movemask_epi8(masking!(a))
                     };
 
-                    write_forward!(mask, align);
+                    if mask != 0 {
+                        write_forward!(mask, align);
+                    }
                     // Aligning pointer
                     $ptr = $ptr.add(align);
                 }
