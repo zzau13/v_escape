@@ -86,24 +86,52 @@ macro_rules! _v_escape_escape_ranges {
                 }};
             }
 
-            macro_rules! fallback {
-                () => {
-                    while ptr < end_ptr {
-                        _v_escape_bodies!(
-                            $T,
-                            $Q,
-                            $Q_LEN,
-                            _v_escape_sub!(ptr, start_ptr),
-                            *ptr,
-                            start,
-                            fmt,
-                            bytes,
-                            _v_escape_mask_body
-                        );
-                        ptr = ptr.offset(1);
+            macro_rules! fallback_callback {
+                (default) => {
+                    macro_rules! fallback {
+                        () => {
+                            while ptr < end_ptr {
+                                _v_escape_bodies!(
+                                    $T,
+                                    $Q,
+                                    $Q_LEN,
+                                    _v_escape_sub!(ptr, start_ptr),
+                                    *ptr,
+                                    start,
+                                    fmt,
+                                    bytes,
+                                    _v_escape_mask_body
+                                );
+                                ptr = ptr.offset(1);
+                            }
+                        };
+                    }
+                };
+                (one) => {
+                    macro_rules! fallback {
+                        () => {
+                            while ptr < end_ptr {
+                                if *ptr == $T {
+                                    _v_escape_bodies_exact_one!(
+                                        $T,
+                                        $Q,
+                                        $Q_LEN,
+                                        _v_escape_sub!(ptr, start_ptr),
+                                        *ptr,
+                                        start,
+                                        fmt,
+                                        bytes,
+                                        _v_escape_mask_body
+                                    );
+                                }
+                                ptr = ptr.offset(1);
+                            }
+                        };
                     }
                 };
             }
+
+            _v_escape_fallback_escaping!($($t)+);
 
             $loops!((len, ptr, start_ptr, end_ptr) $($t)+);
 
