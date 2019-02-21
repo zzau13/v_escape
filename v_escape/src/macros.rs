@@ -92,6 +92,17 @@ macro_rules! _v_escape_bodies_exact {
 
 #[macro_export]
 #[doc(hidden)]
+/// Escape bodies exact one
+///
+macro_rules! _v_escape_bodies_exact_one {
+    ($char:expr, $quote:expr, $_non:expr, $i:expr, $b:expr, $start:ident, $fmt:ident, $bytes:ident, $callback:ident) => {
+        debug_assert_eq!($char, $b);
+        $callback!($i, $start, $fmt, $bytes, $quote);
+    };
+}
+
+#[macro_export]
+#[doc(hidden)]
 /// https://github.com/seanmonstar/httparse/blob/master/src/macros.rs#L33
 macro_rules! byte_map {
     ($($flag:expr,)*) => ([

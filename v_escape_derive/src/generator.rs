@@ -43,28 +43,37 @@ impl<'a> Generator<'a> {
 
     fn write_static_table(&self, buf: &mut Buffer) {
         let len = self.pairs.len();
+        let quote = str::from_utf8(self.pairs[0].quote).unwrap();
 
-        buf.write("static V_ESCAPE_TABLE: [u8; 256] = [");
-        for i in 0..=255 as u8 {
-            let n = self
+        if len == 1 {
+            buf.writeln(&format!(
+                "const V_ESCAPE_CHAR: u8 = {};",
+                self.pairs[0].char
+            ));
+            buf.writeln(&format!("static V_ESCAPE_QUOTES: &str = {:#?};", quote));
+        } else {
+            buf.write("static V_ESCAPE_TABLE: [u8; 256] = [");
+            for i in 0..=255 as u8 {
+                let n = self
+                    .pairs
+                    .binary_search_by(|s| s.char.cmp(&i))
+                    .unwrap_or(len);
+                buf.write(&format!("{}, ", n))
+            }
+            buf.writeln("];");
+
+            let quotes: Vec<&str> = self
                 .pairs
-                .binary_search_by(|s| s.char.cmp(&i))
-                .unwrap_or(len);
-            buf.write(&format!("{}, ", n))
+                .iter()
+                .map(|s| str::from_utf8(s.quote).unwrap())
+                .collect();
+            buf.writeln(&format!(
+                "static V_ESCAPE_QUOTES: [&str; {}] = {:#?};",
+                len, quotes
+            ));
         }
-        buf.writeln("];");
 
-        let quotes: Vec<&str> = self
-            .pairs
-            .iter()
-            .map(|s| str::from_utf8(s.quote).expect("valid utf-8 quote"))
-            .collect();
-        buf.writeln(&format!(
-            "static V_ESCAPE_QUOTES: [&str; {}] = {:#?};",
-            len, quotes
-        ));
-
-        buf.writeln(&format!("const V_ESCAPE_QUOTES_LEN: usize = {};", len));
+        buf.writeln(&format!("const V_ESCAPE_LEN: usize = {};", len));
     }
 
     fn write_functions(&self, buf: &mut Buffer) {
@@ -79,29 +88,56 @@ impl<'a> Generator<'a> {
     }
 
     fn write_scalar(&self, buf: &mut Buffer) {
-        let code = quote!(
-            mod scalar {
-                use super::*;
-                _v_escape_escape_scalar!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_QUOTES_LEN);
-            }
-        );
+        let code = if self.pairs.len() == 1 {
+            quote!(
+                mod scalar {
+                    use super::*;
+                    _v_escape_escape_scalar!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
+                }
+            )
+        } else {
+            quote!(
+                mod scalar {
+                    use super::*;
+                    _v_escape_escape_scalar!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
+                }
+            )
+        };
         buf.writeln(&code.to_string());
     }
 
     fn write_eq(&self, buf: &mut Buffer) {
-        buf.writeln(r#"#[cfg(all(target_arch = "x86_64", not(v_escape_nosimd)))]"#);
+        let len = self.pairs.len();
+        assert!(
+            len <= 16,
+            "The sub-attribute `sse`, true by default, can process a maximum of 16 \
+             Pairs\nsse optimizations has to be deactivated using sub-attribute \
+             \"sse = false\""
+        );
+        buf.writeln(
+            r#"#[cfg(all(target_arch = "x86_64", not(all(target_os = "windows", v_escape_nosimd))))]"#,
+        );
         buf.writeln("mod sse {");
-        buf.writeln("use super::*;");
 
-        let mut chars: Vec<u8> = self.pairs.iter().map(|s| s.char).collect();
-        assert!(chars.len() <= 16);
-        let r = 16 - chars.len();
-        chars.extend(vec![0; r]);
-        let chars: &[u8] = &chars;
+        if len == 1 {
+            buf.writeln("mod ranges {");
+            buf.writeln("use super::super::*;");
+            buf.writeln(&format!(
+                "_v_escape_escape_ranges!((V_ESCAPE_CHAR, V_ESCAPE_QUOTES, V_ESCAPE_LEN) {}, 128, );",
+                self.pairs[0].char
+            ));
+            buf.writeln("}");
+        } else {
+            buf.writeln("use super::*;");
+            let mut chars: Vec<u8> = self.pairs.iter().map(|s| s.char).collect();
+            let r = 16 - chars.len();
+            chars.extend(vec![0; r]);
+            let chars: &[u8] = &chars;
 
-        buf.write(" _v_escape_escape_sse!((V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_QUOTES_LEN) ");
-        self.write_macro_tt(buf, chars);
-        buf.writeln(");");
+            buf.write(" _v_escape_escape_sse!((V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN) ");
+            self.write_macro_tt(buf, chars.iter());
+            buf.writeln(");");
+        }
 
         buf.writeln("}");
     }
@@ -121,7 +157,11 @@ impl<'a> Generator<'a> {
             buf.writeln("use super::super::*;");
             buf.write("_v_escape_escape_ranges!(");
             buf.write(i);
-            buf.write("2 (V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_QUOTES_LEN) ");
+            if self.pairs.len() == 1 {
+                buf.write("2 (V_ESCAPE_CHAR, V_ESCAPE_QUOTES, V_ESCAPE_LEN) ");
+            } else {
+                buf.write("2 (V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN) ");
+            }
             self.write_macro_tt(buf, ranges);
             buf.writeln(");");
             buf.writeln("}");
@@ -132,7 +172,9 @@ impl<'a> Generator<'a> {
     fn write_cfg_if(&self, buf: &mut Buffer) {
         buf.writeln(&format!(
             "_v_escape_cfg_escape!({}, {}, {});",
-            self.simd, self.ranges, self.avx
+            self.simd,
+            self.ranges || self.pairs.len() == 1,
+            self.avx && self.ranges
         ));
     }
 

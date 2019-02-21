@@ -385,6 +385,46 @@ macro_rules! _v_escape_translations_128 {
 
 #[macro_export]
 #[doc(hidden)]
+/// Generate fallback
+///
+/// Defining exact match or false positive
+/// ## The following macros must be defined
+///
+/// * `fallback_callback($t:tt)`
+///     select between `fallback`
+///
+macro_rules! _v_escape_fallback_escaping {
+    ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
+        fallback_callback!(default);
+    };
+    ($fa:expr, $fb:expr, $fc:expr, 128, ) => {
+        fallback_callback!(default);
+    };
+    ($fa:expr, $fb:expr, 128, ) => {
+        fallback_callback!(default);
+    };
+    ($fa:expr, 128, ) => {
+        fallback_callback!(one);
+    };
+    ($la:expr, $ra:expr, $lb:expr, $rb:expr, $lc:expr, $rc:expr, ) => {
+        fallback_callback!(default);
+    };
+    ($la:expr, $ra:expr, $lb:expr, $rb:expr, $c:expr, ) => {
+        fallback_callback!(default);
+    };
+    ($la:expr, $ra:expr, $lb:expr, $rb:expr, ) => {
+        fallback_callback!(default);
+    };
+    ($la:expr, $ra:expr, $b:expr, ) => {
+        fallback_callback!(default);
+    };
+    ($la:expr, $ra:expr, ) => {
+        fallback_callback!(default);
+    };
+}
+
+#[macro_export]
+#[doc(hidden)]
 /// Generate mask bodies callback
 ///
 /// Defining exact match or false positive
@@ -403,9 +443,8 @@ macro_rules! _v_escape_mask_bodies_escaping {
     ($fa:expr, $fb:expr, 128, ) => {
         mask_bodies_callback!(_v_escape_bodies_exact);
     };
-    // TODO: exact
     ($fa:expr, 128, ) => {
-        mask_bodies_callback!(_v_escape_bodies);
+        mask_bodies_callback!(_v_escape_bodies_exact_one);
     };
     ($la:expr, $ra:expr, $lb:expr, $rb:expr, $lc:expr, $rc:expr, ) => {
         mask_bodies_callback!(_v_escape_bodies);
