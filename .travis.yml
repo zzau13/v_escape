@@ -17,19 +17,9 @@ matrix:
     - rust: stable
       env: STAGE=benches
     - rust: nightly
-      env: STAGE=coverage
-    - rust: nightly
       env: STAGE=benches
     - rust: nightly
-      env:
-        - STAGE=benches
-        - CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_AVX=
-        - CARGO_CFG_LATEXESCAPE_DISABLE_AUTO_AVX=
-    - rust: nightly
-      env:
-        - STAGE=benches
-        - CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_SIMD=
-        - CARGO_CFG_LATEXESCAPE_DISABLE_AUTO_SIMD=
+      env: STAGE=coverage
 cache: cargo
 
 before_script:
@@ -59,7 +49,7 @@ after_success:
   - |
     if [[ "$STAGE" == "benches" ]] && [[ "$TRAVIS_RUST_VERSION" == "stable" ]]; then
     cd benches
-    cargo bench --features with-compare
+    cargo bench
     fi
   - |
     if [[ "$STAGE" == "benches" ]] && [[ "$TRAVIS_RUST_VERSION" == "nightly" ]]; then
