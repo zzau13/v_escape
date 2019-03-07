@@ -12,10 +12,9 @@ repository = "https://gitlab.com/r-iendo/v_escape"
 workspace = ".."
 
 [badges]
-appveyor = { repository = "botika/v_htmlescape" }
+gitlab = { repository = "r-iendo/v_escape" }
+appveyor = { repository = "botika/v_escape" }
 maintenance = { status = "actively-developed" }
-travis-ci = { repository =  "rust-iendo/v_htmlescape", branch = "master" }
-codecov = { repository = "rust-iendo/v_htmlescape", branch = "master", service = "github" }
 
 [lib]
 proc-macro = true
