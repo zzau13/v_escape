@@ -1,15 +1,15 @@
 [package]
 name = "v_escape_derive"
-version = "0.5.1"
+version = "0.5.2"
 authors = ["Rust-iendo Barcelona <riendocontributions@gmail.com>"]
 description = "Procedural macro package for v_escape"
 documentation = "https://docs.rs/v_escape_derive"
-keywords = ["derive", "escaping", "simd"]
-homepage = "https://github.com/rust-iendo/v_htmlescape"
-repository = "https://github.com/rust-iendo/v_htmlescape"
-license = "MIT/Apache-2.0"
-workspace = ".."
 edition = "2018"
+keywords = ["derive", "escaping", "simd"]
+license = "MIT/Apache-2.0"
+readme = "../README.md"
+repository = "https://gitlab.com/r-iendo/v_escape"
+workspace = ".."
 
 [badges]
 appveyor = { repository = "botika/v_htmlescape" }

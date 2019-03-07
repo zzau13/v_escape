@@ -4,10 +4,10 @@ name = "v_htmlescape-bench"
 version = "0.0.1"
 authors = ["Rust-iendo Barcelona <riendocontributions@gmail.com>"]
 description = "Criterion benchmark suite for v_htmlescape."
-homepage = "https://github.com/rust-iendo/v_htmlescape"
-repository = "https://github.com/rust-iendo/v_htmlescape"
-license = "MIT/Apache-2.0"
 edition = "2018"
+license = "MIT/Apache-2.0"
+publish = false
+repository = "https://gitlab.com/r-iendo/v_escape"
 
 [workspace]
 members = ["."]
