@@ -13,7 +13,6 @@ workspace = ".."
 
 [badges]
 gitlab = { repository = "r-iendo/v_escape" }
-appveyor = { repository = "botika/v_escape" }
 maintenance = { status = "actively-developed" }
 
 [lib]
