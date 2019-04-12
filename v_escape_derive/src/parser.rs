@@ -85,7 +85,7 @@ pub fn parse(src: &str) -> Vec<Pair> {
                 "Number has to be between 0 and 127.\nOverflow at character:\n\n{:?}",
                 err
             ),
-            ERR_UTF8 => panic!("Need valid utf-8 characters.\n\n{:?}",),
+            ERR_UTF8 => panic!("Need valid utf-8 characters.\n\n{:?}", err),
             _ => panic!("Unable to parse pairs parameter:\n\n{:?}", err),
         },
         Err(nom::Err::Incomplete(err)) => panic!("Parsing incomplete: {:?}", err),
