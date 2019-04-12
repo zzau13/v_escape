@@ -32,18 +32,14 @@ macro_rules! is_digit {
     ($name:ident, $base:expr) => {
         fn $name(s: Input) -> Result<u8, nom::Err<Input>> {
             if let Ok(n) = i8::from_str_radix(
-                str::from_utf8(&s.as_bytes()).map_err(|_| {
-                    nom::Err::Failure(error_position!(s, nom::ErrorKind::Custom(0)))
-                })?,
+                str::from_utf8(&s.as_bytes())
+                    .map_err(|_| nom::Err::Failure(error_position!(s, ERR_UTF8)))?,
                 $base,
             ) {
                 n.try_into()
-                    .map_err(|_| nom::Err::Failure(error_position!(s, nom::ErrorKind::Custom(0))))
+                    .map_err(|_| nom::Err::Failure(error_position!(s, ERR_OVERFLOW)))
             } else {
-                Err(nom::Err::Failure(error_position!(
-                    s,
-                    nom::ErrorKind::Custom(0)
-                )))
+                Err(nom::Err::Failure(error_position!(s, ERR_OVERFLOW)))
             }
         }
     };
@@ -59,7 +55,7 @@ fn try_into_i8(s: Input) -> Result<u8, nom::Err<Input>> {
         b[0].try_into()
             // It is panic-free since previously it was an u8
             .map(|n: i8| n as u8)
-            .map_err(|_| nom::Err::Failure(error_position!(s, nom::ErrorKind::Custom(1))))
+            .map_err(|_| nom::Err::Failure(error_position!(s, ERR_OVERFLOW)))
     } else {
         Err(nom::Err::Incomplete(Needed::Size(1)))
     }
@@ -85,10 +81,11 @@ pub fn parse(src: &str) -> Vec<Pair> {
         }
         Err(nom::Err::Error(err)) => panic!("Unable to parse pairs parameter:\n\n{:?}", err),
         Err(nom::Err::Failure(err)) => match err.clone().into_error_kind() {
-            nom::ErrorKind::Custom(0) => panic!(
+            ERR_OVERFLOW => panic!(
                 "Number has to be between 0 and 127.\nOverflow at character:\n\n{:?}",
                 err
             ),
+            ERR_UTF8 => panic!("Need valid utf-8 characters.\n\n{:?}",),
             _ => panic!("Unable to parse pairs parameter:\n\n{:?}", err),
         },
         Err(nom::Err::Incomplete(err)) => panic!("Parsing incomplete: {:?}", err),
@@ -113,6 +110,9 @@ pub fn parse(src: &str) -> Vec<Pair> {
 
     pairs
 }
+
+const ERR_OVERFLOW: nom::ErrorKind = nom::ErrorKind::Custom(0);
+const ERR_UTF8: nom::ErrorKind = nom::ErrorKind::Custom(1);
 
 #[cfg(test)]
 mod test {
