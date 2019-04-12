@@ -1,6 +1,6 @@
 use std::{convert::TryInto, i8, str};
 
-use nom::{self, AsBytes, Needed};
+use nom::{AsBytes, Needed};
 
 type Input<'a> = nom::types::CompleteByteSlice<'a>;
 

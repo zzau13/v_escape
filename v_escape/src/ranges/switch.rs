@@ -394,31 +394,10 @@ macro_rules! _v_escape_translations_128 {
 ///     select between `fallback`
 ///
 macro_rules! _v_escape_fallback_escaping {
-    ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
-        fallback_callback!(default);
-    };
-    ($fa:expr, $fb:expr, $fc:expr, 128, ) => {
-        fallback_callback!(default);
-    };
-    ($fa:expr, $fb:expr, 128, ) => {
-        fallback_callback!(default);
-    };
     ($fa:expr, 128, ) => {
         fallback_callback!(one);
     };
-    ($la:expr, $ra:expr, $lb:expr, $rb:expr, $lc:expr, $rc:expr, ) => {
-        fallback_callback!(default);
-    };
-    ($la:expr, $ra:expr, $lb:expr, $rb:expr, $c:expr, ) => {
-        fallback_callback!(default);
-    };
-    ($la:expr, $ra:expr, $lb:expr, $rb:expr, ) => {
-        fallback_callback!(default);
-    };
-    ($la:expr, $ra:expr, $b:expr, ) => {
-        fallback_callback!(default);
-    };
-    ($la:expr, $ra:expr, ) => {
+    ($($t:tt)+) => {
         fallback_callback!(default);
     };
 }
@@ -434,17 +413,11 @@ macro_rules! _v_escape_fallback_escaping {
 ///     select between `mask_bodies`
 ///
 macro_rules! _v_escape_mask_bodies_escaping {
-    ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
-        mask_bodies_callback!(_v_escape_bodies);
-    };
-    ($fa:expr, $fb:expr, $fc:expr, 128, ) => {
-        mask_bodies_callback!(_v_escape_bodies_exact);
-    };
-    ($fa:expr, $fb:expr, 128, ) => {
-        mask_bodies_callback!(_v_escape_bodies_exact);
-    };
     ($fa:expr, 128, ) => {
         mask_bodies_callback!(_v_escape_bodies_exact_one);
+    };
+    ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
+        mask_bodies_callback!(_v_escape_bodies);
     };
     ($la:expr, $ra:expr, $lb:expr, $rb:expr, $lc:expr, $rc:expr, ) => {
         mask_bodies_callback!(_v_escape_bodies);
@@ -452,13 +425,7 @@ macro_rules! _v_escape_mask_bodies_escaping {
     ($la:expr, $ra:expr, $lb:expr, $rb:expr, $c:expr, ) => {
         mask_bodies_callback!(_v_escape_bodies);
     };
-    ($la:expr, $ra:expr, $lb:expr, $rb:expr, ) => {
-        mask_bodies_callback!(_v_escape_bodies_exact);
-    };
-    ($la:expr, $ra:expr, $b:expr, ) => {
-        mask_bodies_callback!(_v_escape_bodies_exact);
-    };
-    ($la:expr, $ra:expr, ) => {
+    ($($t:tt)+) => {
         mask_bodies_callback!(_v_escape_bodies_exact);
     };
 }

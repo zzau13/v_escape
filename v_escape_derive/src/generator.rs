@@ -5,6 +5,8 @@ use std::{
 
 use crate::parser::Pair;
 
+type Ranges = Vec<u8>;
+
 struct Generator<'a> {
     pairs: &'a [Pair<'a>],
     simd: bool,
@@ -12,14 +14,9 @@ struct Generator<'a> {
     avx: bool,
 }
 
-type Ranges = Vec<u8>;
-
 pub fn generate(pairs: &[Pair], simd: bool, ranges: bool, avx: bool) -> String {
     Generator::new(pairs, simd, ranges, avx).build()
 }
-
-// End flag for indicate more escapes than ranges
-const FLAG: u8 = 128;
 
 impl<'a> Generator<'a> {
     pub fn new<'n>(pairs: &'n [Pair<'n>], simd: bool, ranges: bool, avx: bool) -> Generator<'n> {
@@ -352,6 +349,7 @@ impl<'a> Generator<'a> {
     }
 }
 
+// TODO: remove in favor of rust code logger
 struct Buffer {
     // The buffer to generate the code into
     buf: String,
@@ -405,6 +403,9 @@ impl Buffer {
         self.indent -= 1;
     }
 }
+
+// End flag for indicate more escapes than ranges
+const FLAG: u8 = 128;
 
 #[cfg(test)]
 mod test {
