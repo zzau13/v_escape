@@ -7,7 +7,7 @@ documentation = "https://docs.rs/v_escape"
 edition = "2018"
 keywords = ["escaping", "simd"]
 license = "MIT/Apache-2.0"
-readme = "README.md"
+readme = "../README.md"
 repository = "https://gitlab.com/r-iendo/v_escape"
 workspace = ".."
 

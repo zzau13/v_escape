@@ -5,7 +5,14 @@ Crate v_escape provides a macro `new_escape!` that define a `struct` with
 escaping functionalities. These macros are optimized using simd by default, 
 but this can be alter using sub-attributes.
 
-# Quick start
+## Documentation & community resources
+
+* [Documentation](https://docs.rs/v_escape/0.7.2/v_escape/)
+* [Chat on gitter](https://gitter.im/rust_iendo/community)
+* Cargo package: [v_escape](https://crates.io/crates/v_escape)
+* Minimum supported Rust version: 1.34 or later
+
+## Example
 In order to use v_escape you will have to call one of the two macros
 to create a escape `struct`. In this example, when using the macro
 `new_escape!(MyEscape, "62->bar");` a new a `struct` `MyEscape`
