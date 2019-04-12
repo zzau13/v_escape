@@ -1,5 +1,6 @@
+use std::{convert::TryInto, i8, str};
+
 use nom::{self, AsBytes, Needed};
-use std::{i8, str};
 
 type Input<'a> = nom::types::CompleteByteSlice<'a>;
 
@@ -30,9 +31,20 @@ named!(parse_pair<Input, Pair>, map!(
 macro_rules! is_digit {
     ($name:ident, $base:expr) => {
         fn $name(s: Input) -> Result<u8, nom::Err<Input>> {
-            i8::from_str_radix(str::from_utf8(&s.as_bytes()).unwrap(), $base)
-                .map_err(|_| nom::Err::Failure(error_position!(s, nom::ErrorKind::Custom(0))))
-                .map(|n| n as u8)
+            if let Ok(n) = i8::from_str_radix(
+                str::from_utf8(&s.as_bytes()).map_err(|_| {
+                    nom::Err::Failure(error_position!(s, nom::ErrorKind::Custom(0)))
+                })?,
+                $base,
+            ) {
+                n.try_into()
+                    .map_err(|_| nom::Err::Failure(error_position!(s, nom::ErrorKind::Custom(0))))
+            } else {
+                Err(nom::Err::Failure(error_position!(
+                    s,
+                    nom::ErrorKind::Custom(0)
+                )))
+            }
         }
     };
 }
@@ -44,7 +56,10 @@ is_digit!(is_digit_16, 16);
 fn try_into_i8(s: Input) -> Result<u8, nom::Err<Input>> {
     let b = s.as_bytes();
     if b.len() == 1 {
-        Ok(*b.first().unwrap() as i8 as u8)
+        b[0].try_into()
+            // It is panic-free since previously it was an u8
+            .map(|n: i8| n as u8)
+            .map_err(|_| nom::Err::Failure(error_position!(s, nom::ErrorKind::Custom(1))))
     } else {
         Err(nom::Err::Incomplete(Needed::Size(1)))
     }
