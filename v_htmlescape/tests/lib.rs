@@ -7,6 +7,13 @@ fn test_escape() {
     let escaped = "&lt;&gt;&amp;&quot;&#x27;&#x2f;";
     let string_long: &str = &"foobar".repeat(1024);
 
+    // https://gitlab.com/r-iendo/v_escape/issues/2
+    let issue = "<".repeat(31);
+    assert_eq!(
+        HTMLEscape::from(issue.as_ref()).to_string(),
+        "&lt;".repeat(31)
+    );
+
     assert_eq!(HTMLEscape::from(empty).to_string(), empty);
     assert_eq!(HTMLEscape::from("").to_string(), "");
     assert_eq!(HTMLEscape::from("<&>").to_string(), "&lt;&amp;&gt;");
