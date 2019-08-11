@@ -1,14 +1,13 @@
-# v_escape [![Documentation](https://docs.rs/v_escape/badge.svg)](https://docs.rs/v_escape/) [![Latest version](https://img.shields.io/crates/v/v_escape.svg)](https://crates.io/crates/v_escape) 
+# v_escape [![Documentation](https://docs.rs/v_escape/badge.svg)](https://docs.rs/v_escape/) [![Latest version](https://img.shields.io/crates/v/v_escape.svg)](https://crates.io/crates/v_escape) [![Build Status](https://travis-ci.org/botika/v_escape.svg?branch=master)](https://travis-ci.org/botika/v_escape)
 > The simd optimized escape code
 
 Crate v_escape provides a macro `new_escape!` that define a `struct` with 
 escaping functionalities. These macros are optimized using simd by default, 
 but this can be alter using sub-attributes.
 
-## Documentation & community resources
+## Documentation
 
 * [Documentation](https://docs.rs/v_escape/0.7.2/v_escape/)
-* [Chat on gitter](https://gitter.im/rust_iendo/community)
 * Cargo package: [v_escape](https://crates.io/crates/v_escape)
 * Minimum supported Rust version: 1.34 or later
 
@@ -32,17 +31,3 @@ fn main() {
     print!("{}", escaped);
 }
 ```
-
-To check if rust version has simd functionality. The following code
-has to be added to file `build.rs`.
-```rust
-use v_escape::check_version;
-
-fn main() {
-    check_version();
-}
-```
-
-## Support
-
-[Patreon](https://www.patreon.com/r_iendo)

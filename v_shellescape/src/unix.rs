@@ -69,7 +69,7 @@ pub mod scalar {
                         fmt.write_str(unsafe { from_utf8_unchecked(&bytes[start..i]) })?;
                     }
                     fmt.write_fmt(format_args!("'\\{}'", unsafe {
-                        from_u32_unchecked(b as u32)
+                        from_u32_unchecked(u32::from(b))
                     }))?;
                     start = i + 1;
                 }

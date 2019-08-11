@@ -1,5 +1,3 @@
-use v_escape::check_version;
-
 use std::env;
 
 fn main() {
@@ -7,8 +5,6 @@ fn main() {
 }
 
 fn enable_simd_optimizations() {
-    check_version();
-
     if is_env_set("CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_SIMD") {
         return;
     }

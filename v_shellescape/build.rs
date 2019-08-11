@@ -1,14 +1,6 @@
-use v_escape::check_version;
-
 use std::env;
 
 fn main() {
-    enable_simd_optimizations();
-}
-
-fn enable_simd_optimizations() {
-    check_version();
-
     if is_env_set("CARGO_CFG_SHELLESCAPE_DISABLE_AUTO_SIMD") {
         return;
     }

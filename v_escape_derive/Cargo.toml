@@ -1,18 +1,18 @@
 [package]
 name = "v_escape_derive"
 version = "0.5.3"
-authors = ["Rust-iendo Barcelona <riendocontributions@gmail.com>"]
+authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "Procedural macro package for v_escape"
 documentation = "https://docs.rs/v_escape_derive"
 edition = "2018"
 keywords = ["derive", "escaping", "simd"]
 license = "MIT/Apache-2.0"
 readme = "../README.md"
-repository = "https://gitlab.com/r-iendo/v_escape"
+repository = "https://github.com/r-iendo/v_escape"
 workspace = ".."
 
 [badges]
-gitlab = { repository = "r-iendo/v_escape" }
+travis-ci = { repository = "botika/v_escape", branch = "master" }
 maintenance = { status = "actively-developed" }
 
 [lib]
@@ -25,4 +25,4 @@ bench = false
 proc-macro2 = "0.4"
 syn = "0.15"
 quote = "0.6"
-nom = "4.2"
+nom = "4"

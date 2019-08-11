@@ -7,7 +7,6 @@
 //! print!("{}", escape("foo<bar"));
 //! ```
 //!
-
 #[macro_use]
 extern crate cfg_if;
 

@@ -68,10 +68,7 @@ fn test_escape() {
         LateXEscape::from("#".repeat(128 * 8 - 1).as_ref()).to_string(),
         "\\#".repeat(128 * 8 - 1)
     );
-    assert_eq!(
-        LateXEscape::from(string_long.as_ref()).to_string(),
-        string_long
-    );
+    assert_eq!(LateXEscape::from(string_long).to_string(), string_long);
     assert_eq!(
         LateXEscape::from([string_long, "#"].join("").as_ref()).to_string(),
         [string_long, "\\#"].join("")
@@ -126,13 +123,13 @@ vulputate euismod lectus vestibulum nec. Donec sit amet massa magna. Nunc ipsum 
 quis lacus at, gravida maximus elit. Duis tristique, nisl nullam.
     "#;
 
-    assert_eq!(LateXEscape::from(no_escape.as_ref()).to_string(), no_escape);
+    assert_eq!(LateXEscape::from(no_escape).to_string(), no_escape);
     assert_eq!(
-        LateXEscape::from(no_escape_long.as_ref()).to_string(),
+        LateXEscape::from(no_escape_long).to_string(),
         no_escape_long
     );
     assert_eq!(
-        LateXEscape::from(string_short.as_ref()).to_string(),
+        LateXEscape::from(string_short).to_string(),
         string_short_escaped
     );
     assert_eq!(
@@ -140,7 +137,7 @@ quis lacus at, gravida maximus elit. Duis tristique, nisl nullam.
         string_short_escaped.repeat(1024)
     );
     assert_eq!(
-        LateXEscape::from(string_short.as_ref()).to_string(),
+        LateXEscape::from(string_short).to_string(),
         string_short_escaped
     );
 }

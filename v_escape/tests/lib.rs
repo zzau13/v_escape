@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+
 #[macro_use]
 extern crate v_escape;
 
@@ -13,7 +14,7 @@ macro_rules! test {
             assert_eq!(less.len(), less.as_bytes().len());
 
             let less = less.as_bytes();
-            let mut buf = String::with_capacity(204672 - less.len());
+            let mut buf = String::with_capacity(204_672 - less.len());
 
             for i in 0..0x80u8 {
                 if !less.contains(&i) {

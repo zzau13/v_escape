@@ -23,17 +23,6 @@
 //! # }
 //! ```
 //!
-//! To check if rust version has simd functionality. The following code
-//! has to be added to file `build.rs`.
-//!
-//! ```ignore
-//! use v_escape::check_version;
-//!
-//! fn main() {
-//!     check_version();
-//! }
-//! ```
-//!
 //! ## Pairs syntax
 //! v_escape uses a simple syntax to replace characters
 //! with their respective quotes. The tuple is named `Pair`,
@@ -144,9 +133,6 @@ mod scalar;
 mod sse;
 #[macro_use]
 mod ranges;
-mod build_check;
-
-pub use self::build_check::check_version;
 
 #[macro_export]
 /// Generates struct `$name` with escaping functionality at `fmt`

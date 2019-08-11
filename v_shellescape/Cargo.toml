@@ -1,18 +1,18 @@
 [package]
 name = "v_shellescape"
 version = "0.3.3"
-authors = ["Rust-iendo Barcelona <riendocontributions@gmail.com>"]
-description = "The simd optimized shell escaping code"
+authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
+description = "Shell escaping code"
 documentation = "https://docs.rs/v_shellescape"
 edition = "2018"
-keywords = ["shell", "escaping", "simd"]
+keywords = ["shell", "escaping"]
 license = "MIT/Apache-2.0"
 readme = "README.md"
-repository = "https://gitlab.com/r-iendo/v_escape"
+repository = "https://github.com/r-iendo/v_escape"
 workspace = ".."
 
 [badges]
-gitlab = { repository = "r-iendo/v_escape" }
+travis-ci = { repository = "botika/v_escape", branch = "master" }
 maintenance = { status = "actively-developed" }
 
 [lib]
@@ -21,7 +21,4 @@ path = "src/lib.rs"
 bench = false
 
 [dependencies]
-v_escape = { version = "0.7", path = "../v_escape" }
-
-[build-dependencies]
 v_escape = { version = "0.7", path = "../v_escape" }

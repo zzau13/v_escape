@@ -2,12 +2,12 @@
 publish = false
 name = "v_htmlescape-bench"
 version = "0.0.1"
-authors = ["Rust-iendo Barcelona <riendocontributions@gmail.com>"]
+authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "Criterion benchmark suite for v_htmlescape."
 edition = "2018"
 license = "MIT/Apache-2.0"
 publish = false
-repository = "https://gitlab.com/r-iendo/v_escape"
+repository = "https://github.com/r-iendo/v_escape"
 
 [workspace]
 members = ["."]

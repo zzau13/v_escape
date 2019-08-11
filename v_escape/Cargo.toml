@@ -1,18 +1,18 @@
 [package]
 name = "v_escape"
 version = "0.7.2"
-authors = ["Rust-iendo Barcelona <riendocontributions@gmail.com>"]
+authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "The simd optimized escaping code"
 documentation = "https://docs.rs/v_escape"
 edition = "2018"
 keywords = ["escaping", "simd"]
 license = "MIT/Apache-2.0"
 readme = "../README.md"
-repository = "https://gitlab.com/r-iendo/v_escape"
+repository = "https://github.com/r-iendo/v_escape"
 workspace = ".."
 
 [badges]
-gitlab = { repository = "r-iendo/v_escape" }
+travis-ci = { repository = "botika/v_escape", branch = "master" }
 maintenance = { status = "actively-developed" }
 
 [lib]

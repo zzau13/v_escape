@@ -1,0 +1,36 @@
+language: rust
+sudo: false
+dist: trusty
+
+cache:
+  cargo: true
+  apt: true
+
+rust:
+  - stable
+  - beta
+  - nightly
+env:
+  -
+  - CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_AVX=
+    CARGO_CFG_LATEXESCAPE_DISABLE_AUTO_AVX=
+  - CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_SIMD=
+    CARGO_CFG_LATEXESCAPE_DISABLE_AUTO_SIMD=
+
+matrix:
+  allow_failures:
+    - rust: nightly
+
+before_script:
+  - |
+    if [[ "$TRAVIS_RUST_VERSION" != "nightly" ]]; then
+      rustup component add rustfmt
+    fi
+
+script:
+  - |
+    if [[ "$TRAVIS_RUST_VERSION" != "nightly" ]]; then
+      cargo fmt -- --check
+    fi
+  - cargo check --all --no-default-features
+  - cargo test --all-features --all -- --nocapture

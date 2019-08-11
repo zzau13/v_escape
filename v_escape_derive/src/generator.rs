@@ -187,13 +187,13 @@ impl<'a> Generator<'a> {
 
     fn calculate_ranges(&self) -> Ranges {
         assert_ne!(self.pairs.len(), 0);
-        let mut r: Ranges = vec![];
+        let mut ranges: Ranges = vec![];
 
         if self.pairs.len() == 1 {
-            r.push(self.pairs[0].char);
-            r.push(FLAG);
+            ranges.push(self.pairs[0].char);
+            ranges.push(FLAG);
 
-            return r;
+            return ranges;
         }
         let e = self.pairs.len() - 1;
 
@@ -209,30 +209,30 @@ impl<'a> Generator<'a> {
         match d.len() {
             0 => {
                 // 1 range
-                r.push(self.pairs[0].char);
-                r.push(self.pairs[e].char);
+                ranges.push(self.pairs[0].char);
+                ranges.push(self.pairs[e].char);
             }
             1 => {
                 if e == 1 {
                     // 2 equals
-                    r.push(self.pairs[0].char);
-                    r.push(self.pairs[e].char);
-                    r.push(FLAG);
+                    ranges.push(self.pairs[0].char);
+                    ranges.push(self.pairs[e].char);
+                    ranges.push(FLAG);
                 } else {
                     let i = d[0].0;
                     if i == 0 {
                         // 1 equal and 1 range
-                        r.push(self.pairs[i + 1].char);
-                        r.push(self.pairs[e].char);
-                        r.push(self.pairs[0].char);
+                        ranges.push(self.pairs[i + 1].char);
+                        ranges.push(self.pairs[e].char);
+                        ranges.push(self.pairs[0].char);
                     } else {
                         // 1 equal and 1 range
-                        r.push(self.pairs[0].char);
-                        r.push(self.pairs[i].char);
-                        r.push(self.pairs[i + 1].char);
+                        ranges.push(self.pairs[0].char);
+                        ranges.push(self.pairs[i].char);
+                        ranges.push(self.pairs[i + 1].char);
                         if i + 1 != e {
                             // 2 ranges
-                            r.push(self.pairs[e].char);
+                            ranges.push(self.pairs[e].char);
                         }
                     }
                 }
@@ -242,11 +242,11 @@ impl<'a> Generator<'a> {
                     assert_eq!(e, 2);
                     // 3 escapes
                     for Pair { char, .. } in self.pairs {
-                        r.push(*char);
+                        ranges.push(*char);
                     }
-                    r.push(FLAG);
+                    ranges.push(FLAG);
 
-                    return r;
+                    return ranges;
                 }
 
                 let (d, _) = d.split_at_mut(2);
@@ -257,31 +257,27 @@ impl<'a> Generator<'a> {
 
                 if f + 1 == l {
                     if f == 0 {
-                        self.push_1_ranges_2_equals_at_first(&mut r, f, l, e);
-                    } else {
-                        if l + 1 == e {
-                            self.push_1_ranges_2_equals_at_last(&mut r, f, l, e);
-                        } else {
-                            self.push_2_ranges_1_equals(&mut r, f, l, e);
-                        }
-                    }
-                } else {
-                    if f == 0 {
-                        if l + 1 == e {
-                            self.push_1_ranges_2_equals_at_first_last(&mut r, f, l, e);
-                        } else {
-                            self.push_2_ranges_1_equals_at_first(&mut r, f, l, e);
-                        }
+                        self.push_1_ranges_2_equals_at_first(&mut ranges, f, l, e);
                     } else if l + 1 == e {
-                        self.push_2_ranges_1_equals_at_last(&mut r, f, l, e);
+                        self.push_1_ranges_2_equals_at_last(&mut ranges, f, l, e);
                     } else {
-                        self.push_3_ranges(&mut r, f, l, e);
+                        self.push_2_ranges_1_equals(&mut ranges, f, l, e);
                     }
+                } else if f == 0 {
+                    if l + 1 == e {
+                        self.push_1_ranges_2_equals_at_first_last(&mut ranges, f, l, e);
+                    } else {
+                        self.push_2_ranges_1_equals_at_first(&mut ranges, f, l, e);
+                    }
+                } else if l + 1 == e {
+                    self.push_2_ranges_1_equals_at_last(&mut ranges, f, l, e);
+                } else {
+                    self.push_3_ranges(&mut ranges, f, l, e);
                 }
             }
         };
 
-        r
+        ranges
     }
 
     #[inline]
