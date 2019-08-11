@@ -7,7 +7,7 @@ description = "Criterion benchmark suite for v_htmlescape."
 edition = "2018"
 license = "MIT/Apache-2.0"
 publish = false
-repository = "https://github.com/r-iendo/v_escape"
+repository = "https://github.com/botika/v_escape"
 
 [workspace]
 members = ["."]
