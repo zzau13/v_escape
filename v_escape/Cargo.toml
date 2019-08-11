@@ -22,7 +22,3 @@ bench = false
 
 [dependencies]
 v_escape_derive = { version = "0.5", path = "../v_escape_derive" }
-version_check = "0.1"
-
-[build-dependencies]
-version_check = "0.1"
