@@ -1,6 +1,6 @@
 [package]
 name = "v_shellescape"
-version = "0.3.3"
+version = "0.3.4"
 authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "Shell escaping code"
 documentation = "https://docs.rs/v_shellescape"
