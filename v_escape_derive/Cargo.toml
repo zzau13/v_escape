@@ -22,7 +22,7 @@ path = "src/lib.rs"
 bench = false
 
 [dependencies]
-proc-macro2 = "0.4"
+proc-macro2 = "1.0"
 syn = "0.15"
 quote = "0.6"
 nom = "4"
