@@ -5,7 +5,7 @@ extern crate nom;
 extern crate quote;
 
 use proc_macro::TokenStream;
-use quote::ToTokens;
+use syn::visit::Visit;
 
 mod generator;
 mod parser;
@@ -20,89 +20,105 @@ pub fn derive(input: TokenStream) -> TokenStream {
 ///
 /// Reads the metadata from the `escape()` attribute.
 fn build(ast: &syn::DeriveInput) -> String {
-    // Check that an attribute called `escape()` exists and that it is
-    // the proper type (list).
-    let mut meta = None;
-    for attr in &ast.attrs {
-        match attr.interpret_meta() {
-            Some(m) => {
-                if m.name() == "escape" {
-                    meta = Some(m);
-                }
-            }
-            None => {
-                let mut tokens = quote::__rt::TokenStream::new();
-                attr.to_tokens(&mut tokens);
-                panic!("unable to interpret attribute: {}", tokens);
-            }
-        }
-    }
-
-    let meta_list = match meta.expect("no attribute 'escape' found") {
-        syn::Meta::List(inner) => inner,
-        _ => panic!("attribute 'escape' has incorrect type"),
-    };
-
-    let mut avx = true;
-    let mut pairs = None;
-    let mut print = false;
-    let mut ranges = true;
-    let mut simd = true;
-    for nm_item in meta_list.nested {
-        if let syn::NestedMeta::Meta(ref item) = nm_item {
-            if let syn::Meta::NameValue(ref pair) = item {
-                match pair.ident.to_string().as_ref() {
-                    "avx" => {
-                        if let syn::Lit::Bool(ref s) = pair.lit {
-                            avx = s.value
-                        } else {
-                            panic!("avx value must be boolean literal")
-                        }
-                    }
-                    "pairs" => {
-                        if let syn::Lit::Str(ref s) = pair.lit {
-                            pairs = Some(s.value());
-                        } else {
-                            panic!("pairs value must be string literal")
-                        }
-                    }
-                    "print" => {
-                        if let syn::Lit::Bool(ref s) = pair.lit {
-                            print = s.value;
-                        } else {
-                            panic!("print value must be boolean literal")
-                        }
-                    }
-                    "simd" => {
-                        if let syn::Lit::Bool(ref s) = pair.lit {
-                            simd = s.value;
-                        } else {
-                            panic!("simd value must be boolean literal")
-                        }
-                    }
-                    "ranges" => {
-                        if let syn::Lit::Bool(ref s) = pair.lit {
-                            ranges = s.value
-                        } else {
-                            panic!("avx value must be boolean literal")
-                        }
-                    }
-                    attr => panic!("unsupported annotation key '{}' found", attr),
-                }
-            }
-        }
-    }
-
-    let code = generator::generate(
-        &parser::parse(&pairs.expect("pairs not found in attributes")),
-        simd,
-        ranges,
-        avx,
-    );
+    let (avx, pairs, print, ranges, simd) = visit_derive(ast);
+    let code = generator::generate(&parser::parse(&pairs), simd, ranges, avx);
 
     if print {
         eprintln!("{}", code);
     }
 
     code
+}
+
+fn visit_derive(i: &syn::DeriveInput) -> Struct {
+    StructBuilder::default().build(i)
+}
+
+type Struct = (bool, String, bool, bool, bool);
+
+struct StructBuilder {
+    avx: bool,
+    pairs: Option<String>,
+    print: bool,
+    ranges: bool,
+    simd: bool,
+}
+
+impl Default for StructBuilder {
+    fn default() -> Self {
+        StructBuilder {
+            avx: true,
+            pairs: None,
+            print: false,
+            ranges: true,
+            simd: true,
+        }
+    }
+}
+
+impl StructBuilder {
+    fn build(mut self, syn::DeriveInput { attrs, .. }: &syn::DeriveInput) -> Struct {
+        for i in attrs {
+            self.visit_meta(&i.parse_meta().expect("valid meta attributes"));
+        }
+
+        (
+            self.avx,
+            self.pairs.expect("Need pairs attribute"),
+            self.print,
+            self.ranges,
+            self.simd,
+        )
+    }
+}
+
+impl<'a> Visit<'a> for StructBuilder {
+    fn visit_meta_list(&mut self, syn::MetaList { path, nested, .. }: &'a syn::MetaList) {
+        if path.is_ident("escape") {
+            use syn::punctuated::Punctuated;
+            for el in Punctuated::pairs(nested) {
+                let it = el.value();
+                self.visit_nested_meta(it)
+            }
+        }
+    }
+
+    fn visit_meta_name_value(
+        &mut self,
+        syn::MetaNameValue { path, lit, .. }: &'a syn::MetaNameValue,
+    ) {
+        if path.is_ident("avx") {
+            if let syn::Lit::Bool(s) = lit {
+                self.avx = s.value
+            } else {
+                panic!("attribute avx value must be boolean")
+            }
+        } else if path.is_ident("pairs") {
+            if let syn::Lit::Str(s) = lit {
+                self.pairs = Some(s.value());
+            } else {
+                panic!("attribute pairs must be string literal");
+            }
+        } else if path.is_ident("print") {
+            if let syn::Lit::Bool(s) = lit {
+                self.print = s.value;
+            } else {
+                panic!("attribute print must be boolean");
+            }
+        } else if path.is_ident("ranges") {
+            if let syn::Lit::Bool(s) = lit {
+                self.ranges = s.value;
+            } else {
+                panic!("attribute ranges must be boolean ");
+            }
+        } else if path.is_ident("simd") {
+            if let syn::Lit::Bool(s) = lit {
+                self.simd = s.value;
+            } else {
+                panic!("attribute simd must be boolean");
+            }
+        } else {
+            panic!("invalid attribute '{:?}'", path.get_ident())
+        }
+    }
 }
