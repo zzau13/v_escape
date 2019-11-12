@@ -32,5 +32,5 @@ script:
     if [[ "$TRAVIS_RUST_VERSION" != "nightly" ]]; then
       cargo fmt -- --check
     fi
-  - cargo check --all --no-default-features
+  - cargo check --all
   - cargo test --all-features --all -- --nocapture

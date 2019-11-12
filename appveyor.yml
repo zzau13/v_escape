@@ -58,5 +58,5 @@ build: false
 # Equivalent to Travis' `script` phase
 test_script:
   - cargo clean
-  - cargo test
-  - cargo build --release --verbose
+  - cargo check --all
+  - cargo test --all-features --all -- --nocapture
