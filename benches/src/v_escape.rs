@@ -32,7 +32,7 @@ pub fn escaping(corpus: &'static [u8]) -> impl FnMut(&mut Bencher) + 'static {
         let mut writer = String::new();
 
         b.iter(|| {
-            write!(writer, "{}", e);
+            let _ = write!(writer, "{}", e);
         });
     }
 }

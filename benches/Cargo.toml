@@ -6,7 +6,6 @@ authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "Criterion benchmark suite for v_htmlescape."
 edition = "2018"
 license = "MIT/Apache-2.0"
-publish = false
 repository = "https://github.com/botika/v_escape"
 
 [workspace]
@@ -20,21 +19,12 @@ name = "v_htmlescape"
 harness = false
 path = "src/all.rs"
 
-[features]
-default = []
-with-compare = ["askama_escape", "shell-escape"]
-with-rocket = ["rocket"]
-
 [dependencies]
 cfg-if = "0.1"
 criterion = "0.2"
 v_escape = { version = "*", path = "../v_escape" }
 v_htmlescape = { version = "*", path = "../v_htmlescape" }
-v_shellescape = { version = "*", path = "../v_shellescape" }
 v_latexescape = { version = "*", path = "../v_latexescape" }
-askama_escape = {version = "0.1", optional = true }
-rocket = { version = "0.4", optional = true }
-shell-escape = { version = "0.1", optional = true }
 
 [build-dependencies]
 v_escape = { version = "*", path = "../v_escape" }
