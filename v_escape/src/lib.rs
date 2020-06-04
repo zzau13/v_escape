@@ -231,7 +231,7 @@ macro_rules! _v_escape_escape_new {
             pub fn v_escape(&self, buf: &mut [u8]) -> Option<usize> {
                 #[allow(unused_unsafe)]
                 unsafe {
-                    _v_escape(self.bytes, buf.as_mut())
+                    _v_escape(self.bytes, buf)
                 }
             }
         }
@@ -254,7 +254,7 @@ macro_rules! _v_escape_escape_new {
         pub fn v_escape(s: &[u8], buf: &mut [u8]) -> Option<usize> {
             #[allow(unused_unsafe)]
             unsafe {
-                _v_escape(s, buf.as_mut())
+                _v_escape(s, buf)
             }
         }
 
