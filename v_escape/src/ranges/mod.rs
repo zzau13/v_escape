@@ -161,9 +161,8 @@ macro_rules! _v_escape_escape_ranges_ptr {
     };
     (impl $loops:ident for ($T:ident, $Q:ident, $Q_LEN:ident) $($t:tt)+) => {
         pub unsafe fn v_escape(bytes: &[u8], buf: &mut [u8]) -> Option<usize> {
-            let buf_ptr = buf.as_mut();
-            let max = buf_ptr.len();
-            let buf_ptr = buf_ptr.as_mut_ptr();
+            let max = buf.len();
+            let buf_ptr = buf.as_mut_ptr();
             let mut buf_cur = 0;
 
             let len = bytes.len();
