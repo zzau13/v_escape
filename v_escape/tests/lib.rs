@@ -41,6 +41,17 @@ macro_rules! test {
         let string = $escapes.to_string();
         let cow = Cow::Owned($escapes.to_string());
 
+        let mut buf = String::with_capacity(escaped.len());
+        for c in escapes.chars() {
+            use std::fmt::Write;
+            write!(buf, "{}", escape_char(c)).unwrap();
+        }
+        assert_eq!(buf, escaped);
+
+        for c in utf8.chars() {
+            assert_eq!(escape_char(c).to_string(), c.to_string());
+        }
+
         assert_eq!($name::from(empty).to_string(), empty);
         assert_eq!($name::from(escapes).to_string(), escaped);
         assert_eq!(escape(&empty_heap).to_string(), empty);

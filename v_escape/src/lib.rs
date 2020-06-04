@@ -133,6 +133,8 @@ mod scalar;
 mod sse;
 #[macro_use]
 mod ranges;
+#[macro_use]
+mod chars;
 
 #[macro_export]
 /// Generates struct `$name` with escaping functionality at `fmt`
@@ -245,6 +247,19 @@ macro_rules! _v_escape_escape_new {
                     _escape(self.bytes, fmt)
                 }
             }
+        }
+
+        #[inline]
+        pub fn escape_char(c: char) -> impl Display {
+            struct EscapeChar(char);
+
+            impl Display for EscapeChar {
+                fn fmt(&self, fmt: &mut Formatter) -> fmt::Result {
+                    chars::escape_char(self.0, fmt)
+                }
+            }
+
+            EscapeChar(c)
         }
     };
 }

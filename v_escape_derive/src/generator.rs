@@ -75,6 +75,7 @@ impl<'a> Generator<'a> {
 
     fn write_functions(&self, buf: &mut Buffer) {
         self.write_scalar(buf);
+        self.write_char(buf);
         if self.simd {
             if self.ranges {
                 self.write_ranges(buf);
@@ -82,6 +83,25 @@ impl<'a> Generator<'a> {
                 self.write_eq(buf);
             }
         }
+    }
+
+    fn write_char(&self, buf: &mut Buffer) {
+        let code = if self.pairs.len() == 1 {
+            quote!(
+                mod chars {
+                    use super::*;
+                    _v_escape_escape_char!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
+                }
+            )
+        } else {
+            quote!(
+                mod chars {
+                    use super::*;
+                    _v_escape_escape_char!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
+                }
+            )
+        };
+        buf.writeln(&code.to_string());
     }
 
     fn write_scalar(&self, buf: &mut Buffer) {
