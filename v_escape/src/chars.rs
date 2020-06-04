@@ -5,7 +5,7 @@ macro_rules! _v_escape_escape_char {
         #[inline]
         pub fn escape_char(c: char, fmt: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
 
-            if c.len_utf8() == 1 {
+            if c.is_ascii() {
                 macro_rules! _inside {
                     (impl one $byte:ident, $quote:ident) => {
                         if $byte == c as u8 {
