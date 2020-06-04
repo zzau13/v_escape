@@ -21,5 +21,5 @@ path = "src/lib.rs"
 bench = false
 
 [dependencies]
-v_escape = { version = "0.7", path = "../v_escape" }
+v_escape = { version = "0.8", path = "../v_escape" }
 cfg-if = "0.1"
