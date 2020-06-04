@@ -141,7 +141,7 @@ macro_rules! _v_escape_mask_body_ptr {
 /// Write in pointer with max bound
 macro_rules! _v_escape_write_ptr {
     ($cur:ident, $ptr:ident, $bytes:expr, $len:expr, $max:ident) => {
-        if $cur + ($len) < $max {
+        if $cur + ($len) <= $max {
             for i in $bytes {
                 $ptr.add($cur).write(*i);
                 $cur += 1;
