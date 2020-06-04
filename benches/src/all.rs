@@ -1,5 +1,4 @@
-#![allow(unused_must_use)]
-#![allow(unused_macros)]
+use std::str;
 
 #[macro_use]
 extern crate cfg_if;
@@ -9,27 +8,12 @@ extern crate criterion;
 extern crate v_escape;
 use criterion::{Bencher, Benchmark, Criterion, Throughput};
 
-use std::str;
-
-#[cfg(feature = "with-compare")]
-mod askama_escape;
-#[cfg(all(
-    v_escape_benches_nightly,
-    feature = "with-rocket",
-    feature = "with-compare"
-))]
-mod rocket;
-#[cfg(feature = "with-compare")]
-#[path = "shell-escape.rs"]
-mod shell_escape;
 #[path = "v_escape.rs"]
 mod v;
 #[path = "v_htmlescape.rs"]
 mod v_html;
 #[path = "v_latexescape.rs"]
 mod v_latex;
-#[path = "v_shellescape.rs"]
-mod v_shell;
 
 static HUGE: &[u8] = include_bytes!("../data/sherlock-holmes-huge.txt");
 // escapable characters replaced by 'a'
@@ -95,16 +79,6 @@ macro_rules! groups {
     }};
 }
 
-macro_rules! v_shellescape {
-    ($c:ident) => {
-        use crate::v_shell::{unix_escaping as v_su, windows_escaping as v_sw};
-        let group = "v_shellescape/unix/Escaping";
-        groups!($c, group, v_su);
-
-        let group = "v_shellescape/windows/Escaping";
-        groups!($c, group, v_sw);
-    };
-}
 macro_rules! v_escape {
     ($c:ident) => {
         use crate::v_html::escaping as v_h;
@@ -115,30 +89,9 @@ macro_rules! v_escape {
         let group = "v_latexescape/Escaping";
         groups!($c, group, v_l);
 
-        v_shellescape!($c);
-
         use crate::v::escaping as v_e;
         let group = "v_escape/ascii numbers RANGE/Escaping";
         groups!($c, group, v_e);
-    };
-}
-
-macro_rules! askama_escape {
-    ($c:ident) => {
-        use crate::askama_escape::escaping as a_e;
-        let group = "askama_escape/Escaping";
-        groups!($c, group, a_e);
-    };
-}
-
-macro_rules! shell_escape {
-    ($c:ident) => {
-        use crate::shell_escape::{unix_escaping as se_su, windows_escaping as se_sw};
-        let group = "shell-escape/unix/Escaping";
-        groups!($c, group, se_su);
-
-        let group = "shell-escape/windows/Escaping";
-        groups!($c, group, se_sw);
     };
 }
 
@@ -151,7 +104,7 @@ macro_rules! std_writing {
                 let mut writer = String::new();
 
                 b.iter(|| {
-                    write!(writer, "{}", unsafe { str::from_utf8_unchecked(corpus) });
+                    let _ = write!(writer, "{}", unsafe { str::from_utf8_unchecked(corpus) });
                 });
             }
         }
@@ -161,31 +114,10 @@ macro_rules! std_writing {
     };
 }
 
-cfg_if! {
-    if #[cfg(all(v_escape_benches_nightly, feature = "with-rocket", feature = "with-compare"))] {
-        fn functions(c: &mut Criterion) {
-            use crate::rocket::escaping as r_e;
-            let group = "rocket/Escaping";
-            groups!(c, group, r_e);
 
-            askama_escape!(c);
-            shell_escape!(c);
-            std_writing!(c);
-            v_escape!(c);
-
-        }
-    } else if #[cfg(feature = "with-compare")] {
-        fn functions(c: &mut Criterion) {
-            askama_escape!(c);
-            shell_escape!(c);
-            std_writing!(c);
-            v_escape!(c);
-        }
-    } else {
-        fn functions(c: &mut Criterion) {
-            v_escape!(c);
-        }
-    }
+fn functions(c: &mut Criterion) {
+    v_escape!(c);
+    std_writing!(c);
 }
 
 criterion_main!(benches);
