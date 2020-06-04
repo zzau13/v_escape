@@ -222,12 +222,22 @@ macro_rules! _v_escape_escape_new {
     ($name:ident) => {
         #[allow(dead_code)]
         impl<'a> $name<'a> {
+            #[inline]
             pub fn new(bytes: &[u8]) -> $name {
                 $name { bytes }
+            }
+
+            #[inline]
+            pub fn v_escape(&self, buf: &mut [u8]) -> Option<usize> {
+                #[allow(unused_unsafe)]
+                unsafe {
+                    _v_escape(self.bytes, buf.as_mut())
+                }
             }
         }
 
         impl<'a> From<&'a str> for $name<'a> {
+            #[inline]
             fn from(s: &str) -> $name {
                 $name {
                     bytes: s.as_bytes(),
@@ -238,6 +248,14 @@ macro_rules! _v_escape_escape_new {
         #[inline]
         pub fn escape(s: &str) -> $name {
             $name::from(s)
+        }
+
+        #[inline]
+        pub fn v_escape(s: &[u8], buf: &mut [u8]) -> Option<usize> {
+            #[allow(unused_unsafe)]
+            unsafe {
+                _v_escape(s, buf.as_mut())
+            }
         }
 
         impl<'a> Display for $name<'a> {
@@ -260,6 +278,14 @@ macro_rules! _v_escape_escape_new {
             }
 
             EscapeChar(c)
+        }
+
+        #[inline]
+        pub fn v_escape_char(c: char, buf: &mut [u8]) -> Option<usize> {
+            #[allow(unused_unsafe)]
+            unsafe {
+                chars::v_escape_char(c, buf)
+            }
         }
     };
 }
@@ -329,6 +355,72 @@ macro_rules! _v_escape_cfg_escape {
             ranges::sse::escape as usize
         } else {
             scalar::escape as usize
+        }
+    };
+}
+
+#[macro_export]
+#[doc(hidden)]
+/// cfg_if for escape function
+macro_rules! _v_escape_cfg_escape_ptr {
+    (false, $a:expr, $b:expr) => {
+        _v_escape_cfg_escape_ptr!(fn);
+    };
+    (true, $($t:tt)+) => {
+        #[cfg(all(target_arch = "x86_64", not(v_escape_nosimd)))]
+        #[inline(always)]
+        #[allow(unreachable_code)]
+        // https://github.com/BurntSushi/rust-memchr/blob/master/src/x86/mod.rs#L9-L29
+        pub unsafe fn _v_escape(bytes: &[u8], buf: &mut [u8]) -> Option<usize> {
+            use std::mem;
+            use std::sync::atomic::{AtomicUsize, Ordering};
+            static mut FN: fn(&[u8], &mut [u8]) -> Option<usize> = detect;
+
+            fn detect(bytes: &[u8], buf: &mut [u8]) -> Option<usize> {
+                let fun = _v_escape_cfg_escape_ptr!(if $($t)+);
+
+                let slot = unsafe { &*(&FN as *const _ as *const AtomicUsize) };
+                slot.store(fun as usize, Ordering::Relaxed);
+                unsafe {
+                    mem::transmute::<usize, fn(&[u8], &mut [u8]) -> Option<usize>>(fun)(
+                        bytes, buf,
+                    )
+                }
+            }
+
+            unsafe {
+                let slot = &*(&FN as *const _ as *const AtomicUsize);
+                let fun = slot.load(Ordering::Relaxed);
+                mem::transmute::<usize, fn(&[u8], &mut [u8]) -> Option<usize>>(fun)(bytes, buf)
+            }
+        }
+
+        #[cfg(not(all(target_arch = "x86_64", not(v_escape_nosimd))))]
+        _v_escape_cfg_escape_ptr!(fn);
+    };
+    (fn) => {
+        #[inline(always)]
+        pub unsafe fn _v_escape(bytes: &[u8], buf: &mut [u8]) -> Option<usize> {
+            scalar::v_escape(bytes, buf)
+        }
+    };
+    (if false, $a:expr) => {
+        unimplemented!("v_escape for sse4");
+    };
+    (if true, true) => {
+        if cfg!(not(v_escape_noavx)) && is_x86_feature_detected!("avx2") {
+            ranges::avx::v_escape as usize
+        } else if is_x86_feature_detected!("sse2") {
+            ranges::sse::v_escape as usize
+        } else {
+            scalar::v_escape as usize
+        }
+    };
+    (if true, false) => {
+        if is_x86_feature_detected!("sse2") {
+            ranges::sse::v_escape as usize
+        } else {
+            scalar::v_escape as usize
         }
     };
 }

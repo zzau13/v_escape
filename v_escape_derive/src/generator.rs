@@ -91,6 +91,7 @@ impl<'a> Generator<'a> {
                 mod chars {
                     use super::*;
                     _v_escape_escape_char!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
+                    _v_escape_escape_char_ptr!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
                 }
             )
         } else {
@@ -98,6 +99,7 @@ impl<'a> Generator<'a> {
                 mod chars {
                     use super::*;
                     _v_escape_escape_char!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
+                    _v_escape_escape_char_ptr!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
                 }
             )
         };
@@ -110,6 +112,7 @@ impl<'a> Generator<'a> {
                 mod scalar {
                     use super::*;
                     _v_escape_escape_scalar!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
+                    _v_escape_escape_scalar_ptr!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
                 }
             )
         } else {
@@ -117,6 +120,7 @@ impl<'a> Generator<'a> {
                 mod scalar {
                     use super::*;
                     _v_escape_escape_scalar!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
+                    _v_escape_escape_scalar_ptr!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
                 }
             )
         };
@@ -181,6 +185,15 @@ impl<'a> Generator<'a> {
             }
             self.write_macro_tt(buf, ranges);
             buf.writeln(");");
+            buf.write("_v_escape_escape_ranges_ptr!(");
+            buf.write(i);
+            if self.pairs.len() == 1 {
+                buf.write("2 (V_ESCAPE_CHAR, V_ESCAPE_QUOTES, V_ESCAPE_LEN) ");
+            } else {
+                buf.write("2 (V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN) ");
+            }
+            self.write_macro_tt(buf, ranges);
+            buf.writeln(");");
             buf.writeln("}");
         }
         buf.writeln("}");
@@ -189,6 +202,12 @@ impl<'a> Generator<'a> {
     fn write_cfg_if(&self, buf: &mut Buffer) {
         buf.writeln(&format!(
             "_v_escape_cfg_escape!({}, {}, {});",
+            self.simd,
+            self.ranges || self.pairs.len() == 1,
+            self.avx && self.ranges
+        ));
+        buf.writeln(&format!(
+            "_v_escape_cfg_escape_ptr!({}, {}, {});",
             self.simd,
             self.ranges || self.pairs.len() == 1,
             self.avx && self.ranges

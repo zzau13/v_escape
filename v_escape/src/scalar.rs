@@ -48,3 +48,63 @@ macro_rules! _v_escape_escape_scalar {
         }
     };
 }
+
+#[macro_export]
+#[doc(hidden)]
+macro_rules! _v_escape_escape_scalar_ptr {
+    ($($t:tt)+) => {
+        #[inline]
+        pub unsafe fn v_escape(bytes: &[u8], buf: &mut [u8]) -> Option<usize> {
+            let max = buf.len();
+            let buf_ptr = buf.as_mut_ptr();
+            let mut buf_cur = 0;
+            let mut start = 0;
+
+            for (i, b) in bytes.iter().enumerate() {
+                macro_rules! _inside {
+                    (impl one $byte:ident, $quote:ident) => {
+                        if $byte == *b {
+                            _v_escape_bodies_exact_one_ptr!(
+                                $byte,
+                                $quote,
+                                (),
+                                i,
+                                *b,
+                                start,
+                                buf_cur,
+                                buf_ptr,
+                                max,
+                                bytes,
+                                _v_escape_escape_body_ptr
+                            );
+                        }
+                    };
+                    (impl $T:ident, $Q:ident, $Q_LEN:ident) => {
+                        _v_escape_bodies_ptr!(
+                            $T,
+                            $Q,
+                            $Q_LEN,
+                            i,
+                            *b,
+                            start,
+                            buf_cur,
+                            buf_ptr,
+                            max,
+                            bytes,
+                            _v_escape_escape_body_ptr
+                        );
+                    };
+                }
+
+                _inside!(impl $($t)+);
+            }
+
+            let len = bytes.len();
+            if start < len {
+                _v_escape_write_ptr!(buf_cur, buf_ptr, &bytes[start..len], len - start, max);
+            }
+
+            Some(buf_cur)
+        }
+    };
+}

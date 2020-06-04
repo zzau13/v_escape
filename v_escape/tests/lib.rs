@@ -166,9 +166,46 @@ macro_rules! test {
     };
 }
 
+macro_rules! test_ptr {
+    ($escapes:expr, $escaped:expr) => {{
+        let empty = "";
+        let escapes = $escapes;
+        let escaped = $escaped;
+        let short = "foobar";
+        let long = "foobar".repeat(100);
+        let mix = long.clone() + escapes + short + &long;
+        let mix_escaped = long.clone() + escaped + short + &long;
+        let buf = &mut [0u8; 2048];
+        assert_eq!(v_escape(empty.as_bytes(), buf), Some(empty.len()));
+        assert_eq!(v_escape(short.as_bytes(), buf), Some(short.len()));
+        assert_eq!(&buf[..short.len()], short.as_bytes());
+        let buf = &mut [0u8; 2048];
+        assert_eq!(v_escape(long.as_bytes(), buf), Some(long.len()));
+        assert_eq!(&buf[..long.len()], long.as_bytes());
+        let buf = &mut [0u8; 2048];
+        assert_eq!(v_escape(escapes.as_bytes(), buf), Some(escaped.len()));
+        assert_eq!(&buf[..escaped.len()], escaped.as_bytes());
+        let buf = &mut [0u8; 2048];
+        assert_eq!(v_escape(mix.as_bytes(), buf), Some(mix_escaped.len()));
+        assert_eq!(&buf[..mix_escaped.len()], mix_escaped.as_bytes());
+
+        let buf = &mut [0u8; 2048];
+        let mut cur = 0;
+        for c in escapes.chars() {
+            if let Some(i) = v_escape_char(c, &mut buf[cur..]) {
+                cur += i;
+            } else {
+                panic!("Can't write");
+            }
+        }
+        assert_eq!(&buf[..escaped.len()], escaped.as_bytes());
+    }};
+}
+
 #[test]
 fn test_escape() {
     test!(MyEscape, "<", "foo");
+    test_ptr!("<", "foo")
 }
 
 mod no_simd {
@@ -182,6 +219,7 @@ mod no_simd {
         #[test]
         fn test_escape() {
             test!(MyE, "<=ABPQ", "bcadef");
+            test_ptr!("<=ABPQ", "bcadef");
         }
     }
 
@@ -195,6 +233,7 @@ mod no_simd {
         #[test]
         fn test_escape() {
             test!(MyE, "<=ABPQ", "bcadef");
+            test_ptr!("<=ABPQ", "bcadef");
         }
     }
 }
@@ -211,6 +250,7 @@ mod no_avx {
         #[test]
         fn test_escape() {
             test!(MyE, "<=ABPQ", "bcadef");
+            test_ptr!("<=ABPQ", "bcadef");
         }
     }
 
@@ -224,6 +264,7 @@ mod no_avx {
         #[test]
         fn test_escape() {
             test!(MyE, "<=ABPQ", "bcadef");
+            test_ptr!("<=ABPQ", "bcadef");
         }
     }
 }
@@ -263,6 +304,7 @@ mod empty {
     #[test]
     fn test_escape() {
         test!(MyE, "A", "");
+        test_ptr!("A", "");
     }
 }
 
@@ -282,12 +324,17 @@ mod test_avx {
                 "0123456789",
                 "zeroonetwothreefourfivesixseveneightnine"
             );
+            test_ptr!("0123456789", "zeroonetwothreefourfivesixseveneightnine");
         }
 
         #[test]
         fn test_escape_b() {
             test!(
                 MyE,
+                "0 1-2 3-4 56789",
+                "zero one-two three-four fivesixseveneightnine"
+            );
+            test_ptr!(
                 "0 1-2 3-4 56789",
                 "zero one-two three-four fivesixseveneightnine"
             );
@@ -301,6 +348,7 @@ mod test_avx {
         #[test]
         fn test_escape() {
             test!(MyE, "<=ABPQ", "bcadef");
+            test_ptr!("<=ABPQ", "bcadef");
         }
     }
 
@@ -311,6 +359,7 @@ mod test_avx {
         #[test]
         fn test_escape() {
             test!(MyE, "<=APQ", "abcde");
+            test_ptr!("<=APQ", "abcde");
         }
     }
 
@@ -321,6 +370,7 @@ mod test_avx {
         #[test]
         fn test_escape() {
             test!(MyE, "<>AP", "aecd");
+            test_ptr!("<>AP", "aecd");
         }
     }
 
@@ -331,6 +381,7 @@ mod test_avx {
         #[test]
         fn test_escape() {
             test!(MyE, "<AP", "acb");
+            test_ptr!("<AP", "acb");
         }
     }
 
@@ -341,6 +392,7 @@ mod test_avx {
         #[test]
         fn test_escape() {
             test!(MyE, "<=>PQ", "abedc");
+            test_ptr!("<=>PQ", "abedc");
         }
     }
 
@@ -351,6 +403,7 @@ mod test_avx {
         #[test]
         fn test_escape() {
             test!(MyE, "<=>P", "abdc");
+            test_ptr!("<=>P", "abdc");
         }
     }
 
@@ -361,6 +414,7 @@ mod test_avx {
         #[test]
         fn test_escape() {
             test!(MyE, "<P", "ab");
+            test_ptr!("<P", "ab");
         }
     }
 
@@ -371,6 +425,7 @@ mod test_avx {
         #[test]
         fn test_escape() {
             test!(MyE, "<=", "ab");
+            test_ptr!("<=", "ab");
         }
     }
 
@@ -381,6 +436,7 @@ mod test_avx {
         #[test]
         fn test_escape() {
             test!(MyE, "<", "f");
+            test_ptr!("<", "f");
         }
     }
 }
@@ -392,6 +448,7 @@ mod char_syntax {
         #[test]
         fn test_escape() {
             test!(MyE, " ", "f");
+            test_ptr!(" ", "f");
         }
     }
 }
