@@ -59,6 +59,7 @@ macro_rules! _v_escape_escape_char_ptr {
                 }
 
                 _inside!(impl $($t)+);
+                // Ascii length is one byte
                 if 0 < max {
                     buf_ptr.write(c as u8);
                     return Some(1);
@@ -68,6 +69,7 @@ macro_rules! _v_escape_escape_char_ptr {
             }
 
 
+            // https://doc.rust-lang.org/std/primitive.char.html#panics-2
             if 3 < max {
                 Some(c.encode_utf8(buf).len())
             } else {
