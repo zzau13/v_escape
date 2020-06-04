@@ -199,6 +199,12 @@ macro_rules! test_ptr {
             }
         }
         assert_eq!(&buf[..escaped.len()], escaped.as_bytes());
+        let buf = &mut [0u8; 0];
+        assert_eq!(v_escape(empty.as_bytes(), buf), Some(empty.len()));
+        assert_eq!(v_escape(short.as_bytes(), buf), None);
+        let mut buf: [u8; 2048] = unsafe { std::mem::MaybeUninit::uninit().assume_init() };
+        assert_eq!(v_escape(long.as_bytes(), &mut buf), Some(long.len()));
+        assert_eq!(&buf[..long.len()], long.as_bytes());
     }};
 }
 
