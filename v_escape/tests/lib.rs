@@ -175,6 +175,9 @@ macro_rules! test_ptr {
         let long = "foobar".repeat(100);
         let mix = long.clone() + escapes + short + &long;
         let mix_escaped = long.clone() + escaped + short + &long;
+        let mix_2 = long.repeat(3) + &escapes.repeat(3) + short + &escapes.repeat(2) + &long;
+        let mix_escaped_2 =
+            long.repeat(3) + &escaped.repeat(3) + short + &escaped.repeat(2) + &long;
         let buf = &mut [0u8; 2048];
         assert_eq!(v_escape(empty.as_bytes(), buf), Some(empty.len()));
         assert_eq!(v_escape(short.as_bytes(), buf), Some(short.len()));
@@ -188,6 +191,10 @@ macro_rules! test_ptr {
         let buf = &mut [0u8; 2048];
         assert_eq!(v_escape(mix.as_bytes(), buf), Some(mix_escaped.len()));
         assert_eq!(&buf[..mix_escaped.len()], mix_escaped.as_bytes());
+
+        let buf = &mut [0u8; 10240];
+        assert_eq!(v_escape(mix_2.as_bytes(), buf), Some(mix_escaped_2.len()));
+        assert_eq!(&buf[..mix_escaped_2.len()], mix_escaped_2.as_bytes());
 
         let buf = &mut [0u8; 2048];
         let mut cur = 0;

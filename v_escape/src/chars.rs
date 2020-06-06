@@ -41,7 +41,7 @@ macro_rules! _v_escape_escape_char_ptr {
                     (impl one $byte:ident, $quote:ident) => {
                         if $byte == c as u8 {
                             let mut buf_cur = 0;
-                            _v_escape_write_ptr!(buf_cur, buf, $quote.as_bytes(), $quote.len());
+                            _v_escape_write_ptr!(buf_cur, buf, ($quote.as_bytes() as *const [u8] as *const u8), $quote.len());
                             return Some(buf_cur);
                         }
                     };
@@ -50,7 +50,7 @@ macro_rules! _v_escape_escape_char_ptr {
                         if c < $Q_LEN {
                             let mut buf_cur = 0;
                             let quote = $Q[c];
-                            _v_escape_write_ptr!(buf_cur, buf, quote.as_bytes(), quote.len());
+                            _v_escape_write_ptr!(buf_cur, buf, (quote.as_bytes() as *const [u8] as *const u8), quote.len());
                             return Some(buf_cur);
                         }
                     };

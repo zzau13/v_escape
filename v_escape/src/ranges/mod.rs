@@ -177,7 +177,7 @@ macro_rules! _v_escape_escape_ranges_ptr {
                         ($mask:ident, $at:ident, $cur:ident, $ptr:ident) => {
                             // Calls macro `bodies!` at position `$at + $cur`
                             // of byte `*$ptr` + `$curr` with macro `_v_escape_mask_body!`
-                            $callback!($T, $Q, $Q_LEN, $at + $cur, *$ptr.add($cur), start, buf_cur, buf, bytes, _v_escape_mask_body_ptr);
+                            $callback!($T, $Q, $Q_LEN, $at + $cur, *$ptr.add($cur), start, buf_cur, buf, start_ptr, _v_escape_mask_body_ptr);
 
                             // Create binary vector of all zeros except
                             // position `$curr` and xor operation with `$mask`
@@ -242,7 +242,7 @@ macro_rules! _v_escape_escape_ranges_ptr {
                                     start,
                                     buf_cur,
                                     buf,
-                                    bytes,
+                                    start_ptr,
                                     _v_escape_mask_body_ptr
                                 );
                                 ptr = ptr.offset(1);
@@ -264,7 +264,7 @@ macro_rules! _v_escape_escape_ranges_ptr {
                                         start,
                                         buf_cur,
                                         buf,
-                                        bytes,
+                                        start_ptr,
                                         _v_escape_mask_body_ptr
                                     );
                                 }
@@ -282,7 +282,8 @@ macro_rules! _v_escape_escape_ranges_ptr {
             // Write since start to the end of the slice
             debug_assert!(start <= len);
             if start < len {
-                _v_escape_write_ptr!(buf_cur, buf, &bytes[start..len], len - start);
+                let len = len - start;
+                _v_escape_write_ptr!(buf_cur, buf, start_ptr.add(start), len);
             }
 
             Some(buf_cur)

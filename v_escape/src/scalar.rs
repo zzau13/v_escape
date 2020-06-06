@@ -5,6 +5,7 @@ macro_rules! _v_escape_escape_scalar {
         #[inline]
         pub fn escape(bytes: &[u8], fmt: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
             use std::str::from_utf8_unchecked;
+            let start_ptr = bytes.as_ptr();
             let mut start = 0;
 
             for (i, b) in bytes.iter().enumerate() {
@@ -55,6 +56,7 @@ macro_rules! _v_escape_escape_scalar_ptr {
     ($($t:tt)+) => {
         #[inline]
         pub unsafe fn v_escape(bytes: &[u8], buf: &mut [u8]) -> Option<usize> {
+            let start_ptr = bytes.as_ptr();
             let mut buf_cur = 0;
             let mut start = 0;
 
@@ -71,7 +73,7 @@ macro_rules! _v_escape_escape_scalar_ptr {
                                 start,
                                 buf_cur,
                                 buf,
-                                bytes,
+                                start_ptr,
                                 _v_escape_escape_body_ptr
                             );
                         }
@@ -86,7 +88,7 @@ macro_rules! _v_escape_escape_scalar_ptr {
                             start,
                             buf_cur,
                             buf,
-                            bytes,
+                            start_ptr,
                             _v_escape_escape_body_ptr
                         );
                     };
@@ -97,7 +99,8 @@ macro_rules! _v_escape_escape_scalar_ptr {
 
             let len = bytes.len();
             if start < len {
-                _v_escape_write_ptr!(buf_cur, buf, &bytes[start..len], len - start);
+                let len = len - start;
+                _v_escape_write_ptr!(buf_cur, buf, start_ptr.add(start), len);
             }
 
             Some(buf_cur)
