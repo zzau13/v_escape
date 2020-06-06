@@ -35,15 +35,13 @@ macro_rules! _v_escape_escape_char_ptr {
     ($($t:tt)+) => {
         #[inline]
         pub unsafe fn v_escape_char(c: char, buf: &mut [u8]) -> Option<usize> {
-            let max = buf.len();
-            let buf_ptr = buf.as_mut_ptr();
-
-            if c.is_ascii() {
+            let len = c.len_utf8();
+            if len == 1 {
                 macro_rules! _inside {
                     (impl one $byte:ident, $quote:ident) => {
                         if $byte == c as u8 {
                             let mut buf_cur = 0;
-                            _v_escape_write_ptr!(buf_cur, buf_ptr, $quote.as_bytes(), $quote.len(), max);
+                            _v_escape_write_ptr!(buf_cur, buf, $quote.as_bytes(), $quote.len());
                             return Some(buf_cur);
                         }
                     };
@@ -52,7 +50,7 @@ macro_rules! _v_escape_escape_char_ptr {
                         if c < $Q_LEN {
                             let mut buf_cur = 0;
                             let quote = $Q[c];
-                            _v_escape_write_ptr!(buf_cur, buf_ptr, quote.as_bytes(), quote.len(), max);
+                            _v_escape_write_ptr!(buf_cur, buf, quote.as_bytes(), quote.len());
                             return Some(buf_cur);
                         }
                     };
@@ -60,17 +58,13 @@ macro_rules! _v_escape_escape_char_ptr {
 
                 _inside!(impl $($t)+);
                 // Ascii length is one byte
-                if 0 < max {
-                    buf_ptr.write(c as u8);
-                    return Some(1);
+                if 0 < buf.len() {
+                    buf[0] = c as u8;
+                    Some(1)
                 } else {
-                    return None;
+                    None
                 }
-            }
-
-
-            // https://doc.rust-lang.org/std/primitive.char.html#panics-2
-            if 3 < max {
+            } else if len < buf.len() {
                 Some(c.encode_utf8(buf).len())
             } else {
                 None

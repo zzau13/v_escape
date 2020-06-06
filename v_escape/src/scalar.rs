@@ -55,8 +55,6 @@ macro_rules! _v_escape_escape_scalar_ptr {
     ($($t:tt)+) => {
         #[inline]
         pub unsafe fn v_escape(bytes: &[u8], buf: &mut [u8]) -> Option<usize> {
-            let max = buf.len();
-            let buf_ptr = buf.as_mut_ptr();
             let mut buf_cur = 0;
             let mut start = 0;
 
@@ -72,8 +70,7 @@ macro_rules! _v_escape_escape_scalar_ptr {
                                 *b,
                                 start,
                                 buf_cur,
-                                buf_ptr,
-                                max,
+                                buf,
                                 bytes,
                                 _v_escape_escape_body_ptr
                             );
@@ -88,8 +85,7 @@ macro_rules! _v_escape_escape_scalar_ptr {
                             *b,
                             start,
                             buf_cur,
-                            buf_ptr,
-                            max,
+                            buf,
                             bytes,
                             _v_escape_escape_body_ptr
                         );
@@ -101,7 +97,7 @@ macro_rules! _v_escape_escape_scalar_ptr {
 
             let len = bytes.len();
             if start < len {
-                _v_escape_write_ptr!(buf_cur, buf_ptr, &bytes[start..len], len - start, max);
+                _v_escape_write_ptr!(buf_cur, buf, &bytes[start..len], len - start);
             }
 
             Some(buf_cur)

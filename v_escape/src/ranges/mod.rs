@@ -161,8 +161,6 @@ macro_rules! _v_escape_escape_ranges_ptr {
     };
     (impl $loops:ident for ($T:ident, $Q:ident, $Q_LEN:ident) $($t:tt)+) => {
         pub unsafe fn v_escape(bytes: &[u8], buf: &mut [u8]) -> Option<usize> {
-            let max = buf.len();
-            let buf_ptr = buf.as_mut_ptr();
             let mut buf_cur = 0;
 
             let len = bytes.len();
@@ -179,7 +177,7 @@ macro_rules! _v_escape_escape_ranges_ptr {
                         ($mask:ident, $at:ident, $cur:ident, $ptr:ident) => {
                             // Calls macro `bodies!` at position `$at + $cur`
                             // of byte `*$ptr` + `$curr` with macro `_v_escape_mask_body!`
-                            $callback!($T, $Q, $Q_LEN, $at + $cur, *$ptr.add($cur), start, buf_cur, buf_ptr, max, bytes, _v_escape_mask_body_ptr);
+                            $callback!($T, $Q, $Q_LEN, $at + $cur, *$ptr.add($cur), start, buf_cur, buf, bytes, _v_escape_mask_body_ptr);
 
                             // Create binary vector of all zeros except
                             // position `$curr` and xor operation with `$mask`
@@ -243,8 +241,7 @@ macro_rules! _v_escape_escape_ranges_ptr {
                                     *ptr,
                                     start,
                                     buf_cur,
-                                    buf_ptr,
-                                    max,
+                                    buf,
                                     bytes,
                                     _v_escape_mask_body_ptr
                                 );
@@ -266,8 +263,7 @@ macro_rules! _v_escape_escape_ranges_ptr {
                                         *ptr,
                                         start,
                                         buf_cur,
-                                        buf_ptr,
-                                        max,
+                                        buf,
                                         bytes,
                                         _v_escape_mask_body_ptr
                                     );
@@ -286,7 +282,7 @@ macro_rules! _v_escape_escape_ranges_ptr {
             // Write since start to the end of the slice
             debug_assert!(start <= len);
             if start < len {
-                _v_escape_write_ptr!(buf_cur, buf_ptr, &bytes[start..len], len - start, max);
+                _v_escape_write_ptr!(buf_cur, buf, &bytes[start..len], len - start);
             }
 
             Some(buf_cur)
