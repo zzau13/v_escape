@@ -64,16 +64,18 @@ macro_rules! loop_range_switch_avx2  {
             // At this point at most there is less then `M256_VECTOR_SIZE` elements
             // so the macro `write_forward` is used to finalize de process
             if $ptr < $end_ptr {
-                debug_assert_eq!(0, ($ptr as usize) % M256_VECTOR_SIZE);
+                let d = M256_VECTOR_SIZE - _v_escape_sub!($end_ptr, $ptr);
+                $ptr = $ptr.sub(d);
 
-                let mut mask = {
-                    let a = _mm256_load_si256($ptr as *const __m256i);
+                let mut mask = ({
+                    debug_assert_eq!(M256_VECTOR_SIZE, _v_escape_sub!($end_ptr, $ptr), "Over runs");
+                    let a = _mm256_loadu_si256($ptr as *const __m256i);
                     _mm256_movemask_epi8(masking!(a))
-                };
+                } as u32).wrapping_shr(d as u32);
+                $ptr = $ptr.add(d);
 
                 if mask != 0 {
-                    let end = _v_escape_sub!($end_ptr, $ptr);
-                    write_forward!(mask, end);
+                    write_mask!(mask, $ptr);
                 }
             }
         }
