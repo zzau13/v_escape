@@ -59,14 +59,12 @@ macro_rules! loop_range_switch_sse2  {
             // so the macro `write_mask` is used to the last elements
             if $ptr < $end_ptr {
                 let d = M128_VECTOR_SIZE - _v_escape_sub!($end_ptr, $ptr);
-                $ptr = $ptr.sub(d);
 
                 let mut mask = ({
-                    debug_assert_eq!(M128_VECTOR_SIZE, _v_escape_sub!($end_ptr, $ptr));
-                    let a = _mm_loadu_si128($ptr as *const __m128i);
+                    debug_assert_eq!(M128_VECTOR_SIZE, _v_escape_sub!($end_ptr, $ptr.sub(d)));
+                    let a = _mm_loadu_si128($ptr.sub(d) as *const __m128i);
                     _mm_movemask_epi8(masking!(a))
                 } as u16).wrapping_shr(d as u32);
-                $ptr = $ptr.add(d);
 
                 if mask != 0 {
                     write_mask!(mask, $ptr);

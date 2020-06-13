@@ -11,7 +11,7 @@
 /// * `b` - *const u8 representing a pointer to u8
 ///
 macro_rules! _v_escape_sub {
-    ($a:ident, $b:ident) => {{
+    ($a:expr, $b:expr) => {{
         debug_assert!($b <= $a);
         ($a as usize) - ($b as usize)
     }};
