@@ -1,3 +1,6 @@
+# Disclaimer
+Any invalid reference issue should have a valid case and not a output of your magic fuzzy.
+
 # v_escape [![Documentation](https://docs.rs/v_escape/badge.svg)](https://docs.rs/v_escape/) [![Latest version](https://img.shields.io/crates/v/v_escape.svg)](https://crates.io/crates/v_escape) [![Build Status](https://travis-ci.org/botika/v_escape.svg?branch=master)](https://travis-ci.org/botika/v_escape)
 > The simd optimized escape code
 
