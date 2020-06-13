@@ -73,23 +73,6 @@
 //! # }
 //! ```
 //!
-//! `ranges` refers to a possible optimization that when given a number of pairs,
-//! an optimal number of ranges (with a maximum of three) are calculated and used
-//! to escape all bytes within each range. It is possible the existence of false
-//! positives, and will be discarded. If a lot of pairs have to be discarded
-//! sub-attribute `ranges` must be explicitly disabled. In the case that more than
-//! three bytes are used and the distance between the escaped characters is very
-//! large, then `ranges = false`.
-//!
-//! ```
-//! # #[macro_use]
-//! # extern crate v_escape;
-//! new_escape!(MyEscape, "0-> || 33->foo || 66->bar || 127->", ranges = false);
-//! # fn main() {
-//! assert_eq!(escape("fooBbar").to_string(), "foobarbar");
-//! # }
-//! ```
-//!
 //! In the following example more than 16 pairs are given, this exceeds simd's
 //! boundary. If simd optimization is wanted, ranges must be enabled (default)
 //! or an error will be thrown. It is possible to not use ranges but simd
@@ -129,8 +112,6 @@ use v_escape_derive::Escape;
 mod macros;
 #[macro_use]
 mod scalar;
-#[macro_use]
-mod sse;
 #[macro_use]
 mod ranges;
 #[macro_use]
@@ -294,7 +275,7 @@ macro_rules! _v_escape_escape_new {
 #[doc(hidden)]
 /// cfg_if for escape function
 macro_rules! _v_escape_cfg_escape {
-    (false, $a:expr, $b:expr) => {
+    (false, $($t:tt)+) => {
         _v_escape_cfg_escape!(fn);
     };
     (true, $($t:tt)+) => {
@@ -334,14 +315,7 @@ macro_rules! _v_escape_cfg_escape {
             scalar::escape(bytes, fmt)
         }
     };
-    (if false, $a:expr) => {
-        if is_x86_feature_detected!("sse4.2") {
-            sse::escape as usize
-        } else {
-            scalar::escape as usize
-        }
-    };
-    (if true, true) => {
+    (if true) => {
         if cfg!(not(v_escape_noavx)) && is_x86_feature_detected!("avx2") {
             ranges::avx::escape as usize
         } else if is_x86_feature_detected!("sse2") {
@@ -350,7 +324,7 @@ macro_rules! _v_escape_cfg_escape {
             scalar::escape as usize
         }
     };
-    (if true, false) => {
+    (if false) => {
         if is_x86_feature_detected!("sse2") {
             ranges::sse::escape as usize
         } else {
@@ -363,7 +337,7 @@ macro_rules! _v_escape_cfg_escape {
 #[doc(hidden)]
 /// cfg_if for escape function
 macro_rules! _v_escape_cfg_escape_ptr {
-    (false, $a:expr, $b:expr) => {
+    (false, $($t:tt)+) => {
         _v_escape_cfg_escape_ptr!(fn);
     };
     (true, $($t:tt)+) => {
@@ -404,10 +378,7 @@ macro_rules! _v_escape_cfg_escape_ptr {
             scalar::v_escape(bytes, buf)
         }
     };
-    (if false, $a:expr) => {
-        unimplemented!("v_escape for sse4");
-    };
-    (if true, true) => {
+    (if true) => {
         if cfg!(not(v_escape_noavx)) && is_x86_feature_detected!("avx2") {
             ranges::avx::v_escape as usize
         } else if is_x86_feature_detected!("sse2") {
@@ -416,7 +387,7 @@ macro_rules! _v_escape_cfg_escape_ptr {
             scalar::v_escape as usize
         }
     };
-    (if true, false) => {
+    (if false) => {
         if is_x86_feature_detected!("sse2") {
             ranges::sse::v_escape as usize
         } else {

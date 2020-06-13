@@ -20,8 +20,8 @@ pub fn derive(input: TokenStream) -> TokenStream {
 ///
 /// Reads the metadata from the `escape()` attribute.
 fn build(ast: &syn::DeriveInput) -> String {
-    let (avx, pairs, print, ranges, simd) = visit_derive(ast);
-    let code = generator::generate(&parser::parse(&pairs), simd, ranges, avx);
+    let (avx, pairs, print, simd) = visit_derive(ast);
+    let code = generator::generate(&parser::parse(&pairs), simd, avx);
 
     if print {
         eprintln!("{}", code);
@@ -34,13 +34,12 @@ fn visit_derive(i: &syn::DeriveInput) -> Struct {
     StructBuilder::default().build(i)
 }
 
-type Struct = (bool, String, bool, bool, bool);
+type Struct = (bool, String, bool, bool);
 
 struct StructBuilder {
     avx: bool,
     pairs: Option<String>,
     print: bool,
-    ranges: bool,
     simd: bool,
 }
 
@@ -50,7 +49,6 @@ impl Default for StructBuilder {
             avx: true,
             pairs: None,
             print: false,
-            ranges: true,
             simd: true,
         }
     }
@@ -66,7 +64,6 @@ impl StructBuilder {
             self.avx,
             self.pairs.expect("Need pairs attribute"),
             self.print,
-            self.ranges,
             self.simd,
         )
     }
@@ -104,12 +101,6 @@ impl<'a> Visit<'a> for StructBuilder {
                 self.print = s.value;
             } else {
                 panic!("attribute print must be boolean");
-            }
-        } else if path.is_ident("ranges") {
-            if let syn::Lit::Bool(s) = lit {
-                self.ranges = s.value;
-            } else {
-                panic!("attribute ranges must be boolean ");
             }
         } else if path.is_ident("simd") {
             if let syn::Lit::Bool(s) = lit {

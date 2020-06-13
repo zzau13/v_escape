@@ -27,13 +27,13 @@ cfg_if! {
         new_escape!(
             HTMLEscape,
             "60->&lt; || 62->&gt; || 38->&amp; || 34->&quot; || 39->&#x27; || 47->&#x2f;",
-            ranges = true, simd = true, avx = true
+            simd = true, avx = true
         );
     } else if #[cfg(all(v_htmlescape_simd, v_htmlescape_sse))] {
         new_escape!(
             HTMLEscape,
             "60->&lt; || 62->&gt; || 38->&amp; || 34->&quot; || 39->&#x27; || 47->&#x2f;",
-            ranges = true, simd = true, avx = false
+            simd = true, avx = false
         );
     } else {
         pub use self::fallback::*;
