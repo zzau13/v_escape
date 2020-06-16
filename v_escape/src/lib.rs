@@ -209,7 +209,7 @@ macro_rules! _v_escape_escape_new {
             }
 
             #[inline]
-            pub fn v_escape(&self, buf: &mut [u8]) -> Option<usize> {
+            pub fn v_escape(&self, buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
                 #[allow(unused_unsafe)]
                 unsafe {
                     _v_escape(self.bytes, buf)
@@ -232,7 +232,7 @@ macro_rules! _v_escape_escape_new {
         }
 
         #[inline]
-        pub fn v_escape(s: &[u8], buf: &mut [u8]) -> Option<usize> {
+        pub fn v_escape(s: &[u8], buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
             #[allow(unused_unsafe)]
             unsafe {
                 _v_escape(s, buf)
@@ -262,7 +262,7 @@ macro_rules! _v_escape_escape_new {
         }
 
         #[inline]
-        pub fn v_escape_char(c: char, buf: &mut [u8]) -> Option<usize> {
+        pub fn v_escape_char(c: char, buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
             #[allow(unused_unsafe)]
             unsafe {
                 chars::v_escape_char(c, buf)
@@ -345,18 +345,18 @@ macro_rules! _v_escape_cfg_escape_ptr {
         #[inline(always)]
         #[allow(unreachable_code)]
         // https://github.com/BurntSushi/rust-memchr/blob/master/src/x86/mod.rs#L9-L29
-        pub unsafe fn _v_escape(bytes: &[u8], buf: &mut [u8]) -> Option<usize> {
+        pub unsafe fn _v_escape(bytes: &[u8], buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
             use std::mem;
             use std::sync::atomic::{AtomicUsize, Ordering};
-            static mut FN: fn(&[u8], &mut [u8]) -> Option<usize> = detect;
+            static mut FN: fn(&[u8], &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> = detect;
 
-            fn detect(bytes: &[u8], buf: &mut [u8]) -> Option<usize> {
+            fn detect(bytes: &[u8], buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
                 let fun = _v_escape_cfg_escape_ptr!(if $($t)+);
 
                 let slot = unsafe { &*(&FN as *const _ as *const AtomicUsize) };
                 slot.store(fun as usize, Ordering::Relaxed);
                 unsafe {
-                    mem::transmute::<usize, fn(&[u8], &mut [u8]) -> Option<usize>>(fun)(
+                    mem::transmute::<usize, fn(&[u8], &mut [std::mem::MaybeUninit<u8>]) -> Option<usize>>(fun)(
                         bytes, buf,
                     )
                 }
@@ -365,7 +365,7 @@ macro_rules! _v_escape_cfg_escape_ptr {
             unsafe {
                 let slot = &*(&FN as *const _ as *const AtomicUsize);
                 let fun = slot.load(Ordering::Relaxed);
-                mem::transmute::<usize, fn(&[u8], &mut [u8]) -> Option<usize>>(fun)(bytes, buf)
+                mem::transmute::<usize, fn(&[u8], &mut [std::mem::MaybeUninit<u8>]) -> Option<usize>>(fun)(bytes, buf)
             }
         }
 
@@ -374,7 +374,7 @@ macro_rules! _v_escape_cfg_escape_ptr {
     };
     (fn) => {
         #[inline(always)]
-        pub unsafe fn _v_escape(bytes: &[u8], buf: &mut [u8]) -> Option<usize> {
+        pub unsafe fn _v_escape(bytes: &[u8], buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
             scalar::v_escape(bytes, buf)
         }
     };

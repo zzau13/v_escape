@@ -119,7 +119,7 @@ macro_rules! _v_escape_escape_body_ptr {
         _v_escape_write_ptr!(
             $cur,
             $buf,
-            (quote.as_bytes() as *const [u8] as *const u8),
+            (quote.as_bytes() as *const _ as *const u8),
             quote.len()
         );
         // Updates `start` index with the new current position  `i` + 1
@@ -149,7 +149,7 @@ macro_rules! _v_escape_write_ptr {
         if $buf.len() < $cur + $len {
             return None;
         } else {
-            std::ptr::copy_nonoverlapping($src, ($buf as *mut [u8] as *mut u8).add($cur), $len);
+            std::ptr::copy_nonoverlapping($src, ($buf as *mut _ as *mut u8).add($cur), $len);
             $cur += $len;
         }
     };

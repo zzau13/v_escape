@@ -166,8 +166,17 @@ macro_rules! test {
     };
 }
 
+macro_rules! maybe_init {
+    ($b:ident, $l:expr) => {
+        unsafe { from_raw_parts(&$b as *const _ as *const u8, $l) }
+    };
+}
+
 macro_rules! test_ptr {
     ($escapes:expr, $escaped:expr) => {{
+        use std::mem::MaybeUninit;
+        use std::slice::from_raw_parts;
+
         let empty = "";
         let escapes = $escapes;
         let escaped = $escaped;
@@ -178,45 +187,48 @@ macro_rules! test_ptr {
         let mix_2 = long.repeat(3) + &escapes.repeat(3) + short + &escapes.repeat(2) + &long;
         let mix_escaped_2 =
             long.repeat(3) + &escaped.repeat(3) + short + &escaped.repeat(2) + &long;
-        let buf = &mut [0u8; 2048];
-        assert_eq!(v_escape(empty.as_bytes(), buf), Some(empty.len()));
-        assert_eq!(v_escape(short.as_bytes(), buf), Some(short.len()));
-        assert_eq!(&buf[..short.len()], short.as_bytes());
-        let buf = &mut [0u8; 2048];
-        assert_eq!(v_escape(long.as_bytes(), buf), Some(long.len()));
-        assert_eq!(&buf[..long.len()], long.as_bytes());
-        let buf = &mut [0u8; 2048];
-        assert_eq!(v_escape(escapes.as_bytes(), buf), Some(escaped.len()));
-        assert_eq!(&buf[..escaped.len()], escaped.as_bytes());
-        let buf = &mut [0u8; 2048];
-        assert_eq!(v_escape(mix.as_bytes(), buf), Some(mix_escaped.len()));
-        assert_eq!(&buf[..mix_escaped.len()], mix_escaped.as_bytes());
+        let mut buf = [MaybeUninit::uninit(); 2048];
+        assert_eq!(v_escape(empty.as_bytes(), &mut buf), Some(empty.len()));
+        assert_eq!(v_escape(short.as_bytes(), &mut buf), Some(short.len()));
+        assert_eq!(maybe_init!(buf, short.len()), short.as_bytes());
+        let mut buf = [MaybeUninit::uninit(); 2048];
+        assert_eq!(v_escape(long.as_bytes(), &mut buf), Some(long.len()));
+        assert_eq!(maybe_init!(buf, long.len()), long.as_bytes());
+        let mut buf = [MaybeUninit::uninit(); 2048];
+        assert_eq!(v_escape(escapes.as_bytes(), &mut buf), Some(escaped.len()));
+        assert_eq!(maybe_init!(buf, escaped.len()), escaped.as_bytes());
+        let mut buf = [MaybeUninit::uninit(); 2048];
+        assert_eq!(v_escape(mix.as_bytes(), &mut buf), Some(mix_escaped.len()));
+        assert_eq!(maybe_init!(buf, mix_escaped.len()), mix_escaped.as_bytes());
 
-        let buf = &mut [0u8; 10240];
-        assert_eq!(v_escape(mix_2.as_bytes(), buf), Some(mix_escaped_2.len()));
-        assert_eq!(&buf[..mix_escaped_2.len()], mix_escaped_2.as_bytes());
+        let mut buf = [MaybeUninit::uninit(); 10240];
+        assert_eq!(
+            v_escape(mix_2.as_bytes(), &mut buf),
+            Some(mix_escaped_2.len())
+        );
+        assert_eq!(
+            maybe_init!(buf, mix_escaped_2.len()),
+            mix_escaped_2.as_bytes()
+        );
 
-        let buf = &mut [0u8; 2048];
+        let mut buf = [MaybeUninit::uninit(); 2048];
         let mut cur = 0;
         for c in escapes.chars() {
             if let Some(i) = v_escape_char(c, &mut buf[cur..]) {
                 cur += i;
             } else {
-                panic!("Can't write");
+                panic!("overflow");
             }
         }
-        assert_eq!(&buf[..escaped.len()], escaped.as_bytes());
-        let buf = &mut [0u8; 0];
-        assert_eq!(v_escape(empty.as_bytes(), buf), Some(empty.len()));
-        assert_eq!(v_escape(short.as_bytes(), buf), None);
-        let mut buf: [u8; 2048] = unsafe { std::mem::MaybeUninit::uninit().assume_init() };
-        assert_eq!(v_escape(long.as_bytes(), &mut buf), Some(long.len()));
-        assert_eq!(&buf[..long.len()], long.as_bytes());
-        let mut buf: [u8; 599] = unsafe { std::mem::MaybeUninit::uninit().assume_init() };
+        assert_eq!(maybe_init!(buf, escaped.len()), escaped.as_bytes());
+        let mut buf = [MaybeUninit::uninit(); 0];
+        assert_eq!(v_escape(empty.as_bytes(), &mut buf), Some(empty.len()));
+        assert_eq!(v_escape(short.as_bytes(), &mut buf), None);
+        let mut buf = [MaybeUninit::uninit(); 599];
         assert_eq!(v_escape(long.as_bytes(), &mut buf), None);
-        let mut buf: [u8; 600] = unsafe { std::mem::MaybeUninit::uninit().assume_init() };
+        let mut buf = [MaybeUninit::uninit(); 600];
         assert_eq!(v_escape(long.as_bytes(), &mut buf), Some(long.len()));
-        assert_eq!(&buf[..long.len()], long.as_bytes());
+        assert_eq!(maybe_init!(buf, long.len()), long.as_bytes());
     }};
 }
 

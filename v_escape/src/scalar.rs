@@ -55,7 +55,7 @@ macro_rules! _v_escape_escape_scalar {
 macro_rules! _v_escape_escape_scalar_ptr {
     ($($t:tt)+) => {
         #[inline]
-        pub unsafe fn v_escape(bytes: &[u8], buf: &mut [u8]) -> Option<usize> {
+        pub unsafe fn v_escape(bytes: &[u8], buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
             let start_ptr = bytes.as_ptr();
             let mut buf_cur = 0;
             let mut start = 0;

@@ -160,7 +160,7 @@ macro_rules! _v_escape_escape_ranges_ptr {
         _v_escape_escape_ranges_ptr!(impl loop_range_switch_sse2 for $($t)+);
     };
     (impl $loops:ident for ($T:ident, $Q:ident, $Q_LEN:ident) $($t:tt)+) => {
-        pub unsafe fn v_escape(bytes: &[u8], buf: &mut [u8]) -> Option<usize> {
+        pub unsafe fn v_escape(bytes: &[u8], buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
             let mut buf_cur = 0;
 
             let len = bytes.len();
