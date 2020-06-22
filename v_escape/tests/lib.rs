@@ -274,7 +274,7 @@ mod bytes_buff {
         b_escape(mix_2.as_bytes(), &mut buf);
         assert_eq!(buf.as_ref(), mix_escaped_2.as_bytes());
 
-        let mut buf = BytesMut::new();
+        let mut buf = BytesMut::with_capacity(4);
         for c in escapes.chars() {
             b_escape_char(c, &mut buf);
         }

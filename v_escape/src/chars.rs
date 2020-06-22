@@ -63,7 +63,7 @@ macro_rules! _v_escape_escape_char_ptr {
                 }
             } else if len < buf.len() {
                 // safety, encode_utf8 not read
-                Some(c.encode_utf8(std::mem::transmute::<&mut [std::mem::MaybeUninit<u8>], &mut [u8]>(buf)).len())
+                Some(c.encode_utf8(std::mem::transmute(buf)).len())
             } else {
                 None
             }
@@ -97,9 +97,9 @@ macro_rules! _v_escape_escape_char_bytes {
                 }
 
                 _inside!(impl $($t)+);
-                buf.as_mut().as_mut_ptr().write(c as u8);
+                v_escape::BufMut::bytes_mut(buf)[0] = std::mem::MaybeUninit::new(c as u8);
             } else {
-                c.encode_utf8(buf.as_mut());
+                c.encode_utf8(std::mem::transmute(v_escape::BufMut::bytes_mut(buf)));
             }
             v_escape::BufMut::advance_mut(buf, len);
         }
