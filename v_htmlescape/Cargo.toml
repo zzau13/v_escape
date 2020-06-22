@@ -15,11 +15,6 @@ workspace = ".."
 travis-ci = { repository = "botika/v_escape", branch = "master" }
 maintenance = { status = "actively-developed" }
 
-[lib]
-name = "v_htmlescape"
-path = "src/lib.rs"
-bench = false
-
 [dependencies]
 v_escape = { version = "0.10", path = "../v_escape" }
 cfg-if = "0.1"

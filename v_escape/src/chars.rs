@@ -2,9 +2,7 @@
 #[doc(hidden)]
 macro_rules! _v_escape_escape_char {
     ($($t:tt)+) => {
-        #[inline]
         pub fn escape_char(c: char, fmt: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-
             if c.is_ascii() {
                 macro_rules! _inside {
                     (impl one $byte:ident, $quote:ident) => {
@@ -33,8 +31,7 @@ macro_rules! _v_escape_escape_char {
 #[doc(hidden)]
 macro_rules! _v_escape_escape_char_ptr {
     ($($t:tt)+) => {
-        #[inline]
-        pub unsafe fn v_escape_char(c: char, buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
+        pub unsafe fn f_escape_char(c: char, buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
             let len = c.len_utf8();
             if len == 1 {
                 macro_rules! _inside {
@@ -70,6 +67,41 @@ macro_rules! _v_escape_escape_char_ptr {
             } else {
                 None
             }
+        }
+    };
+}
+
+#[macro_export]
+#[doc(hidden)]
+macro_rules! _v_escape_escape_char_bytes {
+    ($($t:tt)+) => {
+        pub unsafe fn b_escape_char(c: char, buf: &mut v_escape::BytesMut) {
+            let len = c.len_utf8();
+            buf.reserve(len);
+            if len == 1 {
+                macro_rules! _inside {
+                    (impl one $byte:ident, $quote:ident) => {
+                        if $byte == c as u8 {
+                            let mut buf_cur = 0;
+                            _v_escape_write_bytes!($quote.as_bytes(), buf);
+                            return;
+                        }
+                    };
+                    (impl $T:ident, $Q:ident, $Q_LEN:ident) => {
+                        let c = $T[c as usize] as usize;
+                        if c < $Q_LEN {
+                            _v_escape_write_bytes!($Q[c].as_bytes(), buf);
+                            return;
+                        }
+                    };
+                }
+
+                _inside!(impl $($t)+);
+                buf.as_mut().as_mut_ptr().write(c as u8);
+            } else {
+                c.encode_utf8(buf.as_mut());
+            }
+            v_escape::BufMut::advance_mut(buf, len);
         }
     };
 }

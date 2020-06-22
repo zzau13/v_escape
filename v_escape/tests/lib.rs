@@ -188,22 +188,22 @@ macro_rules! test_ptr {
         let mix_escaped_2 =
             long.repeat(3) + &escaped.repeat(3) + short + &escaped.repeat(2) + &long;
         let mut buf = [MaybeUninit::uninit(); 2048];
-        assert_eq!(v_escape(empty.as_bytes(), &mut buf), Some(empty.len()));
-        assert_eq!(v_escape(short.as_bytes(), &mut buf), Some(short.len()));
+        assert_eq!(f_escape(empty.as_bytes(), &mut buf), Some(empty.len()));
+        assert_eq!(f_escape(short.as_bytes(), &mut buf), Some(short.len()));
         assert_eq!(maybe_init!(buf, short.len()), short.as_bytes());
         let mut buf = [MaybeUninit::uninit(); 2048];
-        assert_eq!(v_escape(long.as_bytes(), &mut buf), Some(long.len()));
+        assert_eq!(f_escape(long.as_bytes(), &mut buf), Some(long.len()));
         assert_eq!(maybe_init!(buf, long.len()), long.as_bytes());
         let mut buf = [MaybeUninit::uninit(); 2048];
-        assert_eq!(v_escape(escapes.as_bytes(), &mut buf), Some(escaped.len()));
+        assert_eq!(f_escape(escapes.as_bytes(), &mut buf), Some(escaped.len()));
         assert_eq!(maybe_init!(buf, escaped.len()), escaped.as_bytes());
         let mut buf = [MaybeUninit::uninit(); 2048];
-        assert_eq!(v_escape(mix.as_bytes(), &mut buf), Some(mix_escaped.len()));
+        assert_eq!(f_escape(mix.as_bytes(), &mut buf), Some(mix_escaped.len()));
         assert_eq!(maybe_init!(buf, mix_escaped.len()), mix_escaped.as_bytes());
 
         let mut buf = [MaybeUninit::uninit(); 10240];
         assert_eq!(
-            v_escape(mix_2.as_bytes(), &mut buf),
+            f_escape(mix_2.as_bytes(), &mut buf),
             Some(mix_escaped_2.len())
         );
         assert_eq!(
@@ -214,7 +214,7 @@ macro_rules! test_ptr {
         let mut buf = [MaybeUninit::uninit(); 2048];
         let mut cur = 0;
         for c in escapes.chars() {
-            if let Some(i) = v_escape_char(c, &mut buf[cur..]) {
+            if let Some(i) = f_escape_char(c, &mut buf[cur..]) {
                 cur += i;
             } else {
                 panic!("overflow");
@@ -222,12 +222,12 @@ macro_rules! test_ptr {
         }
         assert_eq!(maybe_init!(buf, escaped.len()), escaped.as_bytes());
         let mut buf = [MaybeUninit::uninit(); 0];
-        assert_eq!(v_escape(empty.as_bytes(), &mut buf), Some(empty.len()));
-        assert_eq!(v_escape(short.as_bytes(), &mut buf), None);
+        assert_eq!(f_escape(empty.as_bytes(), &mut buf), Some(empty.len()));
+        assert_eq!(f_escape(short.as_bytes(), &mut buf), None);
         let mut buf = [MaybeUninit::uninit(); 599];
-        assert_eq!(v_escape(long.as_bytes(), &mut buf), None);
+        assert_eq!(f_escape(long.as_bytes(), &mut buf), None);
         let mut buf = [MaybeUninit::uninit(); 600];
-        assert_eq!(v_escape(long.as_bytes(), &mut buf), Some(long.len()));
+        assert_eq!(f_escape(long.as_bytes(), &mut buf), Some(long.len()));
         assert_eq!(maybe_init!(buf, long.len()), long.as_bytes());
     }};
 }
@@ -236,6 +236,50 @@ macro_rules! test_ptr {
 fn test_escape() {
     test!(MyEscape, "<", "foo");
     test_ptr!("<", "foo")
+}
+
+mod bytes_buff {
+    new_escape!(MyE, "65->a || 60->b || 61->c || 66->d || 80->e || 81->f");
+
+    #[test]
+    fn test_escape() {
+        use bytes::BytesMut;
+
+        let empty = "";
+        let escapes = "<=ABPQ";
+        let escaped = "bcadef";
+        let short = "foobar";
+        let long = "foobar".repeat(100);
+        let mix = long.clone() + escapes + short + &long;
+        let mix_escaped = long.clone() + escaped + short + &long;
+        let mix_2 = long.repeat(3) + &escapes.repeat(3) + short + &escapes.repeat(2) + &long;
+        let mix_escaped_2 =
+            long.repeat(3) + &escaped.repeat(3) + short + &escaped.repeat(2) + &long;
+        let mut buf = BytesMut::new();
+        b_escape(empty.as_bytes(), &mut buf);
+        assert_eq!(buf.len(), 0);
+        b_escape(short.as_bytes(), &mut buf);
+        assert_eq!(buf.as_ref(), short.as_bytes());
+        let mut buf = BytesMut::new();
+        b_escape(long.as_bytes(), &mut buf);
+        assert_eq!(buf.as_ref(), long.as_bytes());
+        let mut buf = BytesMut::new();
+        b_escape(escapes.as_bytes(), &mut buf);
+        assert_eq!(buf.as_ref(), escaped.as_bytes());
+        let mut buf = BytesMut::new();
+        b_escape(mix.as_bytes(), &mut buf);
+        assert_eq!(buf.as_ref(), mix_escaped.as_bytes());
+
+        let mut buf = BytesMut::new();
+        b_escape(mix_2.as_bytes(), &mut buf);
+        assert_eq!(buf.as_ref(), mix_escaped_2.as_bytes());
+
+        let mut buf = BytesMut::new();
+        for c in escapes.chars() {
+            b_escape_char(c, &mut buf);
+        }
+        assert_eq!(buf.as_ref(), escaped.as_bytes());
+    }
 }
 
 mod no_simd {

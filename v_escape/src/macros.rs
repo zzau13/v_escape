@@ -204,3 +204,90 @@ macro_rules! _v_escape_bodies_exact_one_ptr {
         $callback!($i, $start, $cur, $buf, $src_start, $quote);
     };
 }
+
+#[macro_export]
+#[doc(hidden)]
+/// Escape body
+///
+/// Writes str in formatter `$fmt` from position `start` to `i`-1
+/// and substitutes escaped character in position `i` with quote
+/// and update de index `start`
+macro_rules! _v_escape_escape_body_bytes {
+    ($i:expr, $start:ident, $bytes:ident, $buf:ident, $quote:expr) => {{
+        // Test if `start` index is in current position `i`
+        if $start < $i {
+            // Write slice from `start` to `i`- 1 in a buffer pointer
+            _v_escape_write_bytes!(&$bytes[$start..$i], $buf);
+        }
+        _v_escape_write_bytes!($quote.as_bytes(), $buf);
+
+        // Updates `start` index with the new current position  `i` + 1
+        $start = $i + 1;
+    }};
+}
+
+#[macro_export]
+#[doc(hidden)]
+/// Mask body
+///
+/// Wrap the body of the escape over the body of the mask
+macro_rules! _v_escape_mask_body_bytes {
+    ($i:expr, $start:ident, $bytes:ident, $buf:ident, $quote:expr) => {{
+        // Resolve expression `$i`
+        let i = $i;
+        // Call macro `_v_escape_escape_body_bytes!`
+        _v_escape_escape_body_bytes!(i, $start, $bytes, $buf, $quote);
+    }};
+}
+
+#[macro_export]
+#[doc(hidden)]
+/// Write in pointer with max bound
+macro_rules! _v_escape_write_bytes {
+    ($bytes:expr, $buf:ident) => {
+        $buf.extend_from_slice($bytes);
+    };
+}
+
+#[macro_export]
+#[doc(hidden)]
+/// Escape bodies
+///
+/// Calls macro `$callback!` passing string representation of a valid
+/// escaped byte as `$quotes`, only if current value has to be escaped
+macro_rules! _v_escape_bodies_bytes {
+    ($T:ident, $Q:ident, $Q_LEN:ident, $i:expr, $b:expr, $start:ident, $bytes:ident, $buf:ident, $callback:ident) => {
+        let c = $T[$b as usize] as usize;
+        if c < $Q_LEN {
+            $callback!($i, $start, $bytes, $buf, $Q[c]);
+        }
+    };
+}
+
+#[macro_export]
+#[doc(hidden)]
+/// Escape bodies exact
+///
+/// Calls macro `$callback!` passing string representation of a valid
+/// escaped byte as `$quotes`, only if current value has to be escaped
+macro_rules! _v_escape_bodies_exact_bytes {
+    ($T:ident, $Q:ident, $Q_LEN:ident, $i:expr, $b:expr, $start:ident, $bytes:ident, $buf:ident, $callback:ident) => {
+        // Get usize from 0 to $Q_LEN for a given escape character in byte `$b`
+        // where $Q_LEN is a inescapable character and (0,...,$Q_LEN - 1) are escapable
+        debug_assert_ne!($T[$b as usize] as usize, $Q_LEN as usize);
+        // Call macro `$callback!` passing `QUOTES[c]` as `$quote` argument
+        // `QUOTES[c]` is the string representation of the escaped character
+        $callback!($i, $start, $bytes, $buf, $Q[$T[$b as usize] as usize]);
+    };
+}
+
+#[macro_export]
+#[doc(hidden)]
+/// Escape bodies exact one
+///
+macro_rules! _v_escape_bodies_exact_one_bytes {
+    ($char:expr, $quote:expr, $_non:expr, $i:expr, $b:expr, $start:ident, $bytes:ident, $buf:ident, $callback:ident) => {
+        debug_assert_eq!($char, $b);
+        $callback!($i, $start, $bytes, $buf, $quote);
+    };
+}
