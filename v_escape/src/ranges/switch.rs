@@ -463,6 +463,34 @@ macro_rules! _v_escape_mask_bodies_escaping_ptr {
 /// Generate mask bodies callback
 ///
 /// Defining exact match or false positive
+/// ## The following macros must be defined
+///
+/// * `mask_bodies_callback($callback:ident)`
+///     select between `mask_bodies`
+///
+macro_rules! _v_escape_mask_bodies_escaping_bytes {
+    ($fa:expr, 128, ) => {
+        mask_bodies_callback!(_v_escape_bodies_exact_one_bytes);
+    };
+    ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
+        mask_bodies_callback!(_v_escape_bodies_bytes);
+    };
+    ($la:expr, $ra:expr, $lb:expr, $rb:expr, $lc:expr, $rc:expr, ) => {
+        mask_bodies_callback!(_v_escape_bodies_bytes);
+    };
+    ($la:expr, $ra:expr, $lb:expr, $rb:expr, $c:expr, ) => {
+        mask_bodies_callback!(_v_escape_bodies_bytes);
+    };
+    ($($t:tt)+) => {
+        mask_bodies_callback!(_v_escape_bodies_exact_bytes);
+    };
+}
+
+#[macro_export]
+#[doc(hidden)]
+/// Generate mask bodies callback
+///
+/// Defining exact match or false positive
 ///
 /// ## The following macros must be defined
 ///

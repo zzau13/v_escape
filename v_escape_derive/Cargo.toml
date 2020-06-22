@@ -15,11 +15,9 @@ workspace = ".."
 travis-ci = { repository = "botika/v_escape", branch = "master" }
 maintenance = { status = "actively-developed" }
 
+
 [lib]
 proc-macro = true
-name = "v_escape_derive"
-path = "src/lib.rs"
-bench = false
 
 [dependencies]
 proc-macro2 = "1.0"

@@ -55,7 +55,7 @@ macro_rules! _v_escape_escape_scalar {
 macro_rules! _v_escape_escape_scalar_ptr {
     ($($t:tt)+) => {
         #[inline]
-        pub unsafe fn v_escape(bytes: &[u8], buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
+        pub unsafe fn f_escape(bytes: &[u8], buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
             let start_ptr = bytes.as_ptr();
             let mut buf_cur = 0;
             let mut start = 0;
@@ -98,12 +98,66 @@ macro_rules! _v_escape_escape_scalar_ptr {
             }
 
             let len = bytes.len();
+            // Write since start to the end of the slice
+            debug_assert!(start <= len);
             if start < len {
                 let len = len - start;
                 _v_escape_write_ptr!(buf_cur, buf, start_ptr.add(start), len);
             }
 
             Some(buf_cur)
+        }
+    };
+}
+
+#[macro_export]
+#[doc(hidden)]
+macro_rules! _v_escape_escape_scalar_bytes {
+    ($($t:tt)+) => {
+        #[inline]
+        pub unsafe fn b_escape(bytes: &[u8], buf: &mut v_escape::BytesMut) {
+            let mut start = 0;
+
+            for (i, b) in bytes.iter().enumerate() {
+                macro_rules! _inside {
+                    (impl one $byte:ident, $quote:ident) => {
+                        if $byte == *b {
+                            _v_escape_bodies_exact_one_bytes!(
+                                $byte,
+                                $quote,
+                                (),
+                                i,
+                                *b,
+                                start,
+                                bytes,
+                                buf,
+                                _v_escape_escape_body_bytes
+                            );
+                        }
+                    };
+                    (impl $T:ident, $Q:ident, $Q_LEN:ident) => {
+                        _v_escape_bodies_bytes!(
+                            $T,
+                            $Q,
+                            $Q_LEN,
+                            i,
+                            *b,
+                            start,
+                            bytes,
+                            buf,
+                            _v_escape_escape_body_bytes
+                        );
+                    };
+                }
+
+                _inside!(impl $($t)+);
+            }
+
+            // Write since start to the end of the slice
+            debug_assert!(start <= bytes.len());
+            if start < bytes.len() {
+                _v_escape_write_bytes!(&bytes[start..], buf);
+            }
         }
     };
 }

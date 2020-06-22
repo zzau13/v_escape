@@ -117,6 +117,8 @@ mod ranges;
 #[macro_use]
 mod chars;
 
+pub use bytes::{BufMut, BytesMut};
+
 #[macro_export]
 /// Generates struct `$name` with escaping functionality at `fmt`
 ///
@@ -189,7 +191,7 @@ macro_rules! new_escape {
             bytes: &'a [u8],
         }
 
-        // Implementing function new and traits Display and From
+        // Implementing function
         _v_escape_escape_new!($name);
     };
 }
@@ -209,10 +211,10 @@ macro_rules! _v_escape_escape_new {
             }
 
             #[inline]
-            pub fn v_escape(&self, buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
+            pub fn f_escape(&self, buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
                 #[allow(unused_unsafe)]
                 unsafe {
-                    _v_escape(self.bytes, buf)
+                    _f_escape(self.bytes, buf)
                 }
             }
         }
@@ -229,14 +231,6 @@ macro_rules! _v_escape_escape_new {
         #[inline]
         pub fn escape(s: &str) -> $name {
             $name::from(s)
-        }
-
-        #[inline]
-        pub fn v_escape(s: &[u8], buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
-            #[allow(unused_unsafe)]
-            unsafe {
-                _v_escape(s, buf)
-            }
         }
 
         impl<'a> Display for $name<'a> {
@@ -262,10 +256,34 @@ macro_rules! _v_escape_escape_new {
         }
 
         #[inline]
-        pub fn v_escape_char(c: char, buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
+        pub fn f_escape(s: &[u8], buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
             #[allow(unused_unsafe)]
             unsafe {
-                chars::v_escape_char(c, buf)
+                _f_escape(s, buf)
+            }
+        }
+
+        #[inline]
+        pub fn f_escape_char(c: char, buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
+            #[allow(unused_unsafe)]
+            unsafe {
+                chars::f_escape_char(c, buf)
+            }
+        }
+
+        #[inline]
+        pub fn b_escape(s: &[u8], buf: &mut v_escape::BytesMut) {
+            #[allow(unused_unsafe)]
+            unsafe {
+                _b_escape(s, buf)
+            }
+        }
+
+        #[inline]
+        pub fn b_escape_char(s: char, buf: &mut v_escape::BytesMut) {
+            #[allow(unused_unsafe)]
+            unsafe {
+                chars::b_escape_char(s, buf)
             }
         }
     };
@@ -345,7 +363,7 @@ macro_rules! _v_escape_cfg_escape_ptr {
         #[inline(always)]
         #[allow(unreachable_code)]
         // https://github.com/BurntSushi/rust-memchr/blob/master/src/x86/mod.rs#L9-L29
-        pub unsafe fn _v_escape(bytes: &[u8], buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
+        pub unsafe fn _f_escape(bytes: &[u8], buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
             use std::mem;
             use std::sync::atomic::{AtomicUsize, Ordering};
             static mut FN: fn(&[u8], &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> = detect;
@@ -374,24 +392,87 @@ macro_rules! _v_escape_cfg_escape_ptr {
     };
     (fn) => {
         #[inline(always)]
-        pub unsafe fn _v_escape(bytes: &[u8], buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
-            scalar::v_escape(bytes, buf)
+        pub unsafe fn _f_escape(bytes: &[u8], buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
+            scalar::f_escape(bytes, buf)
         }
     };
     (if true) => {
         if cfg!(not(v_escape_noavx)) && is_x86_feature_detected!("avx2") {
-            ranges::avx::v_escape as usize
+            ranges::avx::f_escape as usize
         } else if is_x86_feature_detected!("sse2") {
-            ranges::sse::v_escape as usize
+            ranges::sse::f_escape as usize
         } else {
-            scalar::v_escape as usize
+            scalar::f_escape as usize
         }
     };
     (if false) => {
         if is_x86_feature_detected!("sse2") {
-            ranges::sse::v_escape as usize
+            ranges::sse::f_escape as usize
         } else {
-            scalar::v_escape as usize
+            scalar::f_escape as usize
+        }
+    };
+}
+
+#[macro_export]
+#[doc(hidden)]
+/// cfg_if for escape function
+macro_rules! _v_escape_cfg_escape_bytes {
+    (false, $($t:tt)+) => {
+        _v_escape_cfg_escape_bytes!(fn);
+    };
+    (true, $($t:tt)+) => {
+        #[cfg(all(target_arch = "x86_64", not(v_escape_nosimd)))]
+        #[inline(always)]
+        #[allow(unreachable_code)]
+        // https://github.com/BurntSushi/rust-memchr/blob/master/src/x86/mod.rs#L9-L29
+        pub unsafe fn _b_escape(bytes: &[u8], buf: &mut v_escape::BytesMut) {
+            use std::mem;
+            use std::sync::atomic::{AtomicUsize, Ordering};
+            static mut FN: fn(&[u8], &mut v_escape::BytesMut) = detect;
+
+            fn detect(bytes: &[u8], buf: &mut v_escape::BytesMut) {
+                let fun = _v_escape_cfg_escape_bytes!(if $($t)+);
+
+                let slot = unsafe { &*(&FN as *const _ as *const AtomicUsize) };
+                slot.store(fun as usize, Ordering::Relaxed);
+                unsafe {
+                    mem::transmute::<usize, fn(&[u8], &mut v_escape::BytesMut)>(fun)(
+                        bytes, buf,
+                    )
+                }
+            }
+
+            unsafe {
+                let slot = &*(&FN as *const _ as *const AtomicUsize);
+                let fun = slot.load(Ordering::Relaxed);
+                mem::transmute::<usize, fn(&[u8], &mut v_escape::BytesMut)>(fun)(bytes, buf)
+            }
+        }
+
+        #[cfg(not(all(target_arch = "x86_64", not(b_escape_nosimd))))]
+        _v_escape_cfg_escape_bytes!(fn);
+    };
+    (fn) => {
+        #[inline(always)]
+        pub unsafe fn _b_escape(bytes: &[u8], buf: &mut v_escape::BytesMut) {
+            scalar::b_escape(bytes, buf)
+        }
+    };
+    (if true) => {
+        if cfg!(not(b_escape_noavx)) && is_x86_feature_detected!("avx2") {
+            ranges::avx::b_escape as usize
+        } else if is_x86_feature_detected!("sse2") {
+            ranges::sse::b_escape as usize
+        } else {
+            scalar::b_escape as usize
+        }
+    };
+    (if false) => {
+        if is_x86_feature_detected!("sse2") {
+            ranges::sse::b_escape as usize
+        } else {
+            scalar::b_escape as usize
         }
     };
 }
