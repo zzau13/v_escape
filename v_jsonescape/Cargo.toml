@@ -1,0 +1,20 @@
+[package]
+name = "v_jsonescape"
+version = "0.1.0"
+authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
+description = "The simd optimized JSON escaping code"
+documentation = "https://docs.rs/v_jsonescape"
+edition = "2018"
+keywords = ["json", "escaping", "simd"]
+license = "MIT/Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/botika/v_escape"
+workspace = ".."
+
+[badges]
+travis-ci = { repository = "botika/v_escape", branch = "master" }
+maintenance = { status = "actively-developed" }
+
+[dependencies]
+v_escape = { version = "0.11", path = "../v_escape" }
+cfg-if = "0.1"
