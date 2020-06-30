@@ -56,7 +56,7 @@ macro_rules! _v_escape_escape_char_ptr {
                 _inside!(impl $($t)+);
                 // Ascii length is one byte
                 if 0 < buf.len() {
-                    buf[0] = std::mem::MaybeUninit::new(c as u8);
+                    *buf.as_mut_ptr() = std::mem::MaybeUninit::new(c as u8);
                     Some(1)
                 } else {
                     None
@@ -97,9 +97,10 @@ macro_rules! _v_escape_escape_char_bytes {
                 }
 
                 _inside!(impl $($t)+);
-                v_escape::BufMut::bytes_mut(buf)[0] = std::mem::MaybeUninit::new(c as u8);
+                *buf.as_mut_ptr().add(buf.len()) = c as u8;
             } else {
-                c.encode_utf8(std::mem::transmute(v_escape::BufMut::bytes_mut(buf)));
+                let buf_len = buf.len();
+                c.encode_utf8(&mut buf[buf_len..]);
             }
             v_escape::BufMut::advance_mut(buf, len);
         }
