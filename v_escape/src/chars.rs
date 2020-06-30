@@ -99,8 +99,7 @@ macro_rules! _v_escape_escape_char_bytes {
                 _inside!(impl $($t)+);
                 *buf.as_mut_ptr().add(buf.len()) = c as u8;
             } else {
-                let buf_len = buf.len();
-                c.encode_utf8(&mut buf[buf_len..]);
+                c.encode_utf8(std::slice::from_raw_parts_mut(buf.as_mut_ptr().add(buf.len()), len));
             }
             v_escape::BufMut::advance_mut(buf, len);
         }

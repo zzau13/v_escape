@@ -279,6 +279,10 @@ mod bytes_buff {
             b_escape_char(c, &mut buf);
         }
         assert_eq!(buf.as_ref(), escaped.as_bytes());
+        let mut buf = BytesMut::with_capacity(0);
+
+        b_escape_char('\u{3A3}', &mut buf);
+        assert_eq!(buf.as_ref(), "\u{3A3}".as_bytes())
     }
 }
 
