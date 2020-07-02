@@ -106,6 +106,8 @@
 //!
 #![allow(unused_imports)]
 
+pub use buf_min::Buffer;
+
 use v_escape_derive::Escape;
 
 #[macro_use]
@@ -116,8 +118,6 @@ mod scalar;
 mod ranges;
 #[macro_use]
 mod chars;
-
-pub use bytes::{BufMut, BytesMut};
 
 #[macro_export]
 /// Generates struct `$name` with escaping functionality at `fmt`
@@ -271,16 +271,24 @@ macro_rules! _v_escape_escape_new {
             }
         }
 
+        /// Escape byte slice to `buf-min::Buffer`
+        ///
+        /// # SIGILL
+        /// Can produce **SIGILL** if compile with `sse2` or `avx2` and execute without they
+        /// Because not exist way to build multiple static allocations by type
+        /// And it's very expensive check it in runtime
+        /// https://github.com/rust-lang/rust/issues/57775
         #[inline]
-        pub fn b_escape(s: &[u8], buf: &mut v_escape::BytesMut) {
+        pub fn b_escape<B: v_escape::Buffer>(s: &[u8], buf: &mut B) {
             #[allow(unused_unsafe)]
             unsafe {
                 _b_escape(s, buf)
             }
         }
 
+        /// Escape char to `buf-min::Buffer`
         #[inline]
-        pub fn b_escape_char(s: char, buf: &mut v_escape::BytesMut) {
+        pub fn b_escape_char<B: v_escape::Buffer>(s: char, buf: &mut B) {
             #[allow(unused_unsafe)]
             unsafe {
                 chars::b_escape_char(s, buf)
@@ -309,7 +317,7 @@ macro_rules! _v_escape_cfg_escape {
                 let fun = _v_escape_cfg_escape!(if $($t)+);
 
                 let slot = unsafe { &*(&FN as *const _ as *const AtomicUsize) };
-                slot.store(fun as usize, Ordering::Relaxed);
+                slot.store(fun, Ordering::Relaxed);
                 unsafe {
                     mem::transmute::<usize, fn(&[u8], &mut Formatter) -> fmt::Result>(fun)(
                         bytes, fmt,
@@ -334,7 +342,7 @@ macro_rules! _v_escape_cfg_escape {
         }
     };
     (if true) => {
-        if cfg!(not(v_escape_noavx)) && is_x86_feature_detected!("avx2") {
+        if is_x86_feature_detected!("avx2") {
             ranges::avx::escape as usize
         } else if is_x86_feature_detected!("sse2") {
             ranges::sse::escape as usize
@@ -372,7 +380,7 @@ macro_rules! _v_escape_cfg_escape_ptr {
                 let fun = _v_escape_cfg_escape_ptr!(if $($t)+);
 
                 let slot = unsafe { &*(&FN as *const _ as *const AtomicUsize) };
-                slot.store(fun as usize, Ordering::Relaxed);
+                slot.store(fun, Ordering::Relaxed);
                 unsafe {
                     mem::transmute::<usize, fn(&[u8], &mut [std::mem::MaybeUninit<u8>]) -> Option<usize>>(fun)(
                         bytes, buf,
@@ -397,7 +405,7 @@ macro_rules! _v_escape_cfg_escape_ptr {
         }
     };
     (if true) => {
-        if cfg!(not(v_escape_noavx)) && is_x86_feature_detected!("avx2") {
+        if is_x86_feature_detected!("avx2") {
             ranges::avx::f_escape as usize
         } else if is_x86_feature_detected!("sse2") {
             ranges::sse::f_escape as usize
@@ -424,30 +432,8 @@ macro_rules! _v_escape_cfg_escape_bytes {
     (true, $($t:tt)+) => {
         #[cfg(all(target_arch = "x86_64", not(v_escape_nosimd)))]
         #[inline(always)]
-        #[allow(unreachable_code)]
-        // https://github.com/BurntSushi/rust-memchr/blob/master/src/x86/mod.rs#L9-L29
-        pub unsafe fn _b_escape(bytes: &[u8], buf: &mut v_escape::BytesMut) {
-            use std::mem;
-            use std::sync::atomic::{AtomicUsize, Ordering};
-            static mut FN: fn(&[u8], &mut v_escape::BytesMut) = detect;
-
-            fn detect(bytes: &[u8], buf: &mut v_escape::BytesMut) {
-                let fun = _v_escape_cfg_escape_bytes!(if $($t)+);
-
-                let slot = unsafe { &*(&FN as *const _ as *const AtomicUsize) };
-                slot.store(fun as usize, Ordering::Relaxed);
-                unsafe {
-                    mem::transmute::<usize, fn(&[u8], &mut v_escape::BytesMut)>(fun)(
-                        bytes, buf,
-                    )
-                }
-            }
-
-            unsafe {
-                let slot = &*(&FN as *const _ as *const AtomicUsize);
-                let fun = slot.load(Ordering::Relaxed);
-                mem::transmute::<usize, fn(&[u8], &mut v_escape::BytesMut)>(fun)(bytes, buf)
-            }
+        pub unsafe fn _b_escape<B: v_escape::Buffer>(bytes: &[u8], buf: &mut B) {
+            _v_escape_cfg_escape_bytes!(if $($t)+, bytes, buf)
         }
 
         #[cfg(not(all(target_arch = "x86_64", not(b_escape_nosimd))))]
@@ -455,24 +441,29 @@ macro_rules! _v_escape_cfg_escape_bytes {
     };
     (fn) => {
         #[inline(always)]
-        pub unsafe fn _b_escape(bytes: &[u8], buf: &mut v_escape::BytesMut) {
+        pub unsafe fn _b_escape<B: v_escape::Buffer>(bytes: &[u8], buf: &mut B) {
             scalar::b_escape(bytes, buf)
         }
     };
-    (if true) => {
-        if cfg!(not(b_escape_noavx)) && is_x86_feature_detected!("avx2") {
-            ranges::avx::b_escape as usize
-        } else if is_x86_feature_detected!("sse2") {
-            ranges::sse::b_escape as usize
-        } else {
-            scalar::b_escape as usize
+    (if true, $bytes:ident, $buf:ident) => {{
+        #[cfg(not(v_escape_avx))] {
+            #[cfg(not(v_escape_sse))] {
+                scalar::b_escape($bytes, $buf)
+            }
+            #[cfg(v_escape_sse)] {
+                ranges::sse::b_escape($bytes, $buf)
+            }
         }
-    };
-    (if false) => {
-        if is_x86_feature_detected!("sse2") {
-            ranges::sse::b_escape as usize
-        } else {
-            scalar::b_escape as usize
+        #[cfg(v_escape_avx)] {
+            ranges::avx::b_escape($bytes, $buf)
         }
-    };
+    }};
+    (if false, $bytes:ident, $buf:ident) => {{
+        #[cfg(not(v_escape_sse))] {
+            scalar::b_escape($bytes, $buf)
+        }
+        #[cfg(v_escape_sse)] {
+            ranges::sse::b_escape($bytes, $buf)
+        }
+    }};
 }

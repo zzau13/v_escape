@@ -1,6 +1,6 @@
 [package]
 name = "v_htmlescape"
-version = "0.9.1"
+version = "0.10.0"
 authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "The simd optimized HTML escaping code"
 documentation = "https://docs.rs/v_htmlescape"
@@ -15,6 +15,10 @@ workspace = ".."
 travis-ci = { repository = "botika/v_escape", branch = "master" }
 maintenance = { status = "actively-developed" }
 
+[features]
+default = ["bytes-buf"]
+bytes-buf = ["v_escape/bytes-buf"]
+
 [dependencies]
-v_escape = { version = "0.11", path = "../v_escape" }
+v_escape = { version = "0.12", path = "../v_escape", default-features = false }
 cfg-if = "0.1"

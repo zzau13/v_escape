@@ -115,7 +115,7 @@ macro_rules! _v_escape_escape_scalar_ptr {
 macro_rules! _v_escape_escape_scalar_bytes {
     ($($t:tt)+) => {
         #[inline]
-        pub unsafe fn b_escape(bytes: &[u8], buf: &mut v_escape::BytesMut) {
+        pub unsafe fn b_escape<B: v_escape::Buffer>(bytes: &[u8], buf: &mut B) {
             let mut start = 0;
 
             for (i, b) in bytes.iter().enumerate() {

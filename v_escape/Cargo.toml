@@ -1,6 +1,6 @@
 [package]
 name = "v_escape"
-version = "0.11.3"
+version = "0.12.0"
 authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "The simd optimized escaping code"
 documentation = "https://docs.rs/v_escape"
@@ -15,6 +15,14 @@ workspace = ".."
 travis-ci = { repository = "botika/v_escape", branch = "master" }
 maintenance = { status = "actively-developed" }
 
+[features]
+default = ["bytes-buf"]
+bytes-buf = ["buf-min/bytes-buf"]
+
 [dependencies]
 v_escape_derive = { version = "0.8", path = "../v_escape_derive" }
+buf-min = "0.1"
+
+[dev-dependencies]
 bytes = "0.5"
+buf-min = { version = "0.1", features = ["bytes-buf"] }

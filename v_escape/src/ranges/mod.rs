@@ -305,7 +305,7 @@ macro_rules! _v_escape_escape_ranges_bytes {
         _v_escape_escape_ranges_bytes!(impl loop_range_switch_sse2 for $($t)+);
     };
     (impl $loops:ident for ($T:ident, $Q:ident, $Q_LEN:ident) $($t:tt)+) => {
-        pub unsafe fn b_escape(bytes: &[u8], buf: &mut v_escape::BytesMut) {
+        pub unsafe fn b_escape<B: v_escape::Buffer>(bytes: &[u8], buf: &mut B) {
             let len = bytes.len();
             let start_ptr = bytes.as_ptr();
             let end_ptr = bytes[len..].as_ptr();
