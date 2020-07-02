@@ -59,4 +59,4 @@ build: false
 test_script:
   - cargo clean
   - cargo check --all
-  - cargo test --all-features --all -- --nocapture
+  - cargo test --all -- --nocapture

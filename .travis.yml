@@ -33,4 +33,4 @@ script:
       cargo fmt -- --check
     fi
   - cargo check --all
-  - cargo test --all-features --all -- --nocapture
+  - cargo test --all -- --nocapture
