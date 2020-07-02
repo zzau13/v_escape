@@ -75,7 +75,7 @@ macro_rules! _v_escape_escape_char_ptr {
 #[doc(hidden)]
 macro_rules! _v_escape_escape_char_bytes {
     ($($t:tt)+) => {
-        pub unsafe fn b_escape_char(c: char, buf: &mut v_escape::BytesMut) {
+        pub unsafe fn b_escape_char<B: v_escape::Buffer>(c: char, buf: &mut B) {
             let len = c.len_utf8();
             buf.reserve(len);
             if len == 1 {
@@ -97,11 +97,11 @@ macro_rules! _v_escape_escape_char_bytes {
                 }
 
                 _inside!(impl $($t)+);
-                *buf.as_mut_ptr().add(buf.len()) = c as u8;
+                *buf.buf_ptr() = c as u8;
             } else {
-                c.encode_utf8(std::slice::from_raw_parts_mut(buf.as_mut_ptr().add(buf.len()), len));
+                c.encode_utf8(std::slice::from_raw_parts_mut(buf.buf_ptr(), len));
             }
-            v_escape::BufMut::advance_mut(buf, len);
+            buf.advance(len);
         }
     };
 }
