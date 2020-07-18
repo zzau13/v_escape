@@ -180,8 +180,8 @@ macro_rules! _v_escape_escape_scalar_bytes {
             }
 
             // Write since start to the end of the slice
-            debug_assert!(start <= bytes.len());
-            if start < bytes.len() {
+            debug_assert!(start <= len);
+            if start < len {
                 _v_escape_write_bytes!(&bytes[start..], buf);
             }
         }
