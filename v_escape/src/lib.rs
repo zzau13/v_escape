@@ -305,7 +305,7 @@ macro_rules! _v_escape_cfg_escape {
         _v_escape_cfg_escape!(fn);
     };
     (true, $($t:tt)+) => {
-        #[cfg(all(target_arch = "x86_64", not(v_escape_nosimd)))]
+        #[cfg(target_arch = "x86_64")]
         #[inline(always)]
         // https://github.com/BurntSushi/rust-memchr/blob/master/src/x86/mod.rs#L9-L29
         fn _escape(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
@@ -332,7 +332,7 @@ macro_rules! _v_escape_cfg_escape {
             }
         }
 
-        #[cfg(not(all(target_arch = "x86_64", not(v_escape_nosimd))))]
+        #[cfg(not(target_arch = "x86_64"))]
         _v_escape_cfg_escape!(fn);
     };
     (fn) => {
@@ -367,7 +367,7 @@ macro_rules! _v_escape_cfg_escape_ptr {
         _v_escape_cfg_escape_ptr!(fn);
     };
     (true, $($t:tt)+) => {
-        #[cfg(all(target_arch = "x86_64", not(v_escape_nosimd)))]
+        #[cfg(target_arch = "x86_64")]
         #[inline(always)]
         #[allow(unreachable_code)]
         // https://github.com/BurntSushi/rust-memchr/blob/master/src/x86/mod.rs#L9-L29
@@ -395,7 +395,7 @@ macro_rules! _v_escape_cfg_escape_ptr {
             }
         }
 
-        #[cfg(not(all(target_arch = "x86_64", not(v_escape_nosimd))))]
+        #[cfg(not(target_arch = "x86_64"))]
         _v_escape_cfg_escape_ptr!(fn);
     };
     (fn) => {
@@ -430,7 +430,7 @@ macro_rules! _v_escape_cfg_escape_bytes {
         _v_escape_cfg_escape_bytes!(fn);
     };
     (true, $($t:tt)+) => {
-        #[cfg(all(target_arch = "x86_64", not(v_escape_nosimd)))]
+        #[cfg(target_arch = "x86_64")]
         #[inline(always)]
         pub unsafe fn _b_escape<B: v_escape::Buffer>(bytes: &[u8], buf: &mut B) {
             _v_escape_cfg_escape_bytes!(if $($t)+, bytes, buf)
