@@ -142,7 +142,7 @@ macro_rules! _v_escape_escape_scalar_bytes {
 
             let mut start = 0;
 
-            while ptr < start_ptr {
+            while ptr < end_ptr {
                 macro_rules! _inside {
                     (impl one $byte:ident, $quote:ident) => {
                         if $byte == *ptr {

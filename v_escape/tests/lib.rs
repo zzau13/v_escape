@@ -240,7 +240,53 @@ fn test_escape() {
 
 mod bytes_buff {
     new_escape!(MyE, "65->a || 60->b || 61->c || 66->d || 80->e || 81->f");
+    #[test]
+    fn test_escape() {
+        use bytes::BytesMut;
 
+        let empty = "";
+        let escapes = "<=ABPQ";
+        let escaped = "bcadef";
+        let short = "foobar";
+        let long = "foobar".repeat(100);
+        let mix = long.clone() + escapes + short + &long;
+        let mix_escaped = long.clone() + escaped + short + &long;
+        let mix_2 = long.repeat(3) + &escapes.repeat(3) + short + &escapes.repeat(2) + &long;
+        let mix_escaped_2 =
+            long.repeat(3) + &escaped.repeat(3) + short + &escaped.repeat(2) + &long;
+        let mut buf = BytesMut::new();
+        b_escape(empty.as_bytes(), &mut buf);
+        assert_eq!(buf.len(), 0);
+        b_escape(short.as_bytes(), &mut buf);
+        assert_eq!(buf.as_ref(), short.as_bytes());
+        let mut buf = BytesMut::new();
+        b_escape(long.as_bytes(), &mut buf);
+        assert_eq!(buf.as_ref(), long.as_bytes());
+        let mut buf = BytesMut::new();
+        b_escape(escapes.as_bytes(), &mut buf);
+        assert_eq!(buf.as_ref(), escaped.as_bytes());
+        let mut buf = BytesMut::new();
+        b_escape(mix.as_bytes(), &mut buf);
+        assert_eq!(buf.as_ref(), mix_escaped.as_bytes());
+
+        let mut buf = BytesMut::new();
+        b_escape(mix_2.as_bytes(), &mut buf);
+        assert_eq!(buf.as_ref(), mix_escaped_2.as_bytes());
+
+        let mut buf = BytesMut::with_capacity(4);
+        for c in escapes.chars() {
+            b_escape_char(c, &mut buf);
+        }
+        assert_eq!(buf.as_ref(), escaped.as_bytes());
+        let mut buf = BytesMut::with_capacity(0);
+
+        b_escape_char('\u{3A3}', &mut buf);
+        assert_eq!(buf.as_ref(), "\u{3A3}".as_bytes())
+    }
+}
+
+mod bytes_buff_nosimd {
+    new_escape!(MyE, "65->a || 60->b || 61->c || 66->d || 80->e || 81->f", simd = false);
     #[test]
     fn test_escape() {
         use bytes::BytesMut;
