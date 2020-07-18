@@ -286,7 +286,11 @@ mod bytes_buff {
 }
 
 mod bytes_buff_nosimd {
-    new_escape!(MyE, "65->a || 60->b || 61->c || 66->d || 80->e || 81->f", simd = false);
+    new_escape!(
+        MyE,
+        "65->a || 60->b || 61->c || 66->d || 80->e || 81->f",
+        simd = false
+    );
     #[test]
     fn test_escape() {
         use bytes::BytesMut;
