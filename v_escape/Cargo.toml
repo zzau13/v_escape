@@ -1,6 +1,6 @@
 [package]
 name = "v_escape"
-version = "0.12.0"
+version = "0.12.1"
 authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "The simd optimized escaping code"
 documentation = "https://docs.rs/v_escape"
