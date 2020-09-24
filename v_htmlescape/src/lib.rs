@@ -1,40 +1,31 @@
 //! # Quick start
 //!
 //! ```
-//! extern crate v_htmlescape;
 //! use v_htmlescape::escape;
 //!
 //! print!("{}", escape("foo<bar"));
 //! ```
 //!
-#[macro_use]
-extern crate cfg_if;
-
-#[macro_use]
-extern crate v_escape;
+macro_rules! build {
+    ($($t:tt)*) => {
+        v_escape::new_escape!(
+            HTMLEscape,
+            "60->&lt; || 62->&gt; || 38->&amp; || 34->&quot; || 39->&#x27; || 47->&#x2f;",
+            $($t)*
+        );
+    };
+}
 
 /// Without simd optimizations
 pub mod fallback {
-    new_escape!(
-        HTMLEscape,
-        "60->&lt; || 62->&gt; || 38->&amp; || 34->&quot; || 39->&#x27; || 47->&#x2f;",
-        simd = false
-    );
+    build!(simd = false);
 }
 
-cfg_if! {
+cfg_if::cfg_if! {
     if #[cfg(all(v_htmlescape_simd, v_htmlescape_avx))] {
-        new_escape!(
-            HTMLEscape,
-            "60->&lt; || 62->&gt; || 38->&amp; || 34->&quot; || 39->&#x27; || 47->&#x2f;",
-            simd = true, avx = true
-        );
+        build!(simd = true, avx = true);
     } else if #[cfg(all(v_htmlescape_simd, v_htmlescape_sse))] {
-        new_escape!(
-            HTMLEscape,
-            "60->&lt; || 62->&gt; || 38->&amp; || 34->&quot; || 39->&#x27; || 47->&#x2f;",
-            simd = true, avx = false
-        );
+        build!(simd = true, avx = false);
     } else {
         pub use self::fallback::*;
     }

@@ -1,6 +1,6 @@
 #[macro_export]
 #[doc(hidden)]
-macro_rules! _v_escape_escape_char {
+macro_rules! escape_char {
     ($($t:tt)+) => {
         pub fn escape_char(c: char, fmt: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
             if c.is_ascii() {
@@ -29,7 +29,7 @@ macro_rules! _v_escape_escape_char {
 
 #[macro_export]
 #[doc(hidden)]
-macro_rules! _v_escape_escape_char_ptr {
+macro_rules! escape_char_ptr {
     ($($t:tt)+) => {
         pub unsafe fn f_escape_char(c: char, buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
             let len = c.len_utf8();
@@ -38,7 +38,7 @@ macro_rules! _v_escape_escape_char_ptr {
                     (impl one $byte:ident, $quote:ident) => {
                         if $byte == c as u8 {
                             let mut buf_cur = 0;
-                            _v_escape_write_ptr!(buf_cur, buf, ($quote.as_bytes() as *const _ as *const u8), $quote.len());
+                            v_escape::write_ptr!(buf_cur, buf, ($quote.as_bytes() as *const _ as *const u8), $quote.len());
                             return Some(buf_cur);
                         }
                     };
@@ -47,7 +47,7 @@ macro_rules! _v_escape_escape_char_ptr {
                         if c < $Q_LEN {
                             let mut buf_cur = 0;
                             let quote = $Q[c];
-                            _v_escape_write_ptr!(buf_cur, buf, (quote.as_bytes() as *const _ as *const u8), quote.len());
+                            v_escape::write_ptr!(buf_cur, buf, (quote.as_bytes() as *const _ as *const u8), quote.len());
                             return Some(buf_cur);
                         }
                     };
@@ -73,7 +73,7 @@ macro_rules! _v_escape_escape_char_ptr {
 
 #[macro_export]
 #[doc(hidden)]
-macro_rules! _v_escape_escape_char_bytes {
+macro_rules! escape_char_bytes {
     ($($t:tt)+) => {
         pub unsafe fn b_escape_char<B: v_escape::Buffer>(c: char, buf: &mut B) {
             let len = c.len_utf8();
@@ -83,14 +83,14 @@ macro_rules! _v_escape_escape_char_bytes {
                     (impl one $byte:ident, $quote:ident) => {
                         if $byte == c as u8 {
                             let mut buf_cur = 0;
-                            _v_escape_write_bytes!($quote.as_bytes(), buf);
+                            v_escape::write_bytes!($quote.as_bytes(), buf);
                             return;
                         }
                     };
                     (impl $T:ident, $Q:ident, $Q_LEN:ident) => {
                         let c = $T[c as usize] as usize;
                         if c < $Q_LEN {
-                            _v_escape_write_bytes!($Q[c].as_bytes(), buf);
+                            v_escape::write_bytes!($Q[c].as_bytes(), buf);
                             return;
                         }
                     };

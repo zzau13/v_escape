@@ -80,18 +80,18 @@ impl<'a> Generator<'a> {
             quote!(
                 mod chars {
                     use super::*;
-                    _v_escape_escape_char!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
-                    _v_escape_escape_char_ptr!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
-                    _v_escape_escape_char_bytes!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
+                    v_escape::escape_char!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
+                    v_escape::escape_char_ptr!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
+                    v_escape::escape_char_bytes!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
                 }
             )
         } else {
             quote!(
                 mod chars {
                     use super::*;
-                    _v_escape_escape_char!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
-                    _v_escape_escape_char_ptr!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
-                    _v_escape_escape_char_bytes!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
+                    v_escape::escape_char!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
+                    v_escape::escape_char_ptr!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
+                    v_escape::escape_char_bytes!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
                 }
             )
         };
@@ -103,18 +103,18 @@ impl<'a> Generator<'a> {
             quote!(
                 mod scalar {
                     use super::*;
-                    _v_escape_escape_scalar!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
-                    _v_escape_escape_scalar_ptr!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
-                    _v_escape_escape_scalar_bytes!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
+                    v_escape::escape_scalar!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
+                    v_escape::escape_scalar_ptr!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
+                    v_escape::escape_scalar_bytes!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
                 }
             )
         } else {
             quote!(
                 mod scalar {
                     use super::*;
-                    _v_escape_escape_scalar!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
-                    _v_escape_escape_scalar_ptr!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
-                    _v_escape_escape_scalar_bytes!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
+                    v_escape::escape_scalar!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
+                    v_escape::escape_scalar_ptr!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
+                    v_escape::escape_scalar_bytes!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
                 }
             )
         };
@@ -134,7 +134,7 @@ impl<'a> Generator<'a> {
             buf.write(i);
             buf.writeln(" {");
             buf.writeln("use super::super::*;");
-            buf.write("_v_escape_escape_ranges!(");
+            buf.write("v_escape::escape_ranges!(");
             buf.write(i);
             if self.pairs.len() == 1 {
                 buf.write("2 (V_ESCAPE_CHAR, V_ESCAPE_QUOTES, V_ESCAPE_LEN) ");
@@ -143,7 +143,7 @@ impl<'a> Generator<'a> {
             }
             self.write_macro_tt(buf, ranges);
             buf.writeln(");");
-            buf.write("_v_escape_escape_ranges_ptr!(");
+            buf.write("v_escape::escape_ranges_ptr!(");
             buf.write(i);
             if self.pairs.len() == 1 {
                 buf.write("2 (V_ESCAPE_CHAR, V_ESCAPE_QUOTES, V_ESCAPE_LEN) ");
@@ -152,7 +152,7 @@ impl<'a> Generator<'a> {
             }
             self.write_macro_tt(buf, ranges);
             buf.writeln(");");
-            buf.write("_v_escape_escape_ranges_bytes!(");
+            buf.write("v_escape::escape_ranges_bytes!(");
             buf.write(i);
             if self.pairs.len() == 1 {
                 buf.write("2 (V_ESCAPE_CHAR, V_ESCAPE_QUOTES, V_ESCAPE_LEN) ");
@@ -168,15 +168,15 @@ impl<'a> Generator<'a> {
 
     fn write_cfg_if(&self, buf: &mut Buffer) {
         buf.writeln(&format!(
-            "_v_escape_cfg_escape!({}, {});",
+            "v_escape::cfg_escape!({}, {});",
             self.simd, self.avx
         ));
         buf.writeln(&format!(
-            "_v_escape_cfg_escape_ptr!({}, {});",
+            "v_escape::cfg_escape_ptr!({}, {});",
             self.simd, self.avx
         ));
         buf.writeln(&format!(
-            "_v_escape_cfg_escape_bytes!({}, {});",
+            "v_escape::cfg_escape_bytes!({}, {});",
             self.simd, self.avx
         ));
     }

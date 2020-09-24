@@ -177,7 +177,7 @@ macro_rules! new_escape {
         $crate::derive!($pairs);
 
         // Implementing function new and traits Display and From
-        _v_escape_escape_new!($name);
+        v_escape::escape_new!($name);
     };
     // Macro called with attributes
     ($name:ident, $pairs:expr, $($t:tt)+) => {
@@ -192,7 +192,7 @@ macro_rules! new_escape {
         $crate::derive!($pairs, $($t)+);
 
         // Implementing function
-        _v_escape_escape_new!($name);
+        v_escape::escape_new!($name);
     };
 }
 
@@ -201,7 +201,7 @@ macro_rules! new_escape {
 /// Escape implementation
 ///
 /// Generates function new, and traits From and Display, for class `$name`
-macro_rules! _v_escape_escape_new {
+macro_rules! escape_new {
     ($name:ident) => {
         #[allow(dead_code)]
         impl<'a> $name<'a> {
@@ -300,9 +300,9 @@ macro_rules! _v_escape_escape_new {
 #[macro_export]
 #[doc(hidden)]
 /// cfg_if for escape function
-macro_rules! _v_escape_cfg_escape {
+macro_rules! cfg_escape {
     (false, $($t:tt)+) => {
-        _v_escape_cfg_escape!(fn);
+        v_escape::cfg_escape!(fn);
     };
     (true, $($t:tt)+) => {
         #[cfg(target_arch = "x86_64")]
@@ -314,7 +314,7 @@ macro_rules! _v_escape_cfg_escape {
             static mut FN: fn(&[u8], &mut Formatter) -> fmt::Result = detect;
 
             fn detect(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
-                let fun = _v_escape_cfg_escape!(if $($t)+);
+                let fun = v_escape::cfg_escape!(if $($t)+);
 
                 let slot = unsafe { &*(&FN as *const _ as *const AtomicUsize) };
                 slot.store(fun, Ordering::Relaxed);
@@ -333,7 +333,7 @@ macro_rules! _v_escape_cfg_escape {
         }
 
         #[cfg(not(target_arch = "x86_64"))]
-        _v_escape_cfg_escape!(fn);
+        v_escape::cfg_escape!(fn);
     };
     (fn) => {
         #[inline(always)]
@@ -362,9 +362,9 @@ macro_rules! _v_escape_cfg_escape {
 #[macro_export]
 #[doc(hidden)]
 /// cfg_if for escape function
-macro_rules! _v_escape_cfg_escape_ptr {
+macro_rules! cfg_escape_ptr {
     (false, $($t:tt)+) => {
-        _v_escape_cfg_escape_ptr!(fn);
+        v_escape::cfg_escape_ptr!(fn);
     };
     (true, $($t:tt)+) => {
         #[cfg(target_arch = "x86_64")]
@@ -377,7 +377,7 @@ macro_rules! _v_escape_cfg_escape_ptr {
             static mut FN: fn(&[u8], &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> = detect;
 
             fn detect(bytes: &[u8], buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
-                let fun = _v_escape_cfg_escape_ptr!(if $($t)+);
+                let fun = v_escape::cfg_escape_ptr!(if $($t)+);
 
                 let slot = unsafe { &*(&FN as *const _ as *const AtomicUsize) };
                 slot.store(fun, Ordering::Relaxed);
@@ -396,7 +396,7 @@ macro_rules! _v_escape_cfg_escape_ptr {
         }
 
         #[cfg(not(target_arch = "x86_64"))]
-        _v_escape_cfg_escape_ptr!(fn);
+        v_escape::cfg_escape_ptr!(fn);
     };
     (fn) => {
         #[inline(always)]
@@ -425,19 +425,19 @@ macro_rules! _v_escape_cfg_escape_ptr {
 #[macro_export]
 #[doc(hidden)]
 /// cfg_if for escape function
-macro_rules! _v_escape_cfg_escape_bytes {
+macro_rules! cfg_escape_bytes {
     (false, $($t:tt)+) => {
-        _v_escape_cfg_escape_bytes!(fn);
+        v_escape::cfg_escape_bytes!(fn);
     };
     (true, $($t:tt)+) => {
         #[cfg(target_arch = "x86_64")]
         #[inline(always)]
         pub unsafe fn _b_escape<B: v_escape::Buffer>(bytes: &[u8], buf: &mut B) {
-            _v_escape_cfg_escape_bytes!(if $($t)+, bytes, buf)
+            v_escape::cfg_escape_bytes!(if $($t)+, bytes, buf)
         }
 
         #[cfg(not(all(target_arch = "x86_64", not(b_escape_nosimd))))]
-        _v_escape_cfg_escape_bytes!(fn);
+        v_escape::cfg_escape_bytes!(fn);
     };
     (fn) => {
         #[inline(always)]

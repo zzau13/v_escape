@@ -19,7 +19,7 @@ macro_rules! loop_range_switch_sse2  {
         if $len < M128_VECTOR_SIZE {
             fallback!();
         } else {
-            _v_escape_translations_128!($($t, )+);
+            v_escape::translations_128!($($t, )+);
 
             // Write mask for unaligned elements from the start
             // of the vector and aligning pointer
@@ -58,10 +58,10 @@ macro_rules! loop_range_switch_sse2  {
             // At this point at most there is less than `M128_VECTOR_SIZE` elements
             // so the macro `write_mask` is used to the last elements
             if $ptr < $end_ptr {
-                let d = M128_VECTOR_SIZE - _v_escape_sub!($end_ptr, $ptr);
+                let d = M128_VECTOR_SIZE - v_escape::sub!($end_ptr, $ptr);
 
                 let mut mask = ({
-                    debug_assert_eq!(M128_VECTOR_SIZE, _v_escape_sub!($end_ptr, $ptr.sub(d)));
+                    debug_assert_eq!(M128_VECTOR_SIZE, v_escape::sub!($end_ptr, $ptr.sub(d)));
                     let a = _mm_loadu_si128($ptr.sub(d) as *const __m128i);
                     _mm_movemask_epi8(masking!(a))
                 } as u16).wrapping_shr(d as u32);

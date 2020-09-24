@@ -1,43 +1,33 @@
 //! # Quick start
 //!
 //! ```rust
-//! extern crate v_latexescape;
 //! use v_latexescape::escape;
 //!
 //! print!("{}", escape("# Header"));
 //! ```
 //!
-#[macro_use]
-extern crate cfg_if;
 
-#[macro_use]
-extern crate v_escape;
+macro_rules! build {
+    ($($t:tt)*) => {
+        v_escape::new_escape!(
+            LateXEscape,
+            "35->\\# || 36->\\$ || 37->\\% || 38->\\& || 92->\\textbackslash{} || \
+             94->\\textasciicircum{} || 95->\\_ || 123->\\{ || 125->\\} || 126->\\textasciitilde{}",
+            $($t)*
+        );
+    };
+}
 
 /// Without simd optimizations
 mod fallback {
-    new_escape!(
-        LateXEscape,
-        "35->\\# || 36->\\$ || 37->\\% || 38->\\& || 92->\\textbackslash{} || \
-         94->\\textasciicircum{} || 95->\\_ || 123->\\{ || 125->\\} || 126->\\textasciitilde{}",
-        simd = false
-    );
+    build!(simd = false);
 }
 
-cfg_if! {
+cfg_if::cfg_if! {
     if #[cfg(all(v_latexescape_simd, v_latexescape_avx))] {
-        new_escape!(
-            LateXEscape,
-            "35->\\# || 36->\\$ || 37->\\% || 38->\\& || 92->\\textbackslash{} || \
-            94->\\textasciicircum{} || 95->\\_ || 123->\\{ || 125->\\} || 126->\\textasciitilde{}",
-            simd = true, avx = true
-        );
+        build!(simd = true, avx = true);
     } else if #[cfg(all(v_latexescape_simd, v_latexescape_sse))] {
-        new_escape!(
-            LateXEscape,
-            "35->\\# || 36->\\$ || 37->\\% || 38->\\& || 92->\\textbackslash{} || \
-            94->\\textasciicircum{} || 95->\\_ || 123->\\{ || 125->\\} || 126->\\textasciitilde{}",
-            simd = true, avx = false
-        );
+        build!(simd = true, avx = false);
     } else {
         pub use self::fallback::*;
     }

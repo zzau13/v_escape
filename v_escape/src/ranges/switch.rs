@@ -4,7 +4,7 @@
 ///
 /// Defining character interval from ASCII table to create bit masks from slice to be escaped
 /// overflow above in addition
-macro_rules! _v_escape_translations_256 {
+macro_rules! translations_256 {
     ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
         use std::arch::x86_64::{
             _mm256_add_epi8, _mm256_cmpeq_epi8, _mm256_cmpgt_epi8, _mm256_or_si256,
@@ -200,7 +200,7 @@ macro_rules! _v_escape_translations_256 {
 ///
 /// Defining character interval from ASCII table to create bit masks from slice to be escaped
 /// overflow above in addition
-macro_rules! _v_escape_translations_128 {
+macro_rules! translations_128 {
     ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
         use std::arch::x86_64::{
             _mm_add_epi8, _mm_cmpeq_epi8, _mm_cmpgt_epi8, _mm_or_si128, _mm_set1_epi8,
@@ -393,7 +393,7 @@ macro_rules! _v_escape_translations_128 {
 /// * `fallback_callback($t:tt)`
 ///     select between `fallback`
 ///
-macro_rules! _v_escape_fallback_escaping {
+macro_rules! fallback_escaping {
     ($fa:expr, 128, ) => {
         fallback_callback!(one);
     };
@@ -409,24 +409,24 @@ macro_rules! _v_escape_fallback_escaping {
 /// Defining exact match or false positive
 /// ## The following macros must be defined
 ///
-/// * `mask_bodies_callback($callback:ident)`
+/// * `mask_bodies_callback($callback:path)`
 ///     select between `mask_bodies`
 ///
-macro_rules! _v_escape_mask_bodies_escaping {
+macro_rules! mask_bodies_escaping {
     ($fa:expr, 128, ) => {
-        mask_bodies_callback!(_v_escape_bodies_exact_one);
+        mask_bodies_callback!(v_escape::bodies_exact_one);
     };
     ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
-        mask_bodies_callback!(_v_escape_bodies);
+        mask_bodies_callback!(v_escape::bodies);
     };
     ($la:expr, $ra:expr, $lb:expr, $rb:expr, $lc:expr, $rc:expr, ) => {
-        mask_bodies_callback!(_v_escape_bodies);
+        mask_bodies_callback!(v_escape::bodies);
     };
     ($la:expr, $ra:expr, $lb:expr, $rb:expr, $c:expr, ) => {
-        mask_bodies_callback!(_v_escape_bodies);
+        mask_bodies_callback!(v_escape::bodies);
     };
     ($($t:tt)+) => {
-        mask_bodies_callback!(_v_escape_bodies_exact);
+        mask_bodies_callback!(v_escape::bodies_exact);
     };
 }
 
@@ -437,24 +437,24 @@ macro_rules! _v_escape_mask_bodies_escaping {
 /// Defining exact match or false positive
 /// ## The following macros must be defined
 ///
-/// * `mask_bodies_callback($callback:ident)`
+/// * `mask_bodies_callback($callback:path)`
 ///     select between `mask_bodies`
 ///
-macro_rules! _v_escape_mask_bodies_escaping_ptr {
+macro_rules! mask_bodies_escaping_ptr {
     ($fa:expr, 128, ) => {
-        mask_bodies_callback!(_v_escape_bodies_exact_one_ptr);
+        mask_bodies_callback!(v_escape::bodies_exact_one_ptr);
     };
     ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
-        mask_bodies_callback!(_v_escape_bodies_ptr);
+        mask_bodies_callback!(v_escape::bodies_ptr);
     };
     ($la:expr, $ra:expr, $lb:expr, $rb:expr, $lc:expr, $rc:expr, ) => {
-        mask_bodies_callback!(_v_escape_bodies_ptr);
+        mask_bodies_callback!(v_escape::bodies_ptr);
     };
     ($la:expr, $ra:expr, $lb:expr, $rb:expr, $c:expr, ) => {
-        mask_bodies_callback!(_v_escape_bodies_ptr);
+        mask_bodies_callback!(v_escape::bodies_ptr);
     };
     ($($t:tt)+) => {
-        mask_bodies_callback!(_v_escape_bodies_exact_ptr);
+        mask_bodies_callback!(v_escape::bodies_exact_ptr);
     };
 }
 
@@ -465,24 +465,24 @@ macro_rules! _v_escape_mask_bodies_escaping_ptr {
 /// Defining exact match or false positive
 /// ## The following macros must be defined
 ///
-/// * `mask_bodies_callback($callback:ident)`
+/// * `mask_bodies_callback($callback:path)`
 ///     select between `mask_bodies`
 ///
-macro_rules! _v_escape_mask_bodies_escaping_bytes {
+macro_rules! mask_bodies_escaping_bytes {
     ($fa:expr, 128, ) => {
-        mask_bodies_callback!(_v_escape_bodies_exact_one_bytes);
+        mask_bodies_callback!(v_escape::bodies_exact_one_bytes);
     };
     ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
-        mask_bodies_callback!(_v_escape_bodies_bytes);
+        mask_bodies_callback!(v_escape::bodies_bytes);
     };
     ($la:expr, $ra:expr, $lb:expr, $rb:expr, $lc:expr, $rc:expr, ) => {
-        mask_bodies_callback!(_v_escape_bodies_bytes);
+        mask_bodies_callback!(v_escape::bodies_bytes);
     };
     ($la:expr, $ra:expr, $lb:expr, $rb:expr, $c:expr, ) => {
-        mask_bodies_callback!(_v_escape_bodies_bytes);
+        mask_bodies_callback!(v_escape::bodies_bytes);
     };
     ($($t:tt)+) => {
-        mask_bodies_callback!(_v_escape_bodies_exact_bytes);
+        mask_bodies_callback!(v_escape::bodies_exact_bytes);
     };
 }
 
@@ -494,32 +494,32 @@ macro_rules! _v_escape_mask_bodies_escaping_bytes {
 ///
 /// ## The following macros must be defined
 ///
-///  * `_v_escape_switch_main_loop!(impl [024] for ($len:ident, $ptr:ident, $end_ptr:ident)`
+///  * `v_escape::switch_main_loop!(impl [024] for ($len:ident, $ptr:ident, $end_ptr:ident)`
 ///    switch between main loops in avx
 ///
-macro_rules! _v_escape_avx_main_loop {
+macro_rules! avx_main_loop {
     (($len:ident, $ptr:ident, $end_ptr:ident) $($t:tt, )+) => {
         macro_rules! _inside {
             ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
-                _v_escape_switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
+                v_escape::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
             ($fa:expr, $fb:expr, $fc:expr, 128, ) => {
-                _v_escape_switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
+                v_escape::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
             ($fa:expr, $fb:expr, 128, ) => {
-                _v_escape_switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
+                v_escape::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
             ($fa:expr, 128, ) => {
-                _v_escape_switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
+                v_escape::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
             // TODO: https://github.com/rust-lang-nursery/stdsimd/issues/674
             ($la:expr, $ra:expr, $lb:expr, $rb:expr, $lc:expr, $rc:expr, ) => {
-                _v_escape_switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
+                v_escape::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
             ($la:expr, $ra:expr, $lb:expr, $rb:expr, $c:expr, ) => {
-                _v_escape_switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
+                v_escape::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
             ($la:expr, $ra:expr, $lb:expr, $rb:expr, ) => {
-                _v_escape_switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
+                v_escape::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
             ($la:expr, $ra:expr, $b:expr, ) => {
-                _v_escape_switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));
+                v_escape::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));
             };
             ($la:expr, $ra:expr, ) => {
-                _v_escape_switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));
+                v_escape::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));
             };
         }
 
@@ -530,7 +530,7 @@ macro_rules! _v_escape_avx_main_loop {
 #[macro_export]
 #[doc(hidden)]
 /// Generate avx main loops
-macro_rules! _v_escape_switch_main_loop {
+macro_rules! switch_main_loop {
     (impl 0 for ($len:ident, $ptr:ident, $end_ptr:ident)) => {
     };
     (impl 2 for ($len:ident, $ptr:ident, $end_ptr:ident)) => {

@@ -1,22 +1,16 @@
 //! # Quick start
 //!
 //! ```
-//! extern crate v_jsonescape;
 //! use v_jsonescape::escape;
 //!
 //! print!("{}", escape("foo<bar"));
 //! ```
 //!
-#[macro_use]
-extern crate cfg_if;
-
-#[macro_use]
-extern crate v_escape;
 // https://tools.ietf.org/id/draft-ietf-json-rfc4627bis-09.html#rfc.section.7
 // https://github.com/serde-rs/json/blob/master/src/ser.rs#L2113-L2143
-macro_rules! new_json {
-    ($simd:expr, $avx:expr) => {
-        new_escape!(
+macro_rules! build {
+    ($($t:tt)*) => {
+        v_escape::new_escape!(
             JSONEscape,
             "0x00->\\u0000 || \
             0x01->\\u0001 || \
@@ -52,22 +46,21 @@ macro_rules! new_json {
             0x1F->\\u001f || \
             0x22->\\\" || \
             0x5C->\\\\",
-            simd = $simd,
-            avx = $avx
+            $($t)*
         );
     };
 }
 
 /// Without simd optimizations
 pub mod fallback {
-    new_json!(false, false);
+    build!(simd = false);
 }
 
-cfg_if! {
+cfg_if::cfg_if! {
     if #[cfg(all(v_jsonescape_simd, v_jsonescape_avx))] {
-        new_json!(true, true);
+        build!(simd = true, avx = true);
     } else if #[cfg(all(v_jsonescape_simd, v_jsonescape_sse))] {
-        new_json!(true, false);
+        build!(simd = true, avx = false);
     } else {
         pub use self::fallback::*;
     }
