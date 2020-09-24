@@ -15,10 +15,15 @@ use syn::{
 mod generator;
 mod parser;
 
+/// Generate static tables and call macros
 #[proc_macro]
 pub fn derive(input: TokenStream) -> TokenStream {
-    let (avx, pairs, print, simd) = match syn::parse::<StructBuilder>(input).and_then(|s| s.build())
-    {
+    let Args {
+        avx,
+        pairs,
+        print,
+        simd,
+    } = match syn::parse::<Builder>(input).and_then(Builder::build) {
         Ok(s) => s,
         Err(e) => return e.to_compile_error().into(),
     };
@@ -31,8 +36,15 @@ pub fn derive(input: TokenStream) -> TokenStream {
     code.parse().unwrap()
 }
 
-type Struct = (bool, String, bool, bool);
+/// Proc macro arguments data
+struct Args {
+    pairs: String,
+    avx: bool,
+    print: bool,
+    simd: bool,
+}
 
+/// Key-value argument
 struct MetaOpt<Lit: Parse> {
     pub path: syn::Path,
     pub eq_token: Token![=],
@@ -49,13 +61,14 @@ impl<Lit: Parse> Parse for MetaOpt<Lit> {
     }
 }
 
-struct StructBuilder {
+/// Proc macro arguments parser
+struct Builder {
     pub pairs: syn::LitStr,
     pub comma: Option<Token![,]>,
     pub opts: Punctuated<MetaOpt<syn::LitBool>, Token![,]>,
 }
 
-impl Parse for StructBuilder {
+impl Parse for Builder {
     fn parse<'a>(input: &'a ParseBuffer<'a>) -> syn::Result<Self> {
         Ok(Self {
             pairs: input.parse()?,
@@ -65,9 +78,10 @@ impl Parse for StructBuilder {
     }
 }
 
-impl StructBuilder {
-    fn build(self) -> syn::Result<Struct> {
-        let StructBuilder { pairs, opts, .. } = self;
+impl Builder {
+    /// Consume and return arguments data
+    fn build(self) -> syn::Result<Args> {
+        let Builder { pairs, opts, .. } = self;
         let mut avx = true;
         let mut print = false;
         let mut simd = true;
@@ -87,6 +101,11 @@ impl StructBuilder {
             }
         }
 
-        Ok((avx, pairs.value(), print, simd))
+        Ok(Args {
+            pairs: pairs.value(),
+            avx,
+            print,
+            simd,
+        })
     }
 }
