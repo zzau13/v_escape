@@ -56,8 +56,8 @@ macro_rules! mask_body {
     ($i:expr, $start:ident, $fmt:ident, $bytes:ident, $quote:expr) => {{
         // Resolve expression `$i`
         let i = $i;
-        // Call macro `v_escape::escape_body!`
-        v_escape::escape_body!(i, $start, $fmt, $bytes, $quote);
+        // Call macro `$crate::escape_body!`
+        $crate::escape_body!(i, $start, $fmt, $bytes, $quote);
     }};
 }
 
@@ -71,12 +71,12 @@ macro_rules! bodies {
     ($T:ident, $Q:ident, $Q_LEN:ident, $i:expr, $b:expr, $start:ident, $fmt:ident, $bytes:ident, $callback:path) => {
         // Get usize from 0 to $Q_LEN for a given escape character in byte `$b`
         // where $Q_LEN is a inescapable character and (0,...,$Q_LEN - 1) are escapable
-        let c = v_escape::index!($T[$b as usize]) as usize;
+        let c = $crate::index!($T[$b as usize]) as usize;
         // Check if escape character is valid
         if c < $Q_LEN {
             // Call macro `$callback!` passing `QUOTES[c]` as `$quote` argument
             // `QUOTES[c]` is the string representation of the escaped character
-            $callback!($i, $start, $fmt, $bytes, v_escape::index!($Q[c]));
+            $callback!($i, $start, $fmt, $bytes, $crate::index!($Q[c]));
         }
     };
 }
@@ -99,7 +99,7 @@ macro_rules! bodies_exact {
             $start,
             $fmt,
             $bytes,
-            v_escape::index!($Q[v_escape::index!($T[$b as usize]) as usize])
+            $crate::index!($Q[$crate::index!($T[$b as usize]) as usize])
         );
     };
 }
@@ -127,10 +127,10 @@ macro_rules! escape_body_ptr {
         // Test if `start` index is in current position `i`
         if $start < $i {
             // Write slice from `start` to `i`- 1 in a buffer pointer
-            v_escape::write_ptr!($cur, $buf, $src_start.add($start), $i - $start);
+            $crate::write_ptr!($cur, $buf, $src_start.add($start), $i - $start);
         }
         let quote = $quote;
-        v_escape::write_ptr!(
+        $crate::write_ptr!(
             $cur,
             $buf,
             (quote.as_bytes() as *const _ as *const u8),
@@ -150,8 +150,8 @@ macro_rules! mask_body_ptr {
     ($i:expr, $start:ident, $cur:ident, $buf:ident, $src_start:ident, $quote:expr) => {{
         // Resolve expression `$i`
         let i = $i;
-        // Call macro `v_escape::escape_body_ptr!`
-        v_escape::escape_body_ptr!(i, $start, $cur, $buf, $src_start, $quote);
+        // Call macro `$crate::escape_body_ptr!`
+        $crate::escape_body_ptr!(i, $start, $cur, $buf, $src_start, $quote);
     }};
 }
 
@@ -177,9 +177,9 @@ macro_rules! write_ptr {
 /// escaped byte as `$quotes`, only if current value has to be escaped
 macro_rules! bodies_ptr {
     ($T:ident, $Q:ident, $Q_LEN:ident, $i:expr, $b:expr, $start:ident, $cur:ident, $buf:ident, $src_start:ident, $callback:path) => {
-        let c = v_escape::index!($T[$b as usize]) as usize;
+        let c = $crate::index!($T[$b as usize]) as usize;
         if c < $Q_LEN {
-            $callback!($i, $start, $cur, $buf, $src_start, v_escape::index!($Q[c]));
+            $callback!($i, $start, $cur, $buf, $src_start, $crate::index!($Q[c]));
         }
     };
 }
@@ -203,7 +203,7 @@ macro_rules! bodies_exact_ptr {
             $cur,
             $buf,
             $src_start,
-            v_escape::index!($Q[v_escape::index!($T[$b as usize]) as usize])
+            $crate::index!($Q[$crate::index!($T[$b as usize]) as usize])
         );
     };
 }
@@ -231,9 +231,9 @@ macro_rules! escape_body_bytes {
         // Test if `start` index is in current position `i`
         if $start < $i {
             // Write slice from `start` to `i`- 1 in a buffer pointer
-            v_escape::write_bytes!(&$bytes[$start..$i], $buf);
+            $crate::write_bytes!(&$bytes[$start..$i], $buf);
         }
-        v_escape::write_bytes!($quote.as_bytes(), $buf);
+        $crate::write_bytes!($quote.as_bytes(), $buf);
 
         // Updates `start` index with the new current position  `i` + 1
         $start = $i + 1;
@@ -249,8 +249,8 @@ macro_rules! mask_body_bytes {
     ($i:expr, $start:ident, $bytes:ident, $buf:ident, $quote:expr) => {{
         // Resolve expression `$i`
         let i = $i;
-        // Call macro `v_escape::escape_body_bytes!`
-        v_escape::escape_body_bytes!(i, $start, $bytes, $buf, $quote);
+        // Call macro `$crate::escape_body_bytes!`
+        $crate::escape_body_bytes!(i, $start, $bytes, $buf, $quote);
     }};
 }
 
@@ -271,9 +271,9 @@ macro_rules! write_bytes {
 /// escaped byte as `$quotes`, only if current value has to be escaped
 macro_rules! bodies_bytes {
     ($T:ident, $Q:ident, $Q_LEN:ident, $i:expr, $b:expr, $start:ident, $bytes:ident, $buf:ident, $callback:path) => {
-        let c = v_escape::index!($T[$b as usize]) as usize;
+        let c = $crate::index!($T[$b as usize]) as usize;
         if c < $Q_LEN {
-            $callback!($i, $start, $bytes, $buf, v_escape::index!($Q[c]));
+            $callback!($i, $start, $bytes, $buf, $crate::index!($Q[c]));
         }
     };
 }
@@ -296,7 +296,7 @@ macro_rules! bodies_exact_bytes {
             $start,
             $bytes,
             $buf,
-            v_escape::index!($Q[v_escape::index!($T[$b as usize]) as usize])
+            $crate::index!($Q[$crate::index!($T[$b as usize]) as usize])
         );
     };
 }

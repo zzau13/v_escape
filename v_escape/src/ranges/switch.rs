@@ -414,19 +414,19 @@ macro_rules! fallback_escaping {
 ///
 macro_rules! mask_bodies_escaping {
     ($fa:expr, 128, ) => {
-        mask_bodies_callback!(v_escape::bodies_exact_one);
+        mask_bodies_callback!($crate::bodies_exact_one);
     };
     ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
-        mask_bodies_callback!(v_escape::bodies);
+        mask_bodies_callback!($crate::bodies);
     };
     ($la:expr, $ra:expr, $lb:expr, $rb:expr, $lc:expr, $rc:expr, ) => {
-        mask_bodies_callback!(v_escape::bodies);
+        mask_bodies_callback!($crate::bodies);
     };
     ($la:expr, $ra:expr, $lb:expr, $rb:expr, $c:expr, ) => {
-        mask_bodies_callback!(v_escape::bodies);
+        mask_bodies_callback!($crate::bodies);
     };
     ($($t:tt)+) => {
-        mask_bodies_callback!(v_escape::bodies_exact);
+        mask_bodies_callback!($crate::bodies_exact);
     };
 }
 
@@ -442,19 +442,19 @@ macro_rules! mask_bodies_escaping {
 ///
 macro_rules! mask_bodies_escaping_ptr {
     ($fa:expr, 128, ) => {
-        mask_bodies_callback!(v_escape::bodies_exact_one_ptr);
+        mask_bodies_callback!($crate::bodies_exact_one_ptr);
     };
     ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
-        mask_bodies_callback!(v_escape::bodies_ptr);
+        mask_bodies_callback!($crate::bodies_ptr);
     };
     ($la:expr, $ra:expr, $lb:expr, $rb:expr, $lc:expr, $rc:expr, ) => {
-        mask_bodies_callback!(v_escape::bodies_ptr);
+        mask_bodies_callback!($crate::bodies_ptr);
     };
     ($la:expr, $ra:expr, $lb:expr, $rb:expr, $c:expr, ) => {
-        mask_bodies_callback!(v_escape::bodies_ptr);
+        mask_bodies_callback!($crate::bodies_ptr);
     };
     ($($t:tt)+) => {
-        mask_bodies_callback!(v_escape::bodies_exact_ptr);
+        mask_bodies_callback!($crate::bodies_exact_ptr);
     };
 }
 
@@ -470,19 +470,19 @@ macro_rules! mask_bodies_escaping_ptr {
 ///
 macro_rules! mask_bodies_escaping_bytes {
     ($fa:expr, 128, ) => {
-        mask_bodies_callback!(v_escape::bodies_exact_one_bytes);
+        mask_bodies_callback!($crate::bodies_exact_one_bytes);
     };
     ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
-        mask_bodies_callback!(v_escape::bodies_bytes);
+        mask_bodies_callback!($crate::bodies_bytes);
     };
     ($la:expr, $ra:expr, $lb:expr, $rb:expr, $lc:expr, $rc:expr, ) => {
-        mask_bodies_callback!(v_escape::bodies_bytes);
+        mask_bodies_callback!($crate::bodies_bytes);
     };
     ($la:expr, $ra:expr, $lb:expr, $rb:expr, $c:expr, ) => {
-        mask_bodies_callback!(v_escape::bodies_bytes);
+        mask_bodies_callback!($crate::bodies_bytes);
     };
     ($($t:tt)+) => {
-        mask_bodies_callback!(v_escape::bodies_exact_bytes);
+        mask_bodies_callback!($crate::bodies_exact_bytes);
     };
 }
 
@@ -494,32 +494,32 @@ macro_rules! mask_bodies_escaping_bytes {
 ///
 /// ## The following macros must be defined
 ///
-///  * `v_escape::switch_main_loop!(impl [024] for ($len:ident, $ptr:ident, $end_ptr:ident)`
+///  * `$crate::switch_main_loop!(impl [024] for ($len:ident, $ptr:ident, $end_ptr:ident)`
 ///    switch between main loops in avx
 ///
 macro_rules! avx_main_loop {
     (($len:ident, $ptr:ident, $end_ptr:ident) $($t:tt, )+) => {
         macro_rules! _inside {
             ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
-                v_escape::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
+                $crate::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
             ($fa:expr, $fb:expr, $fc:expr, 128, ) => {
-                v_escape::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
+                $crate::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
             ($fa:expr, $fb:expr, 128, ) => {
-                v_escape::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
+                $crate::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
             ($fa:expr, 128, ) => {
-                v_escape::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
+                $crate::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
             // TODO: https://github.com/rust-lang-nursery/stdsimd/issues/674
             ($la:expr, $ra:expr, $lb:expr, $rb:expr, $lc:expr, $rc:expr, ) => {
-                v_escape::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
+                $crate::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
             ($la:expr, $ra:expr, $lb:expr, $rb:expr, $c:expr, ) => {
-                v_escape::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
+                $crate::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
             ($la:expr, $ra:expr, $lb:expr, $rb:expr, ) => {
-                v_escape::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
+                $crate::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
             ($la:expr, $ra:expr, $b:expr, ) => {
-                v_escape::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));
+                $crate::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));
             };
             ($la:expr, $ra:expr, ) => {
-                v_escape::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));
+                $crate::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));
             };
         }
 

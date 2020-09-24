@@ -177,7 +177,7 @@ macro_rules! new_escape {
         $crate::derive!($pairs);
 
         // Implementing function new and traits Display and From
-        v_escape::escape_new!($name);
+        $crate::escape_new!($name);
     };
     // Macro called with attributes
     ($name:ident, $pairs:expr, $($t:tt)+) => {
@@ -192,7 +192,7 @@ macro_rules! new_escape {
         $crate::derive!($pairs, $($t)+);
 
         // Implementing function
-        v_escape::escape_new!($name);
+        $crate::escape_new!($name);
     };
 }
 
@@ -279,7 +279,7 @@ macro_rules! escape_new {
         /// And it's very expensive check it in runtime
         /// https://github.com/rust-lang/rust/issues/57775
         #[inline]
-        pub fn b_escape<B: v_escape::Buffer>(s: &[u8], buf: &mut B) {
+        pub fn b_escape<B: $crate::Buffer>(s: &[u8], buf: &mut B) {
             #[allow(unused_unsafe)]
             unsafe {
                 _b_escape(s, buf)
@@ -288,7 +288,7 @@ macro_rules! escape_new {
 
         /// Escape char to `buf-min::Buffer`
         #[inline]
-        pub fn b_escape_char<B: v_escape::Buffer>(s: char, buf: &mut B) {
+        pub fn b_escape_char<B: $crate::Buffer>(s: char, buf: &mut B) {
             #[allow(unused_unsafe)]
             unsafe {
                 chars::b_escape_char(s, buf)
@@ -302,7 +302,7 @@ macro_rules! escape_new {
 /// cfg_if for escape function
 macro_rules! cfg_escape {
     (false, $($t:tt)+) => {
-        v_escape::cfg_escape!(fn);
+        $crate::cfg_escape!(fn);
     };
     (true, $($t:tt)+) => {
         #[cfg(target_arch = "x86_64")]
@@ -314,7 +314,7 @@ macro_rules! cfg_escape {
             static mut FN: fn(&[u8], &mut Formatter) -> fmt::Result = detect;
 
             fn detect(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
-                let fun = v_escape::cfg_escape!(if $($t)+);
+                let fun = $crate::cfg_escape!(if $($t)+);
 
                 let slot = unsafe { &*(&FN as *const _ as *const AtomicUsize) };
                 slot.store(fun, Ordering::Relaxed);
@@ -333,7 +333,7 @@ macro_rules! cfg_escape {
         }
 
         #[cfg(not(target_arch = "x86_64"))]
-        v_escape::cfg_escape!(fn);
+        $crate::cfg_escape!(fn);
     };
     (fn) => {
         #[inline(always)]
@@ -364,7 +364,7 @@ macro_rules! cfg_escape {
 /// cfg_if for escape function
 macro_rules! cfg_escape_ptr {
     (false, $($t:tt)+) => {
-        v_escape::cfg_escape_ptr!(fn);
+        $crate::cfg_escape_ptr!(fn);
     };
     (true, $($t:tt)+) => {
         #[cfg(target_arch = "x86_64")]
@@ -377,7 +377,7 @@ macro_rules! cfg_escape_ptr {
             static mut FN: fn(&[u8], &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> = detect;
 
             fn detect(bytes: &[u8], buf: &mut [std::mem::MaybeUninit<u8>]) -> Option<usize> {
-                let fun = v_escape::cfg_escape_ptr!(if $($t)+);
+                let fun = $crate::cfg_escape_ptr!(if $($t)+);
 
                 let slot = unsafe { &*(&FN as *const _ as *const AtomicUsize) };
                 slot.store(fun, Ordering::Relaxed);
@@ -396,7 +396,7 @@ macro_rules! cfg_escape_ptr {
         }
 
         #[cfg(not(target_arch = "x86_64"))]
-        v_escape::cfg_escape_ptr!(fn);
+        $crate::cfg_escape_ptr!(fn);
     };
     (fn) => {
         #[inline(always)]
@@ -427,21 +427,21 @@ macro_rules! cfg_escape_ptr {
 /// cfg_if for escape function
 macro_rules! cfg_escape_bytes {
     (false, $($t:tt)+) => {
-        v_escape::cfg_escape_bytes!(fn);
+        $crate::cfg_escape_bytes!(fn);
     };
     (true, $($t:tt)+) => {
         #[cfg(target_arch = "x86_64")]
         #[inline(always)]
-        pub unsafe fn _b_escape<B: v_escape::Buffer>(bytes: &[u8], buf: &mut B) {
-            v_escape::cfg_escape_bytes!(if $($t)+, bytes, buf)
+        pub unsafe fn _b_escape<B: $crate::Buffer>(bytes: &[u8], buf: &mut B) {
+            $crate::cfg_escape_bytes!(if $($t)+, bytes, buf)
         }
 
         #[cfg(not(all(target_arch = "x86_64", not(b_escape_nosimd))))]
-        v_escape::cfg_escape_bytes!(fn);
+        $crate::cfg_escape_bytes!(fn);
     };
     (fn) => {
         #[inline(always)]
-        pub unsafe fn _b_escape<B: v_escape::Buffer>(bytes: &[u8], buf: &mut B) {
+        pub unsafe fn _b_escape<B: $crate::Buffer>(bytes: &[u8], buf: &mut B) {
             scalar::b_escape(bytes, buf)
         }
     };

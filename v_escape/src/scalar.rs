@@ -21,30 +21,30 @@ macro_rules! escape_scalar {
                 macro_rules! _inside {
                     (impl one $byte:ident, $quote:ident) => {
                         if $byte == *ptr {
-                            v_escape::bodies_exact_one!(
+                            $crate::bodies_exact_one!(
                                 $byte,
                                 $quote,
                                 (),
-                                v_escape::sub!(ptr, start_ptr),
+                                $crate::sub!(ptr, start_ptr),
                                 *ptr,
                                 start,
                                 fmt,
                                 bytes,
-                                v_escape::escape_body
+                                $crate::escape_body
                             );
                         }
                     };
                     (impl $T:ident, $Q:ident, $Q_LEN:ident) => {
-                        v_escape::bodies!(
+                        $crate::bodies!(
                             $T,
                             $Q,
                             $Q_LEN,
-                            v_escape::sub!(ptr, start_ptr),
+                            $crate::sub!(ptr, start_ptr),
                             *ptr,
                             start,
                             fmt,
                             bytes,
-                            v_escape::escape_body
+                            $crate::escape_body
                         );
                     };
                 }
@@ -81,32 +81,32 @@ macro_rules! escape_scalar_ptr {
                 macro_rules! _inside {
                     (impl one $byte:ident, $quote:ident) => {
                         if $byte == *ptr {
-                            v_escape::bodies_exact_one_ptr!(
+                            $crate::bodies_exact_one_ptr!(
                                 $byte,
                                 $quote,
                                 (),
-                                v_escape::sub!(ptr, start_ptr),
+                                $crate::sub!(ptr, start_ptr),
                                 *ptr,
                                 start,
                                 buf_cur,
                                 buf,
                                 start_ptr,
-                                v_escape::escape_body_ptr
+                                $crate::escape_body_ptr
                             );
                         }
                     };
                     (impl $T:ident, $Q:ident, $Q_LEN:ident) => {
-                        v_escape::bodies_ptr!(
+                        $crate::bodies_ptr!(
                             $T,
                             $Q,
                             $Q_LEN,
-                            v_escape::sub!(ptr, start_ptr),
+                            $crate::sub!(ptr, start_ptr),
                             *ptr,
                             start,
                             buf_cur,
                             buf,
                             start_ptr,
-                            v_escape::escape_body_ptr
+                            $crate::escape_body_ptr
                         );
                     };
                 }
@@ -120,7 +120,7 @@ macro_rules! escape_scalar_ptr {
             debug_assert!(start <= len);
             if start < len {
                 let len = len - start;
-                v_escape::write_ptr!(buf_cur, buf, start_ptr.add(start), len);
+                $crate::write_ptr!(buf_cur, buf, start_ptr.add(start), len);
             }
 
             Some(buf_cur)
@@ -133,7 +133,7 @@ macro_rules! escape_scalar_ptr {
 macro_rules! escape_scalar_bytes {
     ($($t:tt)+) => {
         #[inline]
-        pub unsafe fn b_escape<B: v_escape::Buffer>(bytes: &[u8], buf: &mut B) {
+        pub unsafe fn b_escape<B: $crate::Buffer>(bytes: &[u8], buf: &mut B) {
             let len = bytes.len();
             let start_ptr = bytes.as_ptr();
             let end_ptr = bytes[len..].as_ptr();
@@ -146,30 +146,30 @@ macro_rules! escape_scalar_bytes {
                 macro_rules! _inside {
                     (impl one $byte:ident, $quote:ident) => {
                         if $byte == *ptr {
-                            v_escape::bodies_exact_one_bytes!(
+                            $crate::bodies_exact_one_bytes!(
                                 $byte,
                                 $quote,
                                 (),
-                                v_escape::sub!(ptr, start_ptr),
+                                $crate::sub!(ptr, start_ptr),
                                 *ptr,
                                 start,
                                 bytes,
                                 buf,
-                                v_escape::escape_body_bytes
+                                $crate::escape_body_bytes
                             );
                         }
                     };
                     (impl $T:ident, $Q:ident, $Q_LEN:ident) => {
-                        v_escape::bodies_bytes!(
+                        $crate::bodies_bytes!(
                             $T,
                             $Q,
                             $Q_LEN,
-                            v_escape::sub!(ptr, start_ptr),
+                            $crate::sub!(ptr, start_ptr),
                             *ptr,
                             start,
                             bytes,
                             buf,
-                            v_escape::escape_body_bytes
+                            $crate::escape_body_bytes
                         );
                     };
                 }
@@ -182,7 +182,7 @@ macro_rules! escape_scalar_bytes {
             // Write since start to the end of the slice
             debug_assert!(start <= len);
             if start < len {
-                v_escape::write_bytes!(&bytes[start..], buf);
+                $crate::write_bytes!(&bytes[start..], buf);
             }
         }
     };

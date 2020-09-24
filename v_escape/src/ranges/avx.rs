@@ -18,9 +18,9 @@ macro_rules! loop_range_switch_avx2  {
         const M256_VECTOR_SIZE: usize = ::std::mem::size_of::<__m256i>();
 
         if $len < M256_VECTOR_SIZE {
-            v_escape::loop_range_switch_sse2!(($len, $ptr, $start_ptr, $end_ptr) $($t, )+);
+            $crate::loop_range_switch_sse2!(($len, $ptr, $start_ptr, $end_ptr) $($t, )+);
         } else {
-            v_escape::translations_256!($($t, )+);
+            $crate::translations_256!($($t, )+);
 
             // Aligning pointer by using `_mm256_loadu_si256` on unaligned bytes.
             {
@@ -40,7 +40,7 @@ macro_rules! loop_range_switch_avx2  {
                 }
             }
 
-            v_escape::avx_main_loop!(($len, $ptr, $end_ptr) $($t, )+);
+            $crate::avx_main_loop!(($len, $ptr, $end_ptr) $($t, )+);
 
             // When the rest of string has a $length greater then `M256_VECTOR_SIZE`
             // but less than `LOOP_SIZE`, we process it `M256_VECTOR_SIZE` bits at
@@ -64,10 +64,10 @@ macro_rules! loop_range_switch_avx2  {
             // At this point at most there is less then `M256_VECTOR_SIZE` elements
             // so the macro `write_forward` is used to finalize de process
             if $ptr < $end_ptr {
-                let d = M256_VECTOR_SIZE - v_escape::sub!($end_ptr, $ptr);
+                let d = M256_VECTOR_SIZE - $crate::sub!($end_ptr, $ptr);
 
                 let mut mask = ({
-                    debug_assert_eq!(M256_VECTOR_SIZE, v_escape::sub!($end_ptr, $ptr.sub(d)), "Over runs");
+                    debug_assert_eq!(M256_VECTOR_SIZE, $crate::sub!($end_ptr, $ptr.sub(d)), "Over runs");
                     let a = _mm256_loadu_si256($ptr.sub(d) as *const __m256i);
                     _mm256_movemask_epi8(masking!(a))
                 } as u32).wrapping_shr(d as u32);

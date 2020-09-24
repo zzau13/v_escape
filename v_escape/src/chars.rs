@@ -38,7 +38,7 @@ macro_rules! escape_char_ptr {
                     (impl one $byte:ident, $quote:ident) => {
                         if $byte == c as u8 {
                             let mut buf_cur = 0;
-                            v_escape::write_ptr!(buf_cur, buf, ($quote.as_bytes() as *const _ as *const u8), $quote.len());
+                            $crate::write_ptr!(buf_cur, buf, ($quote.as_bytes() as *const _ as *const u8), $quote.len());
                             return Some(buf_cur);
                         }
                     };
@@ -47,7 +47,7 @@ macro_rules! escape_char_ptr {
                         if c < $Q_LEN {
                             let mut buf_cur = 0;
                             let quote = $Q[c];
-                            v_escape::write_ptr!(buf_cur, buf, (quote.as_bytes() as *const _ as *const u8), quote.len());
+                            $crate::write_ptr!(buf_cur, buf, (quote.as_bytes() as *const _ as *const u8), quote.len());
                             return Some(buf_cur);
                         }
                     };
@@ -75,7 +75,7 @@ macro_rules! escape_char_ptr {
 #[doc(hidden)]
 macro_rules! escape_char_bytes {
     ($($t:tt)+) => {
-        pub unsafe fn b_escape_char<B: v_escape::Buffer>(c: char, buf: &mut B) {
+        pub unsafe fn b_escape_char<B: $crate::Buffer>(c: char, buf: &mut B) {
             let len = c.len_utf8();
             buf.reserve(len);
             if len == 1 {
@@ -83,14 +83,14 @@ macro_rules! escape_char_bytes {
                     (impl one $byte:ident, $quote:ident) => {
                         if $byte == c as u8 {
                             let mut buf_cur = 0;
-                            v_escape::write_bytes!($quote.as_bytes(), buf);
+                            $crate::write_bytes!($quote.as_bytes(), buf);
                             return;
                         }
                     };
                     (impl $T:ident, $Q:ident, $Q_LEN:ident) => {
                         let c = $T[c as usize] as usize;
                         if c < $Q_LEN {
-                            v_escape::write_bytes!($Q[c].as_bytes(), buf);
+                            $crate::write_bytes!($Q[c].as_bytes(), buf);
                             return;
                         }
                     };
