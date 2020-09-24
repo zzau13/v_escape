@@ -10,7 +10,7 @@
 // https://github.com/serde-rs/json/blob/master/src/ser.rs#L2113-L2143
 macro_rules! build {
     ($($t:tt)*) => {
-        v_escape::new_escape!(
+        v_escape::new!(
             JSONEscape,
             "0x00->\\u0000 || \
             0x01->\\u0001 || \

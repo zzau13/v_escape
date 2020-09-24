@@ -9,7 +9,7 @@
 
 macro_rules! build {
     ($($t:tt)*) => {
-        v_escape::new_escape!(
+        v_escape::new!(
             LateXEscape,
             "35->\\# || 36->\\$ || 37->\\% || 38->\\& || 92->\\textbackslash{} || \
              94->\\textasciicircum{} || 95->\\_ || 123->\\{ || 125->\\} || 126->\\textasciitilde{}",

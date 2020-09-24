@@ -1,19 +1,16 @@
-//! Crate v_escape provides a macro, `new_escape!` that define a `struct` with
+//! Crate v_escape provides a macro, `new!` that define a `struct` with
 //! escaping functionality. These macros are optimized using simd by default,
 //! but this can be alter using sub-attributes.
 //!
 //! # Quick start
 //! In order to use v_escape you will have to call one of the two macros
 //! to create a escape `struct`. In this example, when using the macro
-//! `new_escape!(MyEscape, "62->bar");` a new a `struct` `MyEscape`
+//! `new!(MyEscape, "62->bar");` a new a `struct` `MyEscape`
 //! will be created that every time its method `MyEscape::fmt` is called
 //! will replace all characters `">"` with `"bar"`.
 //!
 //! ```
-//! #[macro_use]
-//! extern crate v_escape;
-//!
-//! new_escape!(MyEscape, "62->bar");
+//! v_escape::new!(MyEscape, "62->bar");
 //!
 //! # fn main() {
 //! # let s = "foo>bar";
@@ -41,33 +38,25 @@
 //! * `quote` :   Characters that will replace `character`
 //!
 //! ```
-//! # #[macro_use]
-//! # extern crate v_escape;
-//! new_escape!(MyEscape, "49->bar");
+//! v_escape::new!(MyEscape, "49->bar");
 //! # fn main() {
 //! assert_eq!(escape("foo 1").to_string(), "foo bar");
 //! # }
 //! ```
 //! ```
-//! # #[macro_use]
-//! # extern crate v_escape;
-//! new_escape!(MyEscape, "0x31->bar");
+//! v_escape::new!(MyEscape, "0x31->bar");
 //! # fn main() {
 //! assert_eq!(escape("foo 1").to_string(), "foo bar");
 //! # }
 //! ```
 //! ```
-//! # #[macro_use]
-//! # extern crate v_escape;
-//! new_escape!(MyEscape, "0o61->bar");
+//! v_escape::new!(MyEscape, "0o61->bar");
 //! # fn main() {
 //! assert_eq!(escape("foo 1").to_string(), "foo bar");
 //! # }
 //! ```
 //! ```
-//! # #[macro_use]
-//! # extern crate v_escape;
-//! new_escape!(MyEscape, "#1->bar");
+//! v_escape::new!(MyEscape, "#1->bar");
 //! # fn main() {
 //! assert_eq!(escape("foo 1").to_string(), "foo bar");
 //! # }
@@ -79,9 +68,7 @@
 //! optimization has to be disabled.
 //!
 //! ```
-//! # #[macro_use]
-//! # extern crate v_escape;
-//! new_escape!(
+//! v_escape::new!(
 //!     MyEscape,
 //!     "62->b || 60->f || B->b || 65->f || 0o67->b || #6->f || 68->b || \
 //!     71->f || 72->b || 73->f || 74->b || 75->f || 76->b || 77->f || \
@@ -96,9 +83,7 @@
 //! to print generated code
 //!
 //! ```
-//! # #[macro_use]
-//! # extern crate v_escape;
-//! new_escape!(MyEscape, "o->bar", print = true);
+//! v_escape::new!(MyEscape, "o->bar", print = true);
 //! # fn main() {
 //! # assert_eq!(escape("foo").to_string(), "fbarbar");
 //! # }
@@ -154,17 +139,16 @@ mod chars;
 /// #### Example
 ///
 /// ```
-/// #[macro_use]
-/// extern crate v_escape;
+/// use v_escape::new;
 ///
-/// new_escape!(MyEscape, "o->bar");
+/// new!(MyEscape, "o->bar");
 ///
 /// # fn main() {
 /// assert_eq!(escape("foobar").to_string(), "fbarbarbar");
 /// # }
 /// ```
 ///
-macro_rules! new_escape {
+macro_rules! new {
     // Macro called without attributes
     ($name:ident, $pairs:expr) => {
         use std::fmt::{self, Display, Formatter};
