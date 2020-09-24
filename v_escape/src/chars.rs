@@ -82,7 +82,6 @@ macro_rules! escape_char_bytes {
                 macro_rules! _inside {
                     (impl one $byte:ident, $quote:ident) => {
                         if $byte == c as u8 {
-                            let mut buf_cur = 0;
                             $crate::write_bytes!($quote.as_bytes(), buf);
                             return;
                         }
