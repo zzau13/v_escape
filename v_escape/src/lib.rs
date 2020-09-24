@@ -168,8 +168,6 @@ macro_rules! new {
 /// Generates function new, and traits From and Display, for class `$name`
 macro_rules! escape_new {
     ($name:ident) => {
-        use std::fmt::{self, Display, Formatter};
-
         pub struct $name<'a> {
             bytes: &'a [u8],
         }
@@ -203,8 +201,8 @@ macro_rules! escape_new {
             $name::from(s)
         }
 
-        impl<'a> Display for $name<'a> {
-            fn fmt(&self, fmt: &mut Formatter) -> fmt::Result {
+        impl<'a> std::fmt::Display for $name<'a> {
+            fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
                 #[allow(unused_unsafe)]
                 unsafe {
                     _escape(self.bytes, fmt)
@@ -213,11 +211,11 @@ macro_rules! escape_new {
         }
 
         #[inline]
-        pub fn escape_char(c: char) -> impl Display {
+        pub fn escape_char(c: char) -> impl std::fmt::Display {
             struct EscapeChar(char);
 
-            impl Display for EscapeChar {
-                fn fmt(&self, fmt: &mut Formatter) -> fmt::Result {
+            impl std::fmt::Display for EscapeChar {
+                fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
                     chars::escape_char(self.0, fmt)
                 }
             }
@@ -278,9 +276,10 @@ macro_rules! cfg_escape {
         #[cfg(target_arch = "x86_64")]
         #[inline(always)]
         // https://github.com/BurntSushi/rust-memchr/blob/master/src/x86/mod.rs#L9-L29
-        fn _escape(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
+        fn _escape(bytes: &[u8], fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
             use std::mem;
             use std::sync::atomic::{AtomicUsize, Ordering};
+            use std::fmt::{self, Formatter};
             static mut FN: fn(&[u8], &mut Formatter) -> fmt::Result = detect;
 
             fn detect(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
@@ -307,7 +306,7 @@ macro_rules! cfg_escape {
     };
     (fn) => {
         #[inline(always)]
-        fn _escape(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
+        fn _escape(bytes: &[u8], fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
             scalar::escape(bytes, fmt)
         }
     };
