@@ -1,11 +1,7 @@
 use std::str;
 
 #[macro_use]
-extern crate cfg_if;
-#[macro_use]
 extern crate criterion;
-#[macro_use]
-extern crate v_escape;
 use criterion::{Bencher, Benchmark, Criterion, Throughput};
 
 #[path = "v_escape.rs"]
@@ -113,7 +109,6 @@ macro_rules! std_writing {
         groups!($c, group, writing);
     };
 }
-
 
 fn functions(c: &mut Criterion) {
     v_escape!(c);
