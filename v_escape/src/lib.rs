@@ -152,15 +152,11 @@ macro_rules! new {
     // Macro called without attributes
     ($name:ident, $pairs:expr) => {
         $crate::derive!($pairs);
-
-        // Implementing function new and traits Display and From
         $crate::escape_new!($name);
     };
     // Macro called with attributes
     ($name:ident, $pairs:expr, $($t:tt)+) => {
         $crate::derive!($pairs, $($t)+);
-
-        // Implementing function
         $crate::escape_new!($name);
     };
 }
@@ -178,7 +174,6 @@ macro_rules! escape_new {
             bytes: &'a [u8],
         }
 
-        #[allow(dead_code)]
         impl<'a> $name<'a> {
             #[inline]
             pub fn new(bytes: &[u8]) -> $name {
@@ -246,7 +241,7 @@ macro_rules! escape_new {
             }
         }
 
-        /// Escape byte slice to `buf-min::Buffer`
+        /// Escape byte slice to `Buffer`
         ///
         /// # SIGILL
         /// Can produce **SIGILL** if compile with `sse2` or `avx2` and execute without they

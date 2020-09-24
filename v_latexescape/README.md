@@ -3,7 +3,6 @@
 # Quick start
  
 ```rust
-extern crate v_latexescape;
 use v_latexescape::escape;
 
 print!("{}", escape("# Header"));

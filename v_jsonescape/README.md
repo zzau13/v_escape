@@ -3,7 +3,6 @@
 # Quick start
  
 ```rust
-extern crate v_jsonescape;
 use v_jsonescape::escape;
 
 print!("{}", escape("foo\"\\bar"));

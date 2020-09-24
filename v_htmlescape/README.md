@@ -3,7 +3,6 @@
 # Quick start
  
 ```rust
-extern crate v_htmlescape;
 use v_htmlescape::escape;
 
 print!("{}", escape("foo<bar"));
