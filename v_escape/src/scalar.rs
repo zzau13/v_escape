@@ -3,7 +3,7 @@
 macro_rules! escape_scalar {
     ($($t:tt)+) => {
         #[inline]
-        pub fn escape(bytes: &[u8], fmt: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        pub fn escape(bytes: &[u8], fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
             use std::str::from_utf8_unchecked;
 
             let len = bytes.len();

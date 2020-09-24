@@ -15,7 +15,7 @@ macro_rules! loop_range_switch_avx2  {
             __m256i, _mm256_load_si256, _mm256_loadu_si256, _mm256_movemask_epi8, _mm256_or_si256,
         };
 
-        const M256_VECTOR_SIZE: usize = ::std::mem::size_of::<__m256i>();
+        const M256_VECTOR_SIZE: usize = std::mem::size_of::<__m256i>();
 
         if $len < M256_VECTOR_SIZE {
             $crate::loop_range_switch_sse2!(($len, $ptr, $start_ptr, $end_ptr) $($t, )+);

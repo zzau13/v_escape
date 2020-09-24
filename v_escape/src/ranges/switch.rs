@@ -10,8 +10,8 @@ macro_rules! translations_256 {
             _mm256_add_epi8, _mm256_cmpeq_epi8, _mm256_cmpgt_epi8, _mm256_or_si256,
             _mm256_set1_epi8,
         };
-        const TRANSLATION_A: i8 = ::std::i8::MAX - $ra;
-        const BELOW_A: i8 = ::std::i8::MAX - ($ra - $la) - 1;
+        const TRANSLATION_A: i8 = std::i8::MAX - $ra;
+        const BELOW_A: i8 = std::i8::MAX - ($ra - $la) - 1;
         const B: i8 = $fb;
         const C: i8 = $fc;
 
@@ -78,12 +78,12 @@ macro_rules! translations_256 {
         use std::arch::x86_64::{
             _mm256_add_epi8, _mm256_cmpgt_epi8, _mm256_or_si256, _mm256_set1_epi8,
         };
-        const TRANSLATION_A: i8 = ::std::i8::MAX - $ra;
-        const BELOW_A: i8 = ::std::i8::MAX - ($ra - $la) - 1;
-        const TRANSLATION_B: i8 = ::std::i8::MAX - $rb;
-        const BELOW_B: i8 = ::std::i8::MAX - ($rb - $lb) - 1;
-        const TRANSLATION_C: i8 = ::std::i8::MAX - $rc;
-        const BELOW_C: i8 = ::std::i8::MAX - ($rc - $lc) - 1;
+        const TRANSLATION_A: i8 = std::i8::MAX - $ra;
+        const BELOW_A: i8 = std::i8::MAX - ($ra - $la) - 1;
+        const TRANSLATION_B: i8 = std::i8::MAX - $rb;
+        const BELOW_B: i8 = std::i8::MAX - ($rb - $lb) - 1;
+        const TRANSLATION_C: i8 = std::i8::MAX - $rc;
+        const BELOW_C: i8 = std::i8::MAX - ($rc - $lc) - 1;
 
         let v_translation_a = _mm256_set1_epi8(TRANSLATION_A);
         let v_below_a = _mm256_set1_epi8(BELOW_A);
@@ -109,10 +109,10 @@ macro_rules! translations_256 {
             _mm256_add_epi8, _mm256_cmpeq_epi8, _mm256_cmpgt_epi8, _mm256_or_si256,
             _mm256_set1_epi8,
         };
-        const TRANSLATION_A: i8 = ::std::i8::MAX - $ra;
-        const BELOW_A: i8 = ::std::i8::MAX - ($ra - $la) - 1;
-        const TRANSLATION_B: i8 = ::std::i8::MAX - $rb;
-        const BELOW_B: i8 = ::std::i8::MAX - ($rb - $lb) - 1;
+        const TRANSLATION_A: i8 = std::i8::MAX - $ra;
+        const BELOW_A: i8 = std::i8::MAX - ($ra - $la) - 1;
+        const TRANSLATION_B: i8 = std::i8::MAX - $rb;
+        const BELOW_B: i8 = std::i8::MAX - ($rb - $lb) - 1;
         const C: i8 = $c;
 
         let v_translation_a = _mm256_set1_epi8(TRANSLATION_A);
@@ -137,10 +137,10 @@ macro_rules! translations_256 {
         use std::arch::x86_64::{
             _mm256_add_epi8, _mm256_cmpgt_epi8, _mm256_or_si256, _mm256_set1_epi8,
         };
-        const TRANSLATION_A: i8 = ::std::i8::MAX - $ra;
-        const BELOW_A: i8 = ::std::i8::MAX - ($ra - $la) - 1;
-        const TRANSLATION_B: i8 = ::std::i8::MAX - $rb;
-        const BELOW_B: i8 = ::std::i8::MAX - ($rb - $lb) - 1;
+        const TRANSLATION_A: i8 = std::i8::MAX - $ra;
+        const BELOW_A: i8 = std::i8::MAX - ($ra - $la) - 1;
+        const TRANSLATION_B: i8 = std::i8::MAX - $rb;
+        const BELOW_B: i8 = std::i8::MAX - ($rb - $lb) - 1;
 
         let v_translation_a = _mm256_set1_epi8(TRANSLATION_A);
         let v_below_a = _mm256_set1_epi8(BELOW_A);
@@ -161,8 +161,8 @@ macro_rules! translations_256 {
             _mm256_add_epi8, _mm256_cmpeq_epi8, _mm256_cmpgt_epi8, _mm256_or_si256,
             _mm256_set1_epi8,
         };
-        const TRANSLATION_A: i8 = ::std::i8::MAX - $ra;
-        const BELOW_A: i8 = ::std::i8::MAX - ($ra - $la) - 1;
+        const TRANSLATION_A: i8 = std::i8::MAX - $ra;
+        const BELOW_A: i8 = std::i8::MAX - ($ra - $la) - 1;
         const B: i8 = $b;
 
         let v_translation_a = _mm256_set1_epi8(TRANSLATION_A);
@@ -180,8 +180,8 @@ macro_rules! translations_256 {
     };
     ($la:expr, $ra:expr, ) => {
         use std::arch::x86_64::{_mm256_add_epi8, _mm256_cmpgt_epi8, _mm256_set1_epi8};
-        const TRANSLATION_A: i8 = ::std::i8::MAX - $ra;
-        const BELOW_A: i8 = ::std::i8::MAX - ($ra - $la) - 1;
+        const TRANSLATION_A: i8 = std::i8::MAX - $ra;
+        const BELOW_A: i8 = std::i8::MAX - ($ra - $la) - 1;
 
         let v_translation_a = _mm256_set1_epi8(TRANSLATION_A);
         let v_below_a = _mm256_set1_epi8(BELOW_A);
@@ -205,8 +205,8 @@ macro_rules! translations_128 {
         use std::arch::x86_64::{
             _mm_add_epi8, _mm_cmpeq_epi8, _mm_cmpgt_epi8, _mm_or_si128, _mm_set1_epi8,
         };
-        const TRANSLATION_A: i8 = ::std::i8::MAX - $ra;
-        const BELOW_A: i8 = ::std::i8::MAX - ($ra - $la) - 1;
+        const TRANSLATION_A: i8 = std::i8::MAX - $ra;
+        const BELOW_A: i8 = std::i8::MAX - ($ra - $la) - 1;
         const B: i8 = $fb;
         const C: i8 = $fc;
 
@@ -271,12 +271,12 @@ macro_rules! translations_128 {
     };
     ($la:expr, $ra:expr, $lb:expr, $rb:expr, $lc:expr, $rc:expr, ) => {
         use std::arch::x86_64::{_mm_add_epi8, _mm_cmpgt_epi8, _mm_or_si128, _mm_set1_epi8};
-        const TRANSLATION_A: i8 = ::std::i8::MAX - $ra;
-        const BELOW_A: i8 = ::std::i8::MAX - ($ra - $la) - 1;
-        const TRANSLATION_B: i8 = ::std::i8::MAX - $rb;
-        const BELOW_B: i8 = ::std::i8::MAX - ($rb - $lb) - 1;
-        const TRANSLATION_C: i8 = ::std::i8::MAX - $rc;
-        const BELOW_C: i8 = ::std::i8::MAX - ($rc - $lc) - 1;
+        const TRANSLATION_A: i8 = std::i8::MAX - $ra;
+        const BELOW_A: i8 = std::i8::MAX - ($ra - $la) - 1;
+        const TRANSLATION_B: i8 = std::i8::MAX - $rb;
+        const BELOW_B: i8 = std::i8::MAX - ($rb - $lb) - 1;
+        const TRANSLATION_C: i8 = std::i8::MAX - $rc;
+        const BELOW_C: i8 = std::i8::MAX - ($rc - $lc) - 1;
 
         let v_translation_a = _mm_set1_epi8(TRANSLATION_A);
         let v_below_a = _mm_set1_epi8(BELOW_A);
@@ -301,10 +301,10 @@ macro_rules! translations_128 {
         use std::arch::x86_64::{
             _mm_add_epi8, _mm_cmpeq_epi8, _mm_cmpgt_epi8, _mm_or_si128, _mm_set1_epi8,
         };
-        const TRANSLATION_A: i8 = ::std::i8::MAX - $ra;
-        const BELOW_A: i8 = ::std::i8::MAX - ($ra - $la) - 1;
-        const TRANSLATION_B: i8 = ::std::i8::MAX - $rb;
-        const BELOW_B: i8 = ::std::i8::MAX - ($rb - $lb) - 1;
+        const TRANSLATION_A: i8 = std::i8::MAX - $ra;
+        const BELOW_A: i8 = std::i8::MAX - ($ra - $la) - 1;
+        const TRANSLATION_B: i8 = std::i8::MAX - $rb;
+        const BELOW_B: i8 = std::i8::MAX - ($rb - $lb) - 1;
         const C: i8 = $c;
 
         let v_translation_a = _mm_set1_epi8(TRANSLATION_A);
@@ -327,10 +327,10 @@ macro_rules! translations_128 {
     };
     ($la:expr, $ra:expr, $lb:expr, $rb:expr, ) => {
         use std::arch::x86_64::{_mm_add_epi8, _mm_cmpgt_epi8, _mm_or_si128, _mm_set1_epi8};
-        const TRANSLATION_A: i8 = ::std::i8::MAX - $ra;
-        const BELOW_A: i8 = ::std::i8::MAX - ($ra - $la) - 1;
-        const TRANSLATION_B: i8 = ::std::i8::MAX - $rb;
-        const BELOW_B: i8 = ::std::i8::MAX - ($rb - $lb) - 1;
+        const TRANSLATION_A: i8 = std::i8::MAX - $ra;
+        const BELOW_A: i8 = std::i8::MAX - ($ra - $la) - 1;
+        const TRANSLATION_B: i8 = std::i8::MAX - $rb;
+        const BELOW_B: i8 = std::i8::MAX - ($rb - $lb) - 1;
 
         let v_translation_a = _mm_set1_epi8(TRANSLATION_A);
         let v_below_a = _mm_set1_epi8(BELOW_A);
@@ -350,8 +350,8 @@ macro_rules! translations_128 {
         use std::arch::x86_64::{
             _mm_add_epi8, _mm_cmpeq_epi8, _mm_cmpgt_epi8, _mm_or_si128, _mm_set1_epi8,
         };
-        const TRANSLATION_A: i8 = ::std::i8::MAX - $ra;
-        const BELOW_A: i8 = ::std::i8::MAX - ($ra - $la) - 1;
+        const TRANSLATION_A: i8 = std::i8::MAX - $ra;
+        const BELOW_A: i8 = std::i8::MAX - ($ra - $la) - 1;
         const B: i8 = $b;
 
         let v_translation_a = _mm_set1_epi8(TRANSLATION_A);
@@ -369,8 +369,8 @@ macro_rules! translations_128 {
     };
     ($la:expr, $ra:expr, ) => {
         use std::arch::x86_64::{_mm_add_epi8, _mm_cmpgt_epi8, _mm_set1_epi8};
-        const TRANSLATION_A: i8 = ::std::i8::MAX - $ra;
-        const BELOW_A: i8 = ::std::i8::MAX - ($ra - $la) - 1;
+        const TRANSLATION_A: i8 = std::i8::MAX - $ra;
+        const BELOW_A: i8 = std::i8::MAX - ($ra - $la) - 1;
 
         let v_translation_a = _mm_set1_epi8(TRANSLATION_A);
         let v_below_a = _mm_set1_epi8(BELOW_A);
@@ -534,7 +534,7 @@ macro_rules! switch_main_loop {
     (impl 0 for ($len:ident, $ptr:ident, $end_ptr:ident)) => {
     };
     (impl 2 for ($len:ident, $ptr:ident, $end_ptr:ident)) => {
-        const _ONSWITCH_M256_VECTOR_SIZE: usize = ::std::mem::size_of::<__m256i>();
+        const _ONSWITCH_M256_VECTOR_SIZE: usize = std::mem::size_of::<__m256i>();
         const LOOP_SIZE: usize = 2 * _ONSWITCH_M256_VECTOR_SIZE;
 
         if LOOP_SIZE <= $len {
@@ -576,7 +576,7 @@ macro_rules! switch_main_loop {
         }
     };
     (impl 4 for ($len:ident, $ptr:ident, $end_ptr:ident)) => {
-        const _ONSWITCH_M256_VECTOR_SIZE: usize = ::std::mem::size_of::<__m256i>();
+        const _ONSWITCH_M256_VECTOR_SIZE: usize = std::mem::size_of::<__m256i>();
         const LOOP_SIZE: usize = 4 * _ONSWITCH_M256_VECTOR_SIZE;
 
         if LOOP_SIZE <= $len {

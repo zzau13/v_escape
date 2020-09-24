@@ -19,7 +19,7 @@ macro_rules! escape_ranges {
         $crate::escape_ranges!(impl $crate::loop_range_switch_sse2 where $($t)+);
     };
     (impl $loops:path where ($T:ident, $Q:ident, $Q_LEN:ident) $($t:tt)+) => {
-        pub unsafe fn escape(bytes: &[u8], fmt: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        pub unsafe fn escape(bytes: &[u8], fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
 
             let len = bytes.len();
             let start_ptr = bytes.as_ptr();
@@ -138,7 +138,7 @@ macro_rules! escape_ranges {
             // Write since start to the end of the slice
             debug_assert!(start <= len);
             if start < len {
-                fmt.write_str(::std::str::from_utf8_unchecked(&bytes[start..len]))?;
+                fmt.write_str(std::str::from_utf8_unchecked(&bytes[start..len]))?;
             }
 
             Ok(())

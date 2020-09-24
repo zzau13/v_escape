@@ -2,7 +2,7 @@
 #[doc(hidden)]
 macro_rules! escape_char {
     ($($t:tt)+) => {
-        pub fn escape_char(c: char, fmt: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        pub fn escape_char(c: char, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
             if c.is_ascii() {
                 macro_rules! _inside {
                     (impl one $byte:ident, $quote:ident) => {

@@ -13,7 +13,7 @@ macro_rules! loop_range_switch_sse2  {
     (($len:ident, $ptr:ident, $start_ptr:ident, $end_ptr:ident) $($t:tt, )+) => {
         use std::arch::x86_64::{__m128i, _mm_load_si128, _mm_loadu_si128, _mm_movemask_epi8};
 
-        const M128_VECTOR_SIZE: usize = ::std::mem::size_of::<__m128i>();
+        const M128_VECTOR_SIZE: usize = std::mem::size_of::<__m128i>();
         const M128_VECTOR_ALIGN: usize = M128_VECTOR_SIZE - 1;
 
         if $len < M128_VECTOR_SIZE {
