@@ -5,111 +5,88 @@ extern crate nom;
 extern crate quote;
 
 use proc_macro::TokenStream;
-use syn::visit::Visit;
+use syn::punctuated::Punctuated;
+use syn::{
+    parse::{Parse, ParseBuffer},
+    spanned::Spanned,
+    Token,
+};
 
 mod generator;
 mod parser;
 
-#[proc_macro_derive(Escape, attributes(escape))]
+#[proc_macro]
 pub fn derive(input: TokenStream) -> TokenStream {
-    let ast: &syn::DeriveInput = &syn::parse(input).unwrap();
-    build(ast).parse().unwrap()
-}
-
-/// Takes a `syn::DeriveInput` and generates source code for it
-///
-/// Reads the metadata from the `escape()` attribute.
-fn build(ast: &syn::DeriveInput) -> String {
-    let (avx, pairs, print, simd) = visit_derive(ast);
+    let (avx, pairs, print, simd) = match syn::parse::<StructBuilder>(input).and_then(|s| s.build())
+    {
+        Ok(s) => s,
+        Err(e) => return e.to_compile_error().into(),
+    };
     let code = generator::generate(&parser::parse(&pairs), simd, avx);
 
     if print {
         eprintln!("{}", code);
     }
 
-    code
-}
-
-fn visit_derive(i: &syn::DeriveInput) -> Struct {
-    StructBuilder::default().build(i)
+    code.parse().unwrap()
 }
 
 type Struct = (bool, String, bool, bool);
 
-struct StructBuilder {
-    avx: bool,
-    pairs: Option<String>,
-    print: bool,
-    simd: bool,
+struct MetaOpt<Lit: Parse> {
+    pub path: syn::Path,
+    pub eq_token: Token![=],
+    pub lit: Lit,
 }
 
-impl Default for StructBuilder {
-    fn default() -> Self {
-        StructBuilder {
-            avx: true,
-            pairs: None,
-            print: false,
-            simd: true,
-        }
+impl<Lit: Parse> Parse for MetaOpt<Lit> {
+    fn parse<'a>(input: &'a ParseBuffer<'a>) -> syn::Result<Self> {
+        Ok(Self {
+            path: input.parse()?,
+            eq_token: input.parse()?,
+            lit: input.parse()?,
+        })
+    }
+}
+
+struct StructBuilder {
+    pub pairs: syn::LitStr,
+    pub comma: Option<Token![,]>,
+    pub opts: Punctuated<MetaOpt<syn::LitBool>, Token![,]>,
+}
+
+impl Parse for StructBuilder {
+    fn parse<'a>(input: &'a ParseBuffer<'a>) -> syn::Result<Self> {
+        Ok(Self {
+            pairs: input.parse()?,
+            comma: input.parse()?,
+            opts: Punctuated::parse_terminated(input)?,
+        })
     }
 }
 
 impl StructBuilder {
-    fn build(mut self, syn::DeriveInput { attrs, .. }: &syn::DeriveInput) -> Struct {
-        for i in attrs {
-            self.visit_meta(&i.parse_meta().expect("valid meta attributes"));
+    fn build(self) -> syn::Result<Struct> {
+        let StructBuilder { pairs, opts, .. } = self;
+        let mut avx = true;
+        let mut print = false;
+        let mut simd = true;
+
+        for MetaOpt { path, lit, .. } in opts {
+            if path.is_ident("avx") {
+                avx = lit.value
+            } else if path.is_ident("print") {
+                print = lit.value;
+            } else if path.is_ident("simd") {
+                simd = lit.value;
+            } else {
+                return Err(syn::Error::new(
+                    path.span(),
+                    format!("invalid attribute '{:?}'", path.get_ident()),
+                ));
+            }
         }
 
-        (
-            self.avx,
-            self.pairs.expect("Need pairs attribute"),
-            self.print,
-            self.simd,
-        )
-    }
-}
-
-impl<'a> Visit<'a> for StructBuilder {
-    fn visit_meta_list(&mut self, syn::MetaList { path, nested, .. }: &'a syn::MetaList) {
-        if path.is_ident("escape") {
-            use syn::punctuated::Punctuated;
-            for el in Punctuated::pairs(nested) {
-                let it = el.value();
-                self.visit_nested_meta(it)
-            }
-        }
-    }
-
-    fn visit_meta_name_value(
-        &mut self,
-        syn::MetaNameValue { path, lit, .. }: &'a syn::MetaNameValue,
-    ) {
-        if path.is_ident("avx") {
-            if let syn::Lit::Bool(s) = lit {
-                self.avx = s.value
-            } else {
-                panic!("attribute avx value must be boolean")
-            }
-        } else if path.is_ident("pairs") {
-            if let syn::Lit::Str(s) = lit {
-                self.pairs = Some(s.value());
-            } else {
-                panic!("attribute pairs must be string literal");
-            }
-        } else if path.is_ident("print") {
-            if let syn::Lit::Bool(s) = lit {
-                self.print = s.value;
-            } else {
-                panic!("attribute print must be boolean");
-            }
-        } else if path.is_ident("simd") {
-            if let syn::Lit::Bool(s) = lit {
-                self.simd = s.value;
-            } else {
-                panic!("attribute simd must be boolean");
-            }
-        } else {
-            panic!("invalid attribute '{:?}'", path.get_ident())
-        }
+        Ok((avx, pairs.value(), print, simd))
     }
 }
