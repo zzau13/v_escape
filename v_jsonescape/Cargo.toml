@@ -1,6 +1,6 @@
 [package]
 name = "v_jsonescape"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "The simd optimized JSON escaping code"
 documentation = "https://docs.rs/v_jsonescape"
