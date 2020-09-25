@@ -1,6 +1,6 @@
 [package]
 name = "v_latexescape"
-version = "0.9.2"
+version = "0.9.3"
 authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "The simd optimized LaTeX escaping code"
 documentation = "https://docs.rs/v_latexescape"

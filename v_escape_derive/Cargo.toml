@@ -1,6 +1,6 @@
 [package]
 name = "v_escape_derive"
-version = "0.8.2"
+version = "0.8.3"
 authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "Procedural macro package for v_escape"
 documentation = "https://docs.rs/v_escape_derive"
