@@ -1,5 +1,5 @@
 [package]
-name = "v_latexescape-fuzz"
+name = "v_htmlescape-fuzz"
 version = "0.0.0"
 authors = ["Automatically generated"]
 publish = false
@@ -12,7 +12,7 @@ cargo-fuzz = true
 libfuzzer-sys = "0.3"
 bytes = "0.5.6"
 
-[dependencies.v_latexescape]
+[dependencies.v_htmlescape]
 path = ".."
 features = ["bytes-buf"]
 
