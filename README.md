@@ -1,6 +1,3 @@
-# Disclaimer
-Due to the high degree of idiocy on forums like reddit, I recommend that you use another solution. I can't ban it by license, but I hope this is enough.
-
 # v_escape [![Documentation](https://docs.rs/v_escape/badge.svg)](https://docs.rs/v_escape/) [![Latest version](https://img.shields.io/crates/v/v_escape.svg)](https://crates.io/crates/v_escape) [![Build Status](https://travis-ci.org/botika/v_escape.svg?branch=master)](https://travis-ci.org/botika/v_escape)
 > The simd optimized escape code
 
