@@ -24,5 +24,5 @@ v_escape_derive = { version = "0.8", path = "../v_escape_derive" }
 buf-min = "0.1"
 
 [dev-dependencies]
-bytes = "0.5"
+bytes = "0.6"
 buf-min = { version = "0.1", features = ["bytes-buf"] }
