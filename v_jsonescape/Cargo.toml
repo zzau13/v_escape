@@ -1,6 +1,6 @@
 [package]
 name = "v_jsonescape"
-version = "0.2.4"
+version = "0.3.0"
 authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "The simd optimized JSON escaping code"
 documentation = "https://docs.rs/v_jsonescape"
@@ -20,5 +20,5 @@ default = ["bytes-buf"]
 bytes-buf = ["v_escape/bytes-buf"]
 
 [dependencies]
-v_escape = { version = "0.13", path = "../v_escape", default-features = false }
+v_escape = { version = "0.14", path = "../v_escape", default-features = false }
 cfg-if = "1.0"
