@@ -20,12 +20,11 @@ harness = false
 path = "src/all.rs"
 
 [dependencies]
-cfg-if = "0.1"
-criterion = "0.2"
+cfg-if = "1.0"
+criterion = "0.3"
 v_escape = { version = "*", path = "../v_escape" }
 v_htmlescape = { version = "*", path = "../v_htmlescape" }
 v_latexescape = { version = "*", path = "../v_latexescape" }
 
 [build-dependencies]
 v_escape = { version = "*", path = "../v_escape" }
-version_check = "0.1"
