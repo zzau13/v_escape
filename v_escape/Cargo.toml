@@ -21,8 +21,8 @@ bytes-buf = ["buf-min/bytes-buf"]
 
 [dependencies]
 v_escape_derive = { version = "~0.8.4", path = "../v_escape_derive" }
-buf-min = "0.2"
+buf-min = "0.3"
 
 [dev-dependencies]
 bytes = "0.6"
-buf-min = { version = "0.2", features = ["bytes-buf"] }
+buf-min = { version = "0.3", features = ["bytes-buf"] }
