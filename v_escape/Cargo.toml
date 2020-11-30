@@ -20,7 +20,7 @@ default = ["bytes-buf"]
 bytes-buf = ["buf-min/bytes-buf"]
 
 [dependencies]
-v_escape_derive = { version = "0.8", path = "../v_escape_derive" }
+v_escape_derive = { version = "~0.8.4", path = "../v_escape_derive" }
 buf-min = "0.2"
 
 [dev-dependencies]
