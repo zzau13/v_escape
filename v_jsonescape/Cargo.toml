@@ -16,8 +16,9 @@ travis-ci = { repository = "botika/v_escape", branch = "master" }
 maintenance = { status = "actively-developed" }
 
 [features]
-default = ["bytes-buf"]
-bytes-buf = ["v_escape/bytes-buf"]
+default = ["bytes-buf-tokio2"]
+bytes-buf-tokio2 = ["v_escape/bytes-buf-tokio2"]
+bytes-buf-tokio3 = ["v_escape/bytes-buf-tokio3"]
 
 [dependencies]
 v_escape = { version = "~0.14.1", path = "../v_escape", default-features = false }
