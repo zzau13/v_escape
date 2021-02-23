@@ -1,6 +1,6 @@
 [package]
 name = "v_htmlescape"
-version = "0.12.0"
+version = "0.13.0"
 authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "The simd optimized HTML escaping code"
 documentation = "https://docs.rs/v_htmlescape"
@@ -21,5 +21,5 @@ bytes-buf-tokio2 = ["v_escape/bytes-buf-tokio2"]
 bytes-buf-tokio3 = ["v_escape/bytes-buf-tokio3"]
 
 [dependencies]
-v_escape = { version = "0.15", path = "../v_escape", default-features = false }
+v_escape = { version = "0.16.0", path = "../v_escape", default-features = false }
 cfg-if = "1.0"

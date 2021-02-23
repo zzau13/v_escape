@@ -1,6 +1,6 @@
 [package]
 name = "v_escape"
-version = "0.15.0"
+version = "0.16.0"
 authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "The simd optimized escaping code"
 documentation = "https://docs.rs/v_escape"
@@ -22,9 +22,9 @@ bytes-buf-tokio3 = ["buf-min/bytes-buf-tokio3"]
 
 [dependencies]
 v_escape_derive = { version = "~0.8.4", path = "../v_escape_derive" }
-buf-min = { version = "0.4", optional = true }
+buf-min = { version = "0.5.0", optional = true }
 
 [dev-dependencies]
-bytes = "0.6"
+bytes = "1.0"
 # TODO: Coverage with both versions
-buf-min = { version = "0.4", features = ["bytes-buf-tokio3"] }
+buf-min = { version = "0.5.0", features = ["bytes-buf-tokio3"] }
