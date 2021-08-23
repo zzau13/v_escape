@@ -22,4 +22,4 @@ proc-macro = true
 proc-macro2 = "1.0"
 syn = { version = "1.0" }
 quote = "1.0"
-nom = "4"
+nom = "7"
