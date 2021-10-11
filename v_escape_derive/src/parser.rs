@@ -30,8 +30,8 @@ named!(parse_pair<Input, Pair>, map!(
 
 macro_rules! is_digit {
     ($name:ident, $base:expr) => {
+        #[allow(clippy::from_str_radix_10)]
         fn $name(s: Input) -> Result<u8, nom::Err<Input>> {
-            #[allow(clippy::from_str_radix_10)]
             if let Ok(n) = i8::from_str_radix(
                 str::from_utf8(&s.as_bytes())
                     .map_err(|_| nom::Err::Failure(error_position!(s, ERR_UTF8)))?,
