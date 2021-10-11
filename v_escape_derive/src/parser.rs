@@ -31,6 +31,7 @@ named!(parse_pair<Input, Pair>, map!(
 macro_rules! is_digit {
     ($name:ident, $base:expr) => {
         fn $name(s: Input) -> Result<u8, nom::Err<Input>> {
+            #[allow(clippy::from_str_radix_10)]
             if let Ok(n) = i8::from_str_radix(
                 str::from_utf8(&s.as_bytes())
                     .map_err(|_| nom::Err::Failure(error_position!(s, ERR_UTF8)))?,
@@ -103,9 +104,7 @@ pub fn parse(src: &str) -> Vec<Pair> {
     for i in 0..len - 1 {
         let p1 = &pairs[i];
         let p2 = &pairs[i + 1];
-        if p1.char == p2.char {
-            panic!("{:?} and {:?} are repeated", p1, p2);
-        }
+        assert!(!(p1.char == p2.char), "{:?} and {:?} are repeated", p1, p2);
     }
 
     pairs

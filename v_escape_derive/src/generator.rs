@@ -46,7 +46,7 @@ impl<'a> Generator<'a> {
             buf.writeln(&format!("static V_ESCAPE_QUOTES: &str = {:#?};", quote));
         } else {
             buf.write("static V_ESCAPE_TABLE: [u8; 256] = [");
-            for i in 0..=255 as u8 {
+            for i in 0..=255_u8 {
                 let n = self
                     .pairs
                     .binary_search_by(|s| s.char.cmp(&i))
@@ -401,9 +401,7 @@ impl Buffer {
     }
 
     fn dedent(&mut self) {
-        if self.indent == 0 {
-            panic!("dedent() called while indentation == 0");
-        }
+        assert!(!(self.indent == 0), "dedent() called while indentation == 0");
         self.indent -= 1;
     }
 }
