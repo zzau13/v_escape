@@ -92,7 +92,6 @@
 #![allow(unused_imports)]
 
 pub use buf_min::Buffer;
-
 pub use v_escape_derive::derive;
 
 #[macro_use]

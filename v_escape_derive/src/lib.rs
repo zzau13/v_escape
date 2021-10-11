@@ -41,6 +41,7 @@ struct Args {
     simd: bool,
 }
 
+#[allow(dead_code)]
 /// Key-value argument
 struct MetaOpt<Lit: Parse> {
     pub path: syn::Path,
@@ -59,6 +60,7 @@ impl<Lit: Parse> Parse for MetaOpt<Lit> {
 }
 
 /// Proc macro arguments parser
+#[allow(dead_code)]
 struct Builder {
     pub pairs: syn::LitStr,
     pub comma: Option<Token![,]>,
