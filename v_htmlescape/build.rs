@@ -5,6 +5,8 @@ fn main() {
 }
 
 fn enable_simd_optimizations() {
+    println!("cargo:rerun-if-env-changed=CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_SIMD");
+    println!("cargo:rerun-if-env-changed=CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_AVX");
     if is_env_set("CARGO_CFG_HTMLESCAPE_DISABLE_AUTO_SIMD") {
         return;
     }

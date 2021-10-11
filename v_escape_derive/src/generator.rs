@@ -401,7 +401,10 @@ impl Buffer {
     }
 
     fn dedent(&mut self) {
-        assert!(!(self.indent == 0), "dedent() called while indentation == 0");
+        assert!(
+            !(self.indent == 0),
+            "dedent() called while indentation == 0"
+        );
         self.indent -= 1;
     }
 }
