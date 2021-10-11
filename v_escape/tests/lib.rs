@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-v_escape::new!(MyEscape, "60->foo");
+v_escape::new!(MyEscape; 60->"foo");
 
 macro_rules! test {
     ($name:ident, $escapes:expr, $escaped:expr) => {
@@ -235,7 +235,7 @@ fn test_escape() {
 }
 
 mod bytes_buff {
-    v_escape::new!(MyE, "65->a || 60->b || 61->c || 66->d || 80->e || 81->f");
+    v_escape::new!(MyE; 65->"a",  60->"b",  61->"c",  66->"d",  80->"e",  81->"f");
     #[test]
     fn test_escape() {
         let empty = "";
@@ -281,8 +281,8 @@ mod bytes_buff {
 
 mod bytes_buff_nosimd {
     v_escape::new!(
-        MyE,
-        "65->a || 60->b || 61->c || 66->d || 80->e || 81->f",
+        MyE;
+        65->"a",  60->"b",  61->"c",  66->"d",  80->"e",  81->"f";
         simd = false
     );
     #[test]
@@ -331,8 +331,8 @@ mod bytes_buff_nosimd {
 mod no_simd {
     mod a {
         v_escape::new!(
-            MyE,
-            "65->a || 60->b || 61->c || 66->d || 80->e || 81->f",
+            MyE;
+            65->"a",  60->"b",  61->"c",  66->"d",  80->"e",  81->"f";
             simd = false
         );
 
@@ -345,8 +345,8 @@ mod no_simd {
 
     mod b {
         v_escape::new!(
-            MyE,
-            "65->a || 60->b || 61->c || 66->d || 80->e || 81->f",
+            MyE;
+            65->"a",  60->"b",  61->"c",  66->"d",  80->"e",  81->"f";
             simd = false
         );
 
@@ -362,8 +362,8 @@ mod no_simd {
 mod no_avx {
     mod a {
         v_escape::new!(
-            MyE,
-            "65->a || 60->b || 61->c || 66->d || 80->e || 81->f",
+            MyE;
+            65->"a",  60->"b",  61->"c",  66->"d",  80->"e",  81->"f";
             avx = false
         );
 
@@ -376,8 +376,8 @@ mod no_avx {
 
     mod b {
         v_escape::new!(
-            MyE,
-            "65->a || 60->b || 61->c || 66->d || 80->e || 81->f",
+            MyE;
+            65->"a",  60->"b",  61->"c",  66->"d",  80->"e",  81->"f";
             avx = false
         );
 
@@ -390,7 +390,7 @@ mod no_avx {
 }
 
 mod empty {
-    v_escape::new!(MyE, "65->");
+    v_escape::new!(MyE; 65->"");
 
     #[test]
     fn test_escape() {
@@ -403,9 +403,9 @@ mod empty {
 mod test_avx {
     mod numbers {
         v_escape::new!(
-            MyE,
-            "#0->zero || #1->one || #2->two || #3->three || #4->four || #5->five || \
-             #6->six || #7->seven || #8->eight || #9->nine"
+            MyE;
+            '0'->"zero",  '1'->"one",  '2'->"two",  '3'->"three",  '4'->"four",  '5'->"five",
+             '6'->"six",  '7'->"seven",  '8'->"eight",  '9'->"nine"
         );
 
         #[test]
@@ -434,7 +434,7 @@ mod test_avx {
 
     mod a {
         // 3 ranges
-        v_escape::new!(MyE, "65->a || 60->b || 61->c || 66->d || 80->e || 81->f");
+        v_escape::new!(MyE; 65->"a",  60->"b",  61->"c",  66->"d",  80->"e",  81->"f");
 
         #[test]
         fn test_escape() {
@@ -445,7 +445,7 @@ mod test_avx {
 
     mod b {
         // 2 ranges and 1 escape
-        v_escape::new!(MyE, "60->a || 61->b || 65->c || 80->d || 81->e");
+        v_escape::new!(MyE; 60->"a",  61->"b",  65->"c",  80->"d",  81->"e");
 
         #[test]
         fn test_escape() {
@@ -456,7 +456,7 @@ mod test_avx {
 
     mod c {
         // 1 range and 2 escapes
-        v_escape::new!(MyE, "60->a || 65->c || 80->d || 62->e");
+        v_escape::new!(MyE; 60->"a",  65->"c",  80->"d",  62->"e");
 
         #[test]
         fn test_escape() {
@@ -467,7 +467,7 @@ mod test_avx {
 
     mod d {
         // 3 escapes
-        v_escape::new!(MyE, "60->a || 80->b || 65->c");
+        v_escape::new!(MyE; 60->"a",  80->"b",  65->"c");
 
         #[test]
         fn test_escape() {
@@ -478,7 +478,7 @@ mod test_avx {
 
     mod e {
         // 2 ranges
-        v_escape::new!(MyE, "60->a || 61->b || 81->c || 80->d || 62->e");
+        v_escape::new!(MyE; 60->"a",  61->"b",  81->"c",  80->"d",  62->"e");
 
         #[test]
         fn test_escape() {
@@ -489,7 +489,7 @@ mod test_avx {
 
     mod f {
         // 1 range and 1 escape
-        v_escape::new!(MyE, "60->a || 61->b || 80->c || 62->d");
+        v_escape::new!(MyE; 60->"a",  61->"b",  80->"c",  62->"d");
 
         #[test]
         fn test_escape() {
@@ -500,7 +500,7 @@ mod test_avx {
 
     mod g {
         // 2 escapes
-        v_escape::new!(MyE, "60->a || 80->b");
+        v_escape::new!(MyE; 60->"a",  80->"b");
 
         #[test]
         fn test_escape() {
@@ -511,7 +511,7 @@ mod test_avx {
 
     mod h {
         // 1 range
-        v_escape::new!(MyE, "60->a || 61->b");
+        v_escape::new!(MyE; 60->"a",  61->"b");
 
         #[test]
         fn test_escape() {
@@ -522,7 +522,7 @@ mod test_avx {
 
     mod i {
         // 1 escapes
-        v_escape::new!(MyE, "60->f");
+        v_escape::new!(MyE; 60->"f");
 
         #[test]
         fn test_escape() {
@@ -534,7 +534,7 @@ mod test_avx {
 
 mod char_syntax {
     mod a {
-        v_escape::new!(MyE, " ->f");
+        v_escape::new!(MyE; ' ' -> "f");
 
         #[test]
         fn test_escape() {

@@ -10,7 +10,7 @@
 //! will replace all characters `">"` with `"bar"`.
 //!
 //! ```
-//! v_escape::new!(MyEscape, "62->bar");
+//! v_escape::new!(MyEscape; 62 -> "bar");
 //!
 //! # fn main() {
 //! # let s = "foo>bar";
@@ -28,7 +28,7 @@
 //! by the delimiter `->`, followed by the substitution quote
 //! and the delimiter ` || ` (last delimiter is optional):
 //!
-//!    `([character]->[quote] || )*`
+//!    `([character]->[quote], )*`
 //!
 //! * `character` :   Character to substitute. Accepts`i8+` from `0` to `i8::MAX` and
 //!                 accepts the following formats: decimal (49), hexadecimal (0x31),
@@ -38,25 +38,25 @@
 //! * `quote` :   Characters that will replace `character`
 //!
 //! ```
-//! v_escape::new!(MyEscape, "49->bar");
+//! v_escape::new!(MyEscape; 49 -> "bar");
 //! # fn main() {
 //! assert_eq!(escape("foo 1").to_string(), "foo bar");
 //! # }
 //! ```
 //! ```
-//! v_escape::new!(MyEscape, "0x31->bar");
+//! v_escape::new!(MyEscape; 0x31 -> "bar");
 //! # fn main() {
 //! assert_eq!(escape("foo 1").to_string(), "foo bar");
 //! # }
 //! ```
 //! ```
-//! v_escape::new!(MyEscape, "0o61->bar");
+//! v_escape::new!(MyEscape; 0o61 -> "bar");
 //! # fn main() {
 //! assert_eq!(escape("foo 1").to_string(), "foo bar");
 //! # }
 //! ```
 //! ```
-//! v_escape::new!(MyEscape, "#1->bar");
+//! v_escape::new!(MyEscape; '1' -> "bar");
 //! # fn main() {
 //! assert_eq!(escape("foo 1").to_string(), "foo bar");
 //! # }
@@ -69,10 +69,10 @@
 //!
 //! ```
 //! v_escape::new!(
-//!     MyEscape,
-//!     "62->b || 60->f || B->b || 65->f || 0o67->b || #6->f || 68->b || \
-//!     71->f || 72->b || 73->f || 74->b || 75->f || 76->b || 77->f || \
-//!     78->b || 79->f || 0x1A->f"
+//!     MyEscape;
+//!     62->"b",  60->"f",  'B'->"b",  65->"f",  0o67->"b",  '6'->"f",  68->"b",
+//!     71->"f",  72->"b",  73->"f",  74->"b",  75->"f",  76->"b",  77->"f",
+//!     78->"b",  79->"f",  0x1A->"f"
 //! );
 //! # fn main() {
 //! assert_eq!(escape("foo>bar<").to_string(), "foobbarf");
@@ -83,7 +83,7 @@
 //! to print generated code
 //!
 //! ```
-//! v_escape::new!(MyEscape, "o->bar", print = true);
+//! v_escape::new!(MyEscape; 'o' -> "bar"; print = true);
 //! # fn main() {
 //! # assert_eq!(escape("foo").to_string(), "fbarbar");
 //! # }
@@ -138,9 +138,7 @@ mod chars;
 /// #### Example
 ///
 /// ```
-/// use v_escape::new;
-///
-/// new!(MyEscape, "o->bar");
+/// v_escape::new!(MyEscape; 'o' -> "bar");
 ///
 /// # fn main() {
 /// assert_eq!(escape("foobar").to_string(), "fbarbarbar");
@@ -149,13 +147,8 @@ mod chars;
 ///
 macro_rules! new {
     // Macro called without attributes
-    ($name:ident, $pairs:expr) => {
-        $crate::derive!($pairs);
-        $crate::escape_new!($name);
-    };
-    // Macro called with attributes
-    ($name:ident, $pairs:expr, $($t:tt)+) => {
-        $crate::derive!($pairs, $($t)+);
+    ($name:ident; $($t:tt)+) => {
+        $crate::derive!($($t)+);
         $crate::escape_new!($name);
     };
 }
