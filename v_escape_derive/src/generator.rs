@@ -1,8 +1,6 @@
 use std::fmt::{Display, Write};
 use std::str;
 
-use quote::quote;
-
 use crate::Pair;
 
 type Ranges = Vec<u8>;
@@ -67,48 +65,48 @@ impl<'a> Generator<'a> {
 
     fn write_ch(&self, buf: &mut String) {
         let code = if self.pairs.len() == 1 {
-            quote!(
+            r#"
                 mod chars {
                     use super::*;
                     v_escape::escape_char!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
                     v_escape::escape_char_ptr!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
                     v_escape::escape_char_bytes!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
                 }
-            )
+            "#
         } else {
-            quote!(
+            r#"
                 mod chars {
                     use super::*;
                     v_escape::escape_char!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
                     v_escape::escape_char_ptr!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
                     v_escape::escape_char_bytes!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
                 }
-            )
+            "#
         };
-        buf.push_str(&code.to_string());
+        buf.push_str(code);
     }
 
     fn write_scalar(&self, buf: &mut String) {
         let code = if self.pairs.len() == 1 {
-            quote!(
+            r#"
                 mod scalar {
                     use super::*;
                     v_escape::escape_scalar!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
                     v_escape::escape_scalar_ptr!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
                     v_escape::escape_scalar_bytes!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
                 }
-            )
+            "#
         } else {
-            quote!(
+            r#"
                 mod scalar {
                     use super::*;
                     v_escape::escape_scalar!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
                     v_escape::escape_scalar_ptr!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
                     v_escape::escape_scalar_bytes!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
                 }
-            )
+            "#
         };
-        buf.push_str(&code.to_string());
+        buf.push_str(code);
     }
 
     fn write_ranges(&self, buf: &mut String) {
