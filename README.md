@@ -1,4 +1,4 @@
-# v_escape [![Documentation](https://docs.rs/v_escape/badge.svg)](https://docs.rs/v_escape/) [![Latest version](https://img.shields.io/crates/v/v_escape.svg)](https://crates.io/crates/v_escape) [![Build Status](https://travis-ci.org/botika/v_escape.svg?branch=master)](https://travis-ci.org/botika/v_escape)
+# v_escape [![Documentation](https://docs.rs/v_escape/badge.svg)](https://docs.rs/v_escape/) [![Latest version](https://img.shields.io/crates/v/v_escape.svg)](https://crates.io/crates/v_escape) 
 > The simd optimized escape code
 
 Crate v_escape provides a macro `new_escape!` that define a escaping functionalities. 
