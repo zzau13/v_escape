@@ -1,5 +1,5 @@
 use criterion::Bencher;
-use v_latexescape::b_escape;
+use v_jsonescape::b_escape;
 
 pub fn escaping(corpus: &'static [u8]) -> impl FnMut(&mut Bencher) + 'static {
     move |b: &mut Bencher| {

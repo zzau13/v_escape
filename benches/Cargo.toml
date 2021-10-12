@@ -24,6 +24,7 @@ cfg-if = "1.0"
 criterion = "0.3"
 v_escape = { version = "*", path = "../v_escape" }
 v_htmlescape = { version = "*", path = "../v_htmlescape" }
+v_jsonescape = { version = "*", path = "../v_jsonescape" }
 v_latexescape = { version = "*", path = "../v_latexescape" }
 
 [build-dependencies]

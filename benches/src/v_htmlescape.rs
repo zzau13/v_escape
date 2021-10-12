@@ -1,14 +1,10 @@
 use criterion::Bencher;
-use std::fmt::Write;
-use v_htmlescape::HTMLEscape as Escape;
+use v_htmlescape::b_escape;
 
 pub fn escaping(corpus: &'static [u8]) -> impl FnMut(&mut Bencher) + 'static {
     move |b: &mut Bencher| {
-        let e = Escape::new(corpus);
-        let mut writer = String::new();
+        let mut writer = String::with_capacity(corpus.len());
 
-        b.iter(|| {
-            let _ = write!(writer, "{}", e);
-        });
+        b.iter(|| b_escape(corpus, &mut writer));
     }
 }

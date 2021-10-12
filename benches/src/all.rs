@@ -8,6 +8,8 @@ use criterion::{Bencher, Benchmark, Criterion, Throughput};
 mod v;
 #[path = "v_htmlescape.rs"]
 mod v_html;
+#[path = "v_jsonescape.rs"]
+mod v_json;
 #[path = "v_latexescape.rs"]
 mod v_latex;
 
@@ -81,6 +83,10 @@ macro_rules! v_escape {
         let group = "v_htmlescape/Escaping";
         groups!($c, group, v_h);
 
+        use crate::v_json::escaping as v_j;
+        let group = "v_jsonescape/Escaping";
+        groups!($c, group, v_j);
+
         use crate::v_latex::escaping as v_l;
         let group = "v_latexescape/Escaping";
         groups!($c, group, v_l);
@@ -97,7 +103,7 @@ macro_rules! std_writing {
 
         fn writing(corpus: &'static [u8]) -> impl FnMut(&mut Bencher) + 'static {
             move |b: &mut Bencher| {
-                let mut writer = String::new();
+                let mut writer = String::with_capacity(corpus.len());
 
                 b.iter(|| {
                     let _ = write!(writer, "{}", unsafe { str::from_utf8_unchecked(corpus) });
