@@ -12,7 +12,6 @@ repository = "https://github.com/botika/v_escape"
 workspace = ".."
 
 [badges]
-travis-ci = { repository = "botika/v_escape", branch = "master" }
 maintenance = { status = "actively-developed" }
 
 [lib]
