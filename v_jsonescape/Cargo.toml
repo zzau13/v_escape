@@ -1,6 +1,6 @@
 [package]
 name = "v_jsonescape"
-version = "0.6.0"
+version = "0.6.1"
 authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "The simd optimized JSON escaping code"
 documentation = "https://docs.rs/v_jsonescape"
@@ -16,5 +16,5 @@ travis-ci = { repository = "botika/v_escape", branch = "master" }
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-v_escape = { version = "0.17", path = "../v_escape" }
+v_escape = { version = "0.18", path = "../v_escape" }
 cfg-if = "1.0"
