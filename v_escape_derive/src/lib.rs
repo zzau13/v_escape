@@ -81,7 +81,7 @@ struct Ch(u8);
 
 impl Ch {
     fn new(n: u8) -> Result<Self, ()> {
-        match n <= (i8::MAX as u8) {
+        match n < (std::i8::MAX as u8) {
             true => Ok(Ch(n)),
             false => Err(()),
         }
