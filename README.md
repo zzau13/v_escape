@@ -12,11 +12,12 @@ These macros are optimized using simd by default, but this can be altered using 
 
 ## Example
 ```rust
-new_escape!(MyEscape, "62->bar");
+v_escape::new!(MyEscape; '<' -> "bar");
 
 fn main() {
     let s = "foo<bar";
     
     print!("{}", MyEscape::from(s));
+    assert_eq!(MyEscape::from(s).to_string(), "foobarbar");
 }
 ```
