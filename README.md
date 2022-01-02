@@ -8,7 +8,7 @@ These macros are optimized using simd by default, but this can be altered using 
 
 * [Documentation](https://docs.rs/v_escape)
 * Cargo package: [v_escape](https://crates.io/crates/v_escape)
-* Minimum supported Rust version: 1.42 or later
+* Minimum supported Rust version: 1.56 or later
 
 ## Example
 ```rust
