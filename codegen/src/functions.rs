@@ -1,99 +1,3 @@
-//! Crate v_escape provides a macro, `new!` that define a `struct` with
-//! escaping functionality. These macros are optimized using simd by default,
-//! but this can be alter using sub-attributes.
-//!
-//! # Quick start
-//! In order to use v_escape you will have to call one of the two macros
-//! to create a escape `struct`. In this example, when using the macro
-//! `new!(MyEscape, "62->bar");` a new a `struct` `MyEscape`
-//! will be created that every time its method `MyEscape::fmt` is called
-//! will replace all characters `">"` with `"bar"`.
-//!
-//! ```
-//! v_escape::new!(MyEscape; 62 -> "bar");
-//!
-//! # fn main() {
-//! # let s = "foo>bar";
-//! let escaped = escape(s);
-//!
-//! print!("{}", escaped);
-//! # }
-//! ```
-//!
-//! ## Pairs syntax
-//! v_escape uses a simple syntax to replace characters
-//! with their respective quotes. The tuple is named `Pair`,
-//! and several can be defined, referred as `Pairs`. The syntax to define
-//! `Pairs` consists of a character, followed
-//! by the delimiter `->`, followed by the substitution quote
-//! and the delimiter ` || ` (last delimiter is optional):
-//!
-//!    `([character]->[quote], )*`
-//!
-//! * `character` :   Character to substitute. Accepts`i8+` from `0` to `i8::MAX` and
-//!                 accepts the following formats: decimal (49), hexadecimal (0x31),
-//!                 octal (0o61) or character (#1).
-//!                 Note: Numbers are read in ASCII: `#6->foo`
-//!
-//! * `quote` :   Characters that will replace `character`
-//!
-//! ```
-//! v_escape::new!(MyEscape; 49 -> "bar");
-//! # fn main() {
-//! assert_eq!(escape("foo 1").to_string(), "foo bar");
-//! # }
-//! ```
-//! ```
-//! v_escape::new!(MyEscape; 0x31 -> "bar");
-//! # fn main() {
-//! assert_eq!(escape("foo 1").to_string(), "foo bar");
-//! # }
-//! ```
-//! ```
-//! v_escape::new!(MyEscape; 0o61 -> "bar");
-//! # fn main() {
-//! assert_eq!(escape("foo 1").to_string(), "foo bar");
-//! # }
-//! ```
-//! ```
-//! v_escape::new!(MyEscape; '1' -> "bar");
-//! # fn main() {
-//! assert_eq!(escape("foo 1").to_string(), "foo bar");
-//! # }
-//! ```
-//!
-//! In the following example more than 16 pairs are given, this exceeds simd's
-//! boundary. If simd optimization is wanted, ranges must be enabled (default)
-//! or an error will be thrown. It is possible to not use ranges but simd
-//! optimization has to be disabled.
-//!
-//! ```
-//! v_escape::new!(
-//!     MyEscape;
-//!     62->"b",  60->"f",  'B'->"b",  65->"f",  0o67->"b",  '6'->"f",  68->"b",
-//!     71->"f",  72->"b",  73->"f",  74->"b",  75->"f",  76->"b",  77->"f",
-//!     78->"b",  79->"f",  0x1A->"f"
-//! );
-//! # fn main() {
-//! assert_eq!(escape("foo>bar<").to_string(), "foobbarf");
-//! # }
-//! ```
-//!
-//! For debugging purposes, sub-attribute `print`, can be set to `true`
-//! to print generated code
-//!
-//! ```
-//! v_escape::new!(MyEscape; 'o' -> "bar"; print = true);
-//! # fn main() {
-//! # assert_eq!(escape("foo").to_string(), "fbarbar");
-//! # }
-//! ```
-//!
-#![allow(unused_imports)]
-
-pub use buf_min::Buffer;
-pub use v_escape_derive::derive;
-
 #[macro_use]
 mod macros;
 #[macro_use]
@@ -104,47 +8,6 @@ mod ranges;
 mod chars;
 
 #[macro_export]
-/// Generates struct `$name` with escaping functionality at `fmt`
-///
-/// It will get as input:
-///
-/// * $__name__: Name of escape class.
-///
-/// * $__pairs__: Pairs of `[character]->[quote] || [character]->[quote]` or
-///              `[character]->[quote]`.
-///
-/// * $__t__: Optional boolean parameters (simd, avx, sse, print).
-///     * __simd__:  If true (by default), simd optimizations are enabled. When false,
-///         no matter value of avx, `sse4.2` will be used,
-///     * __avx__:   If true (by default), avx optimization are enabled. When false,
-///         `sse2`(if `ranges=true` and `simd=true`) or `scalar`(if `simd=false`) will be used.
-///     * __ranges__:   If true (by default), ranges optimizations are enabled. When false,
-///         `sse4.2`(if `simd=true`) or `scalar`(if `simd=false`) will be used.
-///     * __print__: If true (false by default), prints out generated code to console.
-///
-/// and will:
-///
-/// 1. Import `std::fmt::{self, Display, Formatter}`
-///
-/// 2. Define basic struct with attribute `bytes` and `Escape`
-///    derive functionality
-///
-/// 3. Implements for `$name` constructors `new` and `From<&'a str>`
-///
-/// 4. Implements trait `Display` for `$name` with escape functionality
-///
-/// 5. Implements function `escape(&str) -> $name`
-///
-/// #### Example
-///
-/// ```
-/// v_escape::new!(MyEscape; 'o' -> "bar");
-///
-/// # fn main() {
-/// assert_eq!(escape("foobar").to_string(), "fbarbarbar");
-/// # }
-/// ```
-///
 macro_rules! new {
     // Macro called without attributes
     ($name:ident; $($t:tt)+) => {
@@ -383,6 +246,8 @@ macro_rules! cfg_escape_ptr {
     };
 }
 
+fn cfg_escape_bytes() {}
+
 #[macro_export]
 #[doc(hidden)]
 /// cfg_if for escape function
@@ -427,16 +292,4 @@ macro_rules! cfg_escape_bytes {
             ranges::sse::b_escape($bytes, $buf)
         }
     }};
-}
-
-#[cfg(doctest)]
-mod test_readme {
-    macro_rules! external_doc_test {
-        ($x:expr) => {
-            #[doc = $x]
-            extern "C" {}
-        };
-    }
-
-    external_doc_test!(include_str!("../../README.md"));
 }

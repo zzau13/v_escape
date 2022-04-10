@@ -1,0 +1,11 @@
+[dependencies.buf-min]
+optional = true
+version = ''
+
+[features]
+bytes-buf = ['buf-min']
+
+[package]
+edition = '2021'
+name = 'testco'
+version = '0.1.0'
