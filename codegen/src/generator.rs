@@ -1,18 +1,220 @@
+use std::collections::BTreeMap;
 use std::fmt::{Display, Write};
+use std::fs;
+use std::path::Path;
 use std::str;
 
-use crate::Pair;
+use proc_macro2::{Ident, TokenStream};
+use serde::Serialize;
+use syn::group::Parens;
+use syn::parse::{Parse, ParseBuffer, ParseStream};
+use syn::punctuated::Punctuated;
+use syn::token::{Bang, Paren, Token};
+use syn::{parenthesized, MacroDelimiter, Token};
+use toml::Value;
 
 type Ranges = Vec<u8>;
+
+#[derive(Serialize)]
+struct Dep {
+    version: &'static str,
+    optional: bool,
+}
+
+pub fn generate<P: AsRef<Path>>(dir: P) {
+    let dir = dir.as_ref();
+    assert!(dir.is_dir(), "input_dir should be a directory");
+    let cargo = dir.join("Cargo.toml");
+    let cargo_src = fs::read_to_string(&cargo).expect("read Cargo.toml `[INPUT_DIR]/Cargo.toml`");
+    let mut cargo_value = cargo_src.parse::<Value>().unwrap();
+    cargo_value
+        .as_table_mut()
+        .unwrap()
+        .get_mut("dependencies")
+        .unwrap()
+        .as_table_mut()
+        .unwrap()
+        .insert(
+            "buf-min".into(),
+            Value::try_from(Dep {
+                version: "",
+                optional: true,
+            })
+            .unwrap(),
+        );
+    let mut features = BTreeMap::new();
+    features.insert("bytes-buf", vec!["buf-min"]);
+    cargo_value
+        .as_table_mut()
+        .unwrap()
+        .insert("features".into(), Value::from(features));
+    let package_name = cargo_value
+        .as_table()
+        .unwrap()
+        .get("package")
+        .unwrap()
+        .as_table()
+        .unwrap()
+        .get("name")
+        .unwrap()
+        .as_str()
+        .unwrap();
+    let src = dir.join("src");
+    let test = dir.join("tests");
+    let template = src.join("_lib.rs");
+    let template_src =
+        fs::read_to_string(&template).expect("read template `[INPUT_DIR]/src/_lib.rs`");
+    let pairs = parse_template(&template_src);
+
+    fs::write(&cargo, toml::to_string_pretty(&cargo_value).unwrap()).unwrap();
+}
+
+fn parse_template(s: &str) -> Vec<Pair> {
+    println!("{}", s);
+    let Args { mut pairs } = syn::parse_str::<Builder>(s)
+        .and_then(Builder::build)
+        .unwrap();
+
+    // need order for calculate ranges
+    pairs.sort_by_key(|p| p.ch);
+    // check repeated
+    for i in 0..pairs.len() - 1 {
+        let p1 = &pairs[i];
+        let p2 = &pairs[i + 1];
+        assert!(!(p1.ch == p2.ch), "{:?} and {:?} are repeated", p1, p2);
+    }
+
+    pairs
+}
+
+/// Generate static tables and call macros
+fn derive(pairs: &[Pair]) -> TokenStream {
+    let code = Generator::new(&pairs, false, false).build();
+    code.parse().unwrap()
+}
+
+#[derive(Debug)]
+pub(crate) struct Pair {
+    ch: u8,
+    quote: String,
+}
+
+impl Pair {
+    pub fn new<I: Into<String>>(ch: u8, quote: I) -> Self {
+        Pair {
+            ch,
+            quote: quote.into(),
+        }
+    }
+}
+/// Proc macro arguments data
+struct Args {
+    pairs: Vec<Pair>,
+}
+
+/// Key-value argument
+struct MetaOpt<Lit: Parse> {
+    path: syn::Path,
+    _eq_token: Token![=],
+    lit: Lit,
+}
+
+impl<Lit: Parse> Parse for MetaOpt<Lit> {
+    fn parse<'a>(input: &'a ParseBuffer<'a>) -> syn::Result<Self> {
+        Ok(Self {
+            path: input.parse()?,
+            _eq_token: input.parse()?,
+            lit: input.parse()?,
+        })
+    }
+}
+
+struct Ch(u8);
+
+impl Ch {
+    fn new(n: u8) -> Result<Self, ()> {
+        match n < (i8::MAX as u8) {
+            true => Ok(Ch(n)),
+            false => Err(()),
+        }
+    }
+}
+
+impl Parse for Ch {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        use syn::Lit;
+        let lit: &Lit = &input.parse()?;
+        let map_err = |_: ()| syn::Error::new(lit.span(), "Only accept ASCII characters");
+        Ok(match lit {
+            Lit::Byte(v) => Ch::new(v.value()).map_err(map_err)?,
+            Lit::Char(v) => Ch::new(v.value() as u8).map_err(map_err)?,
+            Lit::Int(v) => v
+                .base10_parse::<i8>()
+                .map_err(|_| ())
+                .and_then(|x| Ch::new(x as u8))
+                .map_err(map_err)?,
+            _ => return Err(map_err(())),
+        })
+    }
+}
+
+struct PairBuilder {
+    ch: Ch,
+    _s: Token![->],
+    quote: syn::LitStr,
+}
+
+impl Parse for PairBuilder {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        Ok(PairBuilder {
+            ch: input.parse()?,
+            _s: input.parse()?,
+            quote: input.parse()?,
+        })
+    }
+}
+
+/// Proc macro arguments parser
+struct Builder {
+    path: Ident,
+    bang_token: Bang,
+    delimiter: Paren,
+    pairs: Punctuated<PairBuilder, Token![,]>,
+    dots: Token![;],
+}
+
+impl Parse for Builder {
+    fn parse<'a>(input: &'a ParseBuffer<'a>) -> syn::Result<Self> {
+        let tokens;
+        Ok(Self {
+            path: input.parse()?,
+            bang_token: input.parse()?,
+            delimiter: parenthesized!(tokens in input),
+            pairs: Punctuated::parse_separated_nonempty(&tokens)?,
+            dots: input.parse()?,
+        })
+    }
+}
+
+impl Builder {
+    /// Consume and return arguments data
+    fn build(self) -> syn::Result<Args> {
+        let Builder { pairs, .. } = self;
+
+        Ok(Args {
+            pairs: pairs
+                .into_pairs()
+                .map(|x| x.into_value())
+                .map(|x| Pair::new(x.ch.0, x.quote.value()))
+                .collect(),
+        })
+    }
+}
 
 struct Generator<'a> {
     pairs: &'a [Pair],
     simd: bool,
     avx: bool,
-}
-
-pub(crate) fn generate(pairs: &[Pair], simd: bool, avx: bool) -> String {
-    Generator::new(pairs, simd, avx).build()
 }
 
 impl<'a> Generator<'a> {
@@ -35,7 +237,7 @@ impl<'a> Generator<'a> {
         let quote = &self.pairs[0].quote;
 
         if len == 1 {
-            buf.push_str(&format!("const V_ESCAPE_CHAR: u8 = {};", self.pairs[0].ch));
+            write!(buf, "const V_ESCAPE_CHAR: u8 = {};", self.pairs[0].ch);
             buf.push_str(&format!("static V_ESCAPE_QUOTES: &str = {:#?};", quote));
         } else {
             buf.push_str("static V_ESCAPE_TABLE: [u8; 256] = [");
