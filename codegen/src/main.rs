@@ -3,7 +3,9 @@ use std::path::PathBuf;
 use clap::Parser;
 
 mod generator;
+mod macros;
 mod ranges;
+mod utils;
 
 /// V_escape codegen
 #[derive(Parser, Debug)]

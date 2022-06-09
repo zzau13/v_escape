@@ -4,7 +4,7 @@ use quote::quote;
 
 use super::ArgLoop;
 
-pub fn loop_range_switch_avx2(arg: &ArgLoop) -> TokenStream {
+pub fn loop_range_switch_avx2(arg: ArgLoop) -> TokenStream {
     let sse = sse::loop_range_switch_sse(arg);
     let ArgLoop {
         s,
@@ -16,10 +16,6 @@ pub fn loop_range_switch_avx2(arg: &ArgLoop) -> TokenStream {
     let translations = s.translations_256();
 
     quote! {
-        use std::arch::x86_64::{
-            __m256i, _mm256_load_si256, _mm256_loadu_si256, _mm256_movemask_epi8, _mm256_or_si256,
-        };
-
         const M256_VECTOR_SIZE: usize = std::mem::size_of::<__m256i>();
         const LOOP_SIZE: usize = 4 * M256_VECTOR_SIZE;
 
