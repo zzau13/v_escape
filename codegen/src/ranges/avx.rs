@@ -1,19 +1,20 @@
+use crate::ranges::sse;
 use proc_macro2::TokenStream;
 use quote::quote;
 
 use super::ArgLoop;
 
-pub fn loop_range_switch_avx2(
-    ArgLoop {
+pub fn loop_range_switch_avx2(arg: &ArgLoop) -> TokenStream {
+    let sse = sse::loop_range_switch_sse(arg);
+    let ArgLoop {
         s,
         len,
         end_ptr,
         start_ptr,
         ptr,
-    }: ArgLoop,
-) -> TokenStream {
-    let sse = quote! {};
+    } = arg;
     let translations = s.translations_256();
+
     quote! {
         use std::arch::x86_64::{
             __m256i, _mm256_load_si256, _mm256_loadu_si256, _mm256_movemask_epi8, _mm256_or_si256,

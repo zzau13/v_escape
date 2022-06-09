@@ -3,9 +3,10 @@ use quote::quote;
 use syn::Ident;
 
 mod avx;
+mod sse;
 mod switch;
 
-use self::switch::Switch;
+pub use self::switch::Switch;
 
 #[derive(Copy, Clone)]
 enum Feature {
@@ -31,8 +32,8 @@ pub struct ArgLoop {
 
 fn to_loop(f: Feature, arg: ArgLoop) -> TokenStream {
     match f {
-        Avx2 => avx::loop_range_switch_avx2(arg),
-        Sse2 => quote! {},
+        Avx2 => avx::loop_range_switch_avx2(&arg),
+        Sse2 => sse::loop_range_switch_sse(&arg),
     }
 }
 
