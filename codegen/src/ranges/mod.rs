@@ -7,6 +7,7 @@ mod sse;
 mod switch;
 
 pub use self::switch::Switch;
+use crate::utils::ident;
 
 #[derive(Copy, Clone)]
 enum Feature {
@@ -22,41 +23,36 @@ fn to_str(f: Feature) -> &'static str {
     }
 }
 
-pub struct ArgLoop {
-    len: Ident,
-    ptr: Ident,
-    start_ptr: Ident,
-    end_ptr: Ident,
+#[derive(Copy, Clone)]
+pub struct ArgLoop<'a> {
+    len: &'a Ident,
+    ptr: &'a Ident,
+    start_ptr: &'a Ident,
+    end_ptr: &'a Ident,
     s: Switch,
 }
 
 fn to_loop(f: Feature, arg: ArgLoop) -> TokenStream {
     match f {
-        Avx2 => avx::loop_range_switch_avx2(&arg),
-        Sse2 => sse::loop_range_switch_sse(&arg),
+        Avx2 => avx::loop_range_switch_avx2(arg),
+        Sse2 => sse::loop_range_switch_sse(arg),
     }
 }
 
-fn ident(s: &str) -> Ident {
-    Ident::new(s, Span::call_site())
-}
-
-fn escape_range(s: switch::Switch, f: Feature) -> TokenStream {
+fn escape_range(s: Switch, f: Feature) -> TokenStream {
     let feature = to_str(f);
-    let len = ident("len");
-    let start_ptr = ident("start_ptr");
-    let end_ptr = ident("end_ptr");
-    let ptr = ident("ptr");
-    let loops = to_loop(
-        f,
-        ArgLoop {
-            len: len.clone(),
-            ptr: ptr.clone(),
-            end_ptr: end_ptr.clone(),
-            start_ptr: start_ptr.clone(),
-            s,
-        },
-    );
+    let len = &ident("len");
+    let start_ptr = &ident("start_ptr");
+    let end_ptr = &ident("end_ptr");
+    let ptr = &ident("ptr");
+    let arg = ArgLoop {
+        len,
+        ptr,
+        end_ptr,
+        start_ptr,
+        s,
+    };
+    let loops = to_loop(f, arg);
 
     quote! {
         #[inline]

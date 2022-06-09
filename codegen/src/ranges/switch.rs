@@ -60,10 +60,6 @@ impl Switch {
     pub fn translations_256(&self) -> TokenStream {
         match *self {
             ArBC { la, ra, b, c } => quote! {
-                use std::arch::x86_64::{
-                    _mm256_add_epi8, _mm256_cmpeq_epi8, _mm256_cmpgt_epi8, _mm256_or_si256,
-                    _mm256_set1_epi8,
-                };
                 const TRANSLATION_A: i8 = i8::MAX - #ra;
                 const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
                 const B: i8 = #b;
@@ -84,7 +80,6 @@ impl Switch {
                 }
             },
             ABC { a, b, c } => quote! {
-                use std::arch::x86_64::{_mm256_cmpeq_epi8, _mm256_or_si256, _mm256_set1_epi8};
                 const A: i8 = #a;
                 const B: i8 = #b;
                 const C: i8 = #c;
@@ -103,7 +98,6 @@ impl Switch {
                 }
             },
             AB { a, b } => quote! {
-                use std::arch::x86_64::{_mm256_cmpeq_epi8, _mm256_or_si256, _mm256_set1_epi8};
                 const A: i8 = $fa;
                 const B: i8 = $fb;
 
@@ -117,7 +111,6 @@ impl Switch {
                 }
             },
             A { a } => quote! {
-                use std::arch::x86_64::{_mm256_cmpeq_epi8, _mm256_set1_epi8};
                 const A: i8 = $fa;
 
                 let v_a = _mm256_set1_epi8(A);
@@ -136,9 +129,6 @@ impl Switch {
                 lc,
                 rc,
             } => quote! {
-                use std::arch::x86_64::{
-                    _mm256_add_epi8, _mm256_cmpgt_epi8, _mm256_or_si256, _mm256_set1_epi8,
-                };
                 const TRANSLATION_A: i8 = i8::MAX - #ra;
                 const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
                 const TRANSLATION_B: i8 = i8::MAX - #rb;
@@ -166,10 +156,6 @@ impl Switch {
                 }
             },
             ArBrC { la, ra, lb, rb, c } => quote! {
-                use std::arch::x86_64::{
-                    _mm256_add_epi8, _mm256_cmpeq_epi8, _mm256_cmpgt_epi8, _mm256_or_si256,
-                    _mm256_set1_epi8,
-                };
                 const TRANSLATION_A: i8 = i8::MAX - #ra;
                 const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
                 const TRANSLATION_B: i8 = i8::MAX - #rb;
@@ -195,9 +181,6 @@ impl Switch {
                 }
             },
             ArBr { la, ra, lb, rb } => quote! {
-                use std::arch::x86_64::{
-                    _mm256_add_epi8, _mm256_cmpgt_epi8, _mm256_or_si256, _mm256_set1_epi8,
-                };
                 const TRANSLATION_A: i8 = i8::MAX - #ra;
                 const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
                 const TRANSLATION_B: i8 = i8::MAX - #rb;
@@ -218,11 +201,6 @@ impl Switch {
                 }
             },
             ArB { la, ra, b } => quote! {
-
-                use std::arch::x86_64::{
-                    _mm256_add_epi8, _mm256_cmpeq_epi8, _mm256_cmpgt_epi8, _mm256_or_si256,
-                    _mm256_set1_epi8,
-                };
                 const TRANSLATION_A: i8 = i8::MAX - #ra;
                 const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
                 const B: i8 = #b;
@@ -241,7 +219,6 @@ impl Switch {
                 }
             },
             Ar { la, ra } => quote! {
-                use std::arch::x86_64::{_mm256_add_epi8, _mm256_cmpgt_epi8, _mm256_set1_epi8};
                 const TRANSLATION_A: i8 = i8::MAX - #ra;
                 const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
 
@@ -260,9 +237,6 @@ impl Switch {
     pub fn translations_128(&self) -> TokenStream {
         match *self {
             ArBC { la, ra, b, c } => quote! {
-                use std::arch::x86_64::{
-                    _mm_add_epi8, _mm_cmpeq_epi8, _mm_cmpgt_epi8, _mm_or_si128, _mm_set1_epi8,
-                };
                 const TRANSLATION_A: i8 = i8::MAX - #ra;
                 const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
                 const B: i8 = #b;
@@ -283,7 +257,6 @@ impl Switch {
                 }
             },
             ABC { a, b, c } => quote! {
-            use std::arch::x86_64::{_mm_cmpeq_epi8, _mm_or_si128, _mm_set1_epi8};
             const A: i8 = #a;
             const B: i8 = #b;
             const C: i8 = #c;
@@ -302,7 +275,6 @@ impl Switch {
             }
                 },
             AB { a, b } => quote! {
-            use std::arch::x86_64::{_mm_cmpeq_epi8, _mm_or_si128, _mm_set1_epi8};
             const A: i8 = #a;
             const B: i8 = #b;
 
@@ -316,7 +288,6 @@ impl Switch {
             }
                 },
             A { a } => quote! {
-            use std::arch::x86_64::{_mm_cmpeq_epi8, _mm_set1_epi8};
             const A: i8 = #a;
 
             let v_a = _mm_set1_epi8(A);
@@ -335,7 +306,6 @@ impl Switch {
                 lc,
                 rc,
             } => quote! {
-            use std::arch::x86_64::{_mm_add_epi8, _mm_cmpgt_epi8, _mm_or_si128, _mm_set1_epi8};
             const TRANSLATION_A: i8 = i8::MAX - #ra;
             const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
             const TRANSLATION_B: i8 = i8::MAX - #rb;
@@ -363,9 +333,6 @@ impl Switch {
             }
             },
             ArBrC { la, ra, lb, rb, c } => quote! {
-            use std::arch::x86_64::{
-                _mm_add_epi8, _mm_cmpeq_epi8, _mm_cmpgt_epi8, _mm_or_si128, _mm_set1_epi8,
-            };
             const TRANSLATION_A: i8 = i8::MAX - #ra;
             const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
             const TRANSLATION_B: i8 = i8::MAX - #rb;
@@ -391,7 +358,6 @@ impl Switch {
             }
                 },
             ArBr { la, ra, lb, rb } => quote! {
-            use std::arch::x86_64::{_mm_add_epi8, _mm_cmpgt_epi8, _mm_or_si128, _mm_set1_epi8};
             const TRANSLATION_A: i8 = i8::MAX - #ra;
             const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
             const TRANSLATION_B: i8 = i8::MAX - #rb;
@@ -412,9 +378,6 @@ impl Switch {
             }
                 },
             ArB { la, ra, b } => quote! {
-            use std::arch::x86_64::{
-                _mm_add_epi8, _mm_cmpeq_epi8, _mm_cmpgt_epi8, _mm_or_si128, _mm_set1_epi8,
-            };
             const TRANSLATION_A: i8 = i8::MAX - #ra;
             const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
             const B: i8 = #b;
@@ -433,7 +396,6 @@ impl Switch {
             }
                 },
             Ar { la, ra } => quote! {
-            use std::arch::x86_64::{_mm_add_epi8, _mm_cmpgt_epi8, _mm_set1_epi8};
             const TRANSLATION_A: i8 = i8::MAX - #ra;
             const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
 
