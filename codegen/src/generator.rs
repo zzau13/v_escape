@@ -539,7 +539,7 @@ mod test {
         let pairs = &[Pair::new(0, E), Pair::new(1, E)];
         let g = Generator::new(pairs);
 
-        // assert_eq!(g.calculate_ranges(), vec![0, 1])
+        assert_eq!(g.calculate_ranges(), Ar { la: 0, ra: 1 })
     }
 
     #[test]
@@ -552,7 +552,15 @@ mod test {
         ];
         let g = Generator::new(pairs);
 
-        // assert_eq!(g.calculate_ranges(), vec![0, 1, 3, 4])
+        assert_eq!(
+            g.calculate_ranges(),
+            ArBr {
+                la: 0,
+                ra: 1,
+                lb: 3,
+                rb: 4
+            }
+        )
     }
 
     #[test]
@@ -567,7 +575,18 @@ mod test {
         ];
         let g = Generator::new(pairs);
 
-        // assert_eq!(g.calculate_ranges(), vec![0, 1, 3, 4, 6, 7]);
+        assert_eq!(
+            g.calculate_ranges(),
+            ArBrCr {
+                la: 0,
+                ra: 1,
+                lb: 3,
+                rb: 4,
+                lc: 6,
+                rc: 7
+            }
+        );
+
         let pairs = &[
             Pair::new(0, E),
             Pair::new(1, E),
@@ -588,7 +607,17 @@ mod test {
         ];
         let g = Generator::new(pairs);
 
-        // assert_eq!(g.calculate_ranges(), vec![0, 9, 50, 64, 126, 127])
+        assert_eq!(
+            g.calculate_ranges(),
+            ArBrCr {
+                la: 0,
+                ra: 9,
+                lb: 50,
+                rb: 64,
+                lc: 126,
+                rc: 127
+            }
+        )
     }
 
     #[test]
@@ -596,12 +625,12 @@ mod test {
         let pairs = &[Pair::new(0, E), Pair::new(1, E), Pair::new(3, E)];
         let g = Generator::new(pairs);
 
-        // assert_eq!(g.calculate_ranges(), vec![0, 1, 3]);
+        assert_eq!(g.calculate_ranges(), ArB { la: 0, ra: 1, b: 3 });
 
         let pairs = &[Pair::new(0, E), Pair::new(2, E), Pair::new(3, E)];
         let g = Generator::new(pairs);
 
-        // assert_eq!(g.calculate_ranges(), vec![2, 3, 0]);
+        assert_eq!(g.calculate_ranges(), ArB { la: 2, ra: 3, b: 0 });
 
         let pairs = &[
             Pair::new(0, E),
@@ -611,7 +640,7 @@ mod test {
         ];
         let g = Generator::new(pairs);
 
-        // assert_eq!(g.calculate_ranges(), vec![0, 2, 4]);
+        assert_eq!(g.calculate_ranges(), ArB { la: 0, ra: 2, b: 4 });
 
         let pairs = &[
             Pair::new(50, E),
@@ -624,7 +653,14 @@ mod test {
         ];
         let g = Generator::new(pairs);
 
-        // assert_eq!(g.calculate_ranges(), vec![50, 55, 67]);
+        assert_eq!(
+            g.calculate_ranges(),
+            ArB {
+                la: 50,
+                ra: 55,
+                b: 67
+            }
+        );
     }
 
     #[test]
@@ -638,7 +674,16 @@ mod test {
         ];
         let g = Generator::new(pairs);
 
-        // assert_eq!(g.calculate_ranges(), vec![0, 1, 3, 4, 6]);
+        assert_eq!(
+            g.calculate_ranges(),
+            ArBrC {
+                la: 0,
+                ra: 1,
+                lb: 3,
+                rb: 4,
+                c: 6
+            }
+        );
     }
 
     #[test]
@@ -652,7 +697,16 @@ mod test {
         ];
         let g = Generator::new(pairs);
 
-        // assert_eq!(g.calculate_ranges(), vec![4, 5, 7, 8, 0]);
+        assert_eq!(
+            g.calculate_ranges(),
+            ArBrC {
+                la: 4,
+                ra: 5,
+                lb: 7,
+                rb: 8,
+                c: 0
+            }
+        );
     }
 
     #[test]
@@ -668,7 +722,16 @@ mod test {
         ];
         let g = Generator::new(pairs);
 
-        // assert_eq!(g.calculate_ranges(), vec![14, 16, 50, 52, 98]);
+        assert_eq!(
+            g.calculate_ranges(),
+            ArBrC {
+                la: 14,
+                ra: 16,
+                lb: 50,
+                rb: 52,
+                c: 98
+            }
+        );
     }
 
     #[test]
@@ -685,7 +748,16 @@ mod test {
 
         let g = Generator::new(pairs);
 
-        // assert_eq!(g.calculate_ranges(), vec![14, 16, 50, 52, 98]);
+        assert_eq!(
+            g.calculate_ranges(),
+            ArBrC {
+                la: 14,
+                ra: 16,
+                lb: 50,
+                rb: 52,
+                c: 98
+            }
+        );
         let pairs = &[
             Pair::new(14, E),
             Pair::new(15, E),
@@ -706,7 +778,16 @@ mod test {
         ];
         let g = Generator::new(pairs);
 
-        // assert_eq!(g.calculate_ranges(), vec![14, 19, 50, 58, 98]);
+        assert_eq!(
+            g.calculate_ranges(),
+            ArBrC {
+                la: 14,
+                ra: 19,
+                lb: 50,
+                rb: 58,
+                c: 98
+            }
+        );
     }
 
     #[test]
@@ -722,7 +803,17 @@ mod test {
 
         let g = Generator::new(pairs);
 
-        // assert_eq!(g.calculate_ranges(), vec![14, 16, 50, 52, 98]);
+        assert_eq!(
+            g.calculate_ranges(),
+            ArBrC {
+                la: 14,
+                ra: 16,
+                lb: 50,
+                rb: 52,
+                c: 98
+            }
+        );
+
         let pairs = &[
             Pair::new(14, E),
             Pair::new(16, E),
@@ -739,7 +830,16 @@ mod test {
         ];
         let g = Generator::new(pairs);
 
-        // assert_eq!(g.calculate_ranges(), vec![14, 19, 50, 58, 98]);
+        assert_eq!(
+            g.calculate_ranges(),
+            ArBrC {
+                la: 14,
+                ra: 19,
+                lb: 50,
+                rb: 58,
+                c: 98
+            }
+        );
     }
 
     #[test]
@@ -754,7 +854,16 @@ mod test {
 
         let g = Generator::new(pairs);
 
-        // assert_eq!(g.calculate_ranges(), vec![60, 61, 80, 81, 65]);
+        assert_eq!(
+            g.calculate_ranges(),
+            ArBrC {
+                la: 60,
+                ra: 61,
+                lb: 80,
+                rb: 81,
+                c: 65
+            }
+        );
 
         let pairs = &[
             Pair::new(52, E),
@@ -777,7 +886,16 @@ mod test {
 
         let g = Generator::new(pairs);
 
-        // assert_eq!(g.calculate_ranges(), vec![52, 62, 101, 120, 80]);
+        assert_eq!(
+            g.calculate_ranges(),
+            ArBrC {
+                la: 52,
+                ra: 62,
+                lb: 101,
+                rb: 120,
+                c: 80
+            }
+        );
     }
 
     #[test]
@@ -790,7 +908,15 @@ mod test {
         ];
         let g = Generator::new(pairs);
 
-        // assert_eq!(g.calculate_ranges(), vec![0, 1, 4, 6, 128]);
+        assert_eq!(
+            g.calculate_ranges(),
+            ArBC {
+                la: 0,
+                ra: 1,
+                b: 4,
+                c: 6
+            }
+        );
 
         let pairs = &[
             Pair::new(0, E),
@@ -813,7 +939,15 @@ mod test {
         ];
         let g = Generator::new(pairs);
 
-        // assert_eq!(g.calculate_ranges(), vec![0, 14, 73, 127, 128]);
+        assert_eq!(
+            g.calculate_ranges(),
+            ArBC {
+                la: 0,
+                ra: 14,
+                b: 73,
+                c: 127
+            }
+        );
     }
 
     #[test]
@@ -826,7 +960,15 @@ mod test {
         ];
         let g = Generator::new(pairs);
 
-        // assert_eq!(g.calculate_ranges(), vec![5, 6, 0, 2, 128]);
+        assert_eq!(
+            g.calculate_ranges(),
+            ArBC {
+                la: 5,
+                ra: 6,
+                b: 0,
+                c: 2
+            }
+        );
 
         let pairs = &[
             Pair::new(0, E),
@@ -848,7 +990,15 @@ mod test {
         ];
         let g = Generator::new(pairs);
 
-        // assert_eq!(g.calculate_ranges(), vec![5, 18, 0, 2, 128]);
+        assert_eq!(
+            g.calculate_ranges(),
+            ArBC {
+                la: 5,
+                ra: 18,
+                b: 0,
+                c: 2
+            }
+        );
     }
 
     #[test]
@@ -861,7 +1011,15 @@ mod test {
         ];
         let g = Generator::new(pairs);
 
-        // assert_eq!(g.calculate_ranges(), vec![2, 3, 0, 8, 128]);
+        assert_eq!(
+            g.calculate_ranges(),
+            ArBC {
+                la: 2,
+                ra: 3,
+                b: 0,
+                c: 8
+            }
+        );
 
         let pairs = &[
             Pair::new(0, E),
@@ -885,6 +1043,14 @@ mod test {
         ];
         let g = Generator::new(pairs);
 
-        // assert_eq!(g.calculate_ranges(), vec![2, 17, 0, 127, 128]);
+        assert_eq!(
+            g.calculate_ranges(),
+            ArBC {
+                la: 2,
+                ra: 17,
+                b: 0,
+                c: 127
+            }
+        );
     }
 }
