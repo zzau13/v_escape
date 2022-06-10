@@ -52,7 +52,10 @@ fn mask_body(i: &TokenStream, arg: BodyArg) -> TokenStream {
     }
 }
 
-struct BodiesArg<'a> {
+trait CB: Fn(&TokenStream, BodyArg) -> TokenStream {}
+impl<T: Fn(&TokenStream, BodyArg) -> TokenStream> CB for T {}
+
+struct BodiesArg<'a, F: CB> {
     t: &'a Ident,
     q: &'a Ident,
     q_len: &'a Ident,
@@ -61,7 +64,7 @@ struct BodiesArg<'a> {
     start: &'a Ident,
     fmt: &'a Ident,
     bytes: &'a Ident,
-    callback: Box<dyn Fn(&TokenStream, BodyArg) -> TokenStream>,
+    callback: F,
 }
 
 // TODO: bodies one
@@ -70,7 +73,7 @@ enum Bodies {
     Exact,
 }
 
-fn bodies(
+fn bodies<F: CB>(
     kind: Bodies,
     BodiesArg {
         t,
@@ -82,7 +85,7 @@ fn bodies(
         fmt,
         bytes,
         callback,
-    }: BodiesArg,
+    }: BodiesArg<F>,
 ) -> TokenStream {
     let var = &ident("c");
     let ch = &index(t, &quote! { #b as usize });
@@ -119,11 +122,13 @@ fn escape_body_bytes(
         quote,
     }: BodyArg,
 ) -> TokenStream {
+    let write_1 = write_bytes(&quote! { &#bytes[#start..#i] }, fmt);
+    let write_2 = write_bytes(&quote! { #quote.as_bytes() }, fmt);
     quote! {
         if #start < #i {
-            crate::write_bytes!(&#bytes[#start..#i], #fmt);
+            #write_1
         }
-        crate::write_bytes!(#quote.as_bytes(), #fmt);
+        #write_2
 
         #start = #i + 1;
     }
@@ -138,35 +143,8 @@ fn mask_body_bytes(i: &TokenStream, arg: BodyArg) -> TokenStream {
     }
 }
 
-macro_rules! write_bytes {
-    ($bytes:expr, $buf:ident) => {
-        $buf.extend_from_slice($bytes);
-    };
-}
-
-macro_rules! bodies_bytes {
-    ($T:ident, $Q:ident, $Q_LEN:ident, $i:expr, $b:expr, $start:ident, $bytes:ident, $buf:ident, $callback:path) => {
-        let c = $crate::index!($T[$b as usize]) as usize;
-        if c < $Q_LEN {
-            $callback!($i, $start, $bytes, $buf, $crate::index!($Q[c]));
-        }
-    };
-}
-macro_rules! bodies_exact_bytes {
-    ($T:ident, $Q:ident, $Q_LEN:ident, $i:expr, $b:expr, $start:ident, $bytes:ident, $buf:ident, $callback:path) => {
-        debug_assert_ne!($T[$b as usize] as usize, $Q_LEN as usize);
-        $callback!(
-            $i,
-            $start,
-            $bytes,
-            $buf,
-            $crate::index!($Q[$crate::index!($T[$b as usize]) as usize])
-        );
-    };
-}
-macro_rules! bodies_exact_one_bytes {
-    ($char:expr, $quote:expr, $_non:expr, $i:expr, $b:expr, $start:ident, $bytes:ident, $buf:ident, $callback:path) => {
-        debug_assert_eq!($char, $b);
-        $callback!($i, $start, $bytes, $buf, $quote);
-    };
+fn write_bytes(bytes: &TokenStream, buf: &Ident) -> TokenStream {
+    quote! {
+        #buf.extend_from_slice(#bytes);
+    }
 }

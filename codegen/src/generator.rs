@@ -6,11 +6,12 @@ use std::str;
 
 use crate::ranges::Switch;
 use proc_macro2::{Ident, TokenStream};
+use quote::quote;
 use serde::Serialize;
-use syn::parse::{Parse, ParseBuffer, ParseStream};
+use syn::parse::{Parse, ParseBuffer, ParseStream, Parser};
 use syn::punctuated::Punctuated;
 use syn::token::{Bang, Paren};
-use syn::{parenthesized, Token};
+use syn::{parenthesized, File, Token};
 use toml::Value;
 
 #[derive(Serialize)]
@@ -63,8 +64,9 @@ pub fn generate<P: AsRef<Path>>(dir: P) {
     let template_src =
         fs::read_to_string(&template).expect("read template `[INPUT_DIR]/src/_lib.rs`");
     let pairs = parse_template(&template_src);
-    let code = derive(&pairs);
-    eprintln!("{}", code);
+    let code = Generator::new(&pairs).build();
+    let code_pretty = prettyplease::unparse(&syn::parse2(code).unwrap());
+    eprintln!("{}", code_pretty);
 
     // fs::write(&cargo, toml::to_string_pretty(&cargo_value).unwrap()).unwrap();
 }
@@ -80,16 +82,10 @@ fn parse_template(s: &str) -> Vec<Pair> {
     for i in 0..pairs.len() - 1 {
         let p1 = &pairs[i];
         let p2 = &pairs[i + 1];
-        assert!(!(p1.ch == p2.ch), "{:?} and {:?} are repeated", p1, p2);
+        assert_ne!(p1.ch, p2.ch, "{:?} and {:?} are repeated", p1, p2);
     }
 
     pairs
-}
-
-/// Generate static tables and call macros
-fn derive(pairs: &[Pair]) -> TokenStream {
-    let code = Generator::new(&pairs).build();
-    code.parse().unwrap()
 }
 
 #[derive(Debug)]
@@ -196,39 +192,41 @@ impl<'a> Generator<'a> {
         Generator { pairs }
     }
 
-    pub fn build(&self) -> String {
-        let mut buf = String::new();
+    pub fn build(&self) -> TokenStream {
+        let mut buf = TokenStream::new();
 
         self.write_static_table(&mut buf);
-        self.write_functions(&mut buf);
-        self.write_cfg_if(&mut buf);
+        // self.write_functions(&mut buf);
+        // self.write_cfg_if(&mut buf);
 
         buf
     }
 
-    fn write_static_table(&self, buf: &mut String) {
+    fn write_static_table(&self, buf: &mut TokenStream) {
         let len = self.pairs.len();
         let quote = &self.pairs[0].quote;
 
         if len == 1 {
-            write!(buf, "const V_ESCAPE_CHAR: u8 = {};", self.pairs[0].ch);
-            buf.push_str(&format!("static V_ESCAPE_QUOTES: &str = {:#?};", quote));
+            let ch = self.pairs[0].ch;
+            buf.extend(quote! {
+                const V_ESCAPE_CHAR: u8 = #ch;
+                static V_ESCAPE_QUOTES: &str = #quote;
+            })
         } else {
-            buf.push_str("static V_ESCAPE_TABLE: [u8; 256] = [");
+            let mut chs = Vec::with_capacity(256);
             for i in 0..=255_u8 {
                 let n = self.pairs.binary_search_by(|s| s.ch.cmp(&i)).unwrap_or(len);
-                buf.push_str(&format!("{}, ", n))
+                chs.push(n as u8)
             }
-            buf.push_str("];");
-
             let quotes: Vec<&str> = self.pairs.iter().map(|s| s.quote.as_str()).collect();
-            buf.push_str(&format!(
-                "static V_ESCAPE_QUOTES: [&str; {}] = {:#?};",
-                len, quotes
-            ));
+            buf.extend(quote! {
+                static V_ESCAPE_TABLE: [u8; 256] = [#(#chs),*];
+                static V_ESCAPE_QUOTES: [&str; #len] = [#(#quotes),*];
+            })
         }
-
-        buf.push_str(&format!("const V_ESCAPE_LEN: usize = {};", len));
+        buf.extend(quote! {
+            const V_ESCAPE_LEN: usize = #len;
+        })
     }
 
     fn write_functions(&self, buf: &mut String) {
