@@ -449,10 +449,13 @@ mod test {
     use Switch::*;
 
     static E: &str = "f";
+    macro_rules! pair {
+        ($($l:literal),*) => { &[$(Pair::new($l, E)),*] };
+    }
 
     #[test]
     fn test_1_escape() {
-        let pairs = &[Pair::new(0, E)];
+        let pairs = pair!(0);
         let g = Generator::new(pairs);
 
         assert_eq!(g.calculate_ranges(), A { a: 0 })
@@ -460,7 +463,7 @@ mod test {
 
     #[test]
     fn test_2_escape() {
-        let pairs = &[Pair::new(0, E), Pair::new(2, E)];
+        let pairs = pair!(0, 2);
         let g = Generator::new(pairs);
 
         assert_eq!(g.calculate_ranges(), AB { a: 0, b: 2 })
@@ -468,7 +471,7 @@ mod test {
 
     #[test]
     fn test_3_escape() {
-        let pairs = &[Pair::new(0, E), Pair::new(2, E), Pair::new(4, E)];
+        let pairs = pair!(0, 2, 4);
         let g = Generator::new(pairs);
 
         assert_eq!(g.calculate_ranges(), ABC { a: 0, b: 2, c: 4 })
@@ -476,7 +479,7 @@ mod test {
 
     #[test]
     fn test_1_range() {
-        let pairs = &[Pair::new(0, E), Pair::new(1, E)];
+        let pairs = pair!(0, 1);
         let g = Generator::new(pairs);
 
         assert_eq!(g.calculate_ranges(), Ar { la: 0, ra: 1 })
@@ -484,12 +487,7 @@ mod test {
 
     #[test]
     fn test_2_range() {
-        let pairs = &[
-            Pair::new(0, E),
-            Pair::new(1, E),
-            Pair::new(3, E),
-            Pair::new(4, E),
-        ];
+        let pairs = pair!(0, 1, 3, 4);
         let g = Generator::new(pairs);
 
         assert_eq!(
@@ -505,14 +503,7 @@ mod test {
 
     #[test]
     fn test_3_range() {
-        let pairs = &[
-            Pair::new(0, E),
-            Pair::new(1, E),
-            Pair::new(3, E),
-            Pair::new(4, E),
-            Pair::new(6, E),
-            Pair::new(7, E),
-        ];
+        let pairs = pair!(0, 1, 3, 4, 6, 7);
         let g = Generator::new(pairs);
 
         assert_eq!(
@@ -527,24 +518,7 @@ mod test {
             }
         );
 
-        let pairs = &[
-            Pair::new(0, E),
-            Pair::new(1, E),
-            Pair::new(3, E),
-            Pair::new(5, E),
-            Pair::new(7, E),
-            Pair::new(9, E),
-            Pair::new(50, E),
-            Pair::new(52, E),
-            Pair::new(55, E),
-            Pair::new(60, E),
-            Pair::new(61, E),
-            Pair::new(62, E),
-            Pair::new(63, E),
-            Pair::new(64, E),
-            Pair::new(126, E),
-            Pair::new(127, E),
-        ];
+        let pairs = pair!(0, 1, 3, 5, 7, 9, 50, 52, 55, 60, 61, 62, 63, 64, 126, 127);
         let g = Generator::new(pairs);
 
         assert_eq!(
@@ -562,35 +536,22 @@ mod test {
 
     #[test]
     fn test_1_range_1_escape() {
-        let pairs = &[Pair::new(0, E), Pair::new(1, E), Pair::new(3, E)];
+        let pairs = pair!(0, 1, 3);
         let g = Generator::new(pairs);
 
         assert_eq!(g.calculate_ranges(), ArB { la: 0, ra: 1, b: 3 });
 
-        let pairs = &[Pair::new(0, E), Pair::new(2, E), Pair::new(3, E)];
+        let pairs = pair!(0, 2, 3);
         let g = Generator::new(pairs);
 
         assert_eq!(g.calculate_ranges(), ArB { la: 2, ra: 3, b: 0 });
 
-        let pairs = &[
-            Pair::new(0, E),
-            Pair::new(1, E),
-            Pair::new(2, E),
-            Pair::new(4, E),
-        ];
+        let pairs = pair!(0, 1, 2, 4);
         let g = Generator::new(pairs);
 
         assert_eq!(g.calculate_ranges(), ArB { la: 0, ra: 2, b: 4 });
 
-        let pairs = &[
-            Pair::new(50, E),
-            Pair::new(51, E),
-            Pair::new(52, E),
-            Pair::new(53, E),
-            Pair::new(54, E),
-            Pair::new(55, E),
-            Pair::new(67, E),
-        ];
+        let pairs = pair!(50, 51, 52, 53, 54, 55, 67);
         let g = Generator::new(pairs);
 
         assert_eq!(
@@ -605,13 +566,7 @@ mod test {
 
     #[test]
     fn test_2_range_1_escape_a() {
-        let pairs = &[
-            Pair::new(0, E),
-            Pair::new(1, E),
-            Pair::new(3, E),
-            Pair::new(4, E),
-            Pair::new(6, E),
-        ];
+        let pairs = pair!(0, 1, 3, 4, 6);
         let g = Generator::new(pairs);
 
         assert_eq!(
@@ -628,13 +583,7 @@ mod test {
 
     #[test]
     fn test_2_range_1_escape_b() {
-        let pairs = &[
-            Pair::new(0, E),
-            Pair::new(4, E),
-            Pair::new(5, E),
-            Pair::new(7, E),
-            Pair::new(8, E),
-        ];
+        let pairs = pair!(0, 4, 5, 7, 8);
         let g = Generator::new(pairs);
 
         assert_eq!(
@@ -651,15 +600,7 @@ mod test {
 
     #[test]
     fn test_2_range_1_escape_c() {
-        let pairs = &[
-            Pair::new(14, E),
-            Pair::new(15, E),
-            Pair::new(16, E),
-            Pair::new(50, E),
-            Pair::new(51, E),
-            Pair::new(52, E),
-            Pair::new(98, E),
-        ];
+        let pairs = pair!(14, 15, 16, 50, 51, 52, 98);
         let g = Generator::new(pairs);
 
         assert_eq!(
@@ -676,16 +617,7 @@ mod test {
 
     #[test]
     fn test_2_range_1_escape_d() {
-        let pairs = &[
-            Pair::new(14, E),
-            Pair::new(15, E),
-            Pair::new(16, E),
-            Pair::new(50, E),
-            Pair::new(51, E),
-            Pair::new(52, E),
-            Pair::new(98, E),
-        ];
-
+        let pairs = pair!(14, 15, 16, 50, 51, 52, 98);
         let g = Generator::new(pairs);
 
         assert_eq!(
@@ -698,24 +630,7 @@ mod test {
                 c: 98
             }
         );
-        let pairs = &[
-            Pair::new(14, E),
-            Pair::new(15, E),
-            Pair::new(16, E),
-            Pair::new(17, E),
-            Pair::new(18, E),
-            Pair::new(19, E),
-            Pair::new(50, E),
-            Pair::new(51, E),
-            Pair::new(52, E),
-            Pair::new(53, E),
-            Pair::new(54, E),
-            Pair::new(55, E),
-            Pair::new(56, E),
-            Pair::new(57, E),
-            Pair::new(58, E),
-            Pair::new(98, E),
-        ];
+        let pairs = pair!(14, 15, 16, 17, 18, 19, 50, 51, 52, 53, 54, 55, 56, 57, 58, 98);
         let g = Generator::new(pairs);
 
         assert_eq!(
@@ -732,15 +647,7 @@ mod test {
 
     #[test]
     fn test_2_range_1_escape_e() {
-        let pairs = &[
-            Pair::new(14, E),
-            Pair::new(16, E),
-            Pair::new(50, E),
-            Pair::new(51, E),
-            Pair::new(52, E),
-            Pair::new(98, E),
-        ];
-
+        let pairs = pair!(14, 16, 50, 51, 52, 98);
         let g = Generator::new(pairs);
 
         assert_eq!(
@@ -754,20 +661,7 @@ mod test {
             }
         );
 
-        let pairs = &[
-            Pair::new(14, E),
-            Pair::new(16, E),
-            Pair::new(17, E),
-            Pair::new(18, E),
-            Pair::new(19, E),
-            Pair::new(50, E),
-            Pair::new(52, E),
-            Pair::new(53, E),
-            Pair::new(56, E),
-            Pair::new(57, E),
-            Pair::new(58, E),
-            Pair::new(98, E),
-        ];
+        let pairs = pair!(14, 16, 17, 18, 19, 50, 52, 53, 56, 57, 58, 98);
         let g = Generator::new(pairs);
 
         assert_eq!(
@@ -784,14 +678,7 @@ mod test {
 
     #[test]
     fn test_2_range_1_escape_f() {
-        let pairs = &[
-            Pair::new(60, E),
-            Pair::new(61, E),
-            Pair::new(65, E),
-            Pair::new(80, E),
-            Pair::new(81, E),
-        ];
-
+        let pairs = pair!(60, 61, 65, 80, 81);
         let g = Generator::new(pairs);
 
         assert_eq!(
@@ -805,25 +692,7 @@ mod test {
             }
         );
 
-        let pairs = &[
-            Pair::new(52, E),
-            Pair::new(53, E),
-            Pair::new(56, E),
-            Pair::new(58, E),
-            Pair::new(60, E),
-            Pair::new(61, E),
-            Pair::new(62, E),
-            Pair::new(80, E),
-            Pair::new(101, E),
-            Pair::new(102, E),
-            Pair::new(103, E),
-            Pair::new(104, E),
-            Pair::new(105, E),
-            Pair::new(108, E),
-            Pair::new(110, E),
-            Pair::new(120, E),
-        ];
-
+        let pairs = pair!(52, 53, 56, 58, 60, 61, 62, 80, 101, 102, 104, 105, 108, 110, 120);
         let g = Generator::new(pairs);
 
         assert_eq!(
@@ -840,12 +709,7 @@ mod test {
 
     #[test]
     fn test_1_range_2_escape_a() {
-        let pairs = &[
-            Pair::new(0, E),
-            Pair::new(1, E),
-            Pair::new(4, E),
-            Pair::new(6, E),
-        ];
+        let pairs = pair!(0, 1, 4, 6);
         let g = Generator::new(pairs);
 
         assert_eq!(
@@ -858,25 +722,7 @@ mod test {
             }
         );
 
-        let pairs = &[
-            Pair::new(0, E),
-            Pair::new(1, E),
-            Pair::new(2, E),
-            Pair::new(3, E),
-            Pair::new(4, E),
-            Pair::new(5, E),
-            Pair::new(6, E),
-            Pair::new(7, E),
-            Pair::new(8, E),
-            Pair::new(9, E),
-            Pair::new(10, E),
-            Pair::new(11, E),
-            Pair::new(12, E),
-            Pair::new(13, E),
-            Pair::new(14, E),
-            Pair::new(73, E),
-            Pair::new(127, E),
-        ];
+        let pairs = pair!(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 73, 127);
         let g = Generator::new(pairs);
 
         assert_eq!(
@@ -892,12 +738,7 @@ mod test {
 
     #[test]
     fn test_1_range_2_escape_b() {
-        let pairs = &[
-            Pair::new(0, E),
-            Pair::new(2, E),
-            Pair::new(5, E),
-            Pair::new(6, E),
-        ];
+        let pairs = pair!(0, 2, 5, 6);
         let g = Generator::new(pairs);
 
         assert_eq!(
@@ -910,24 +751,7 @@ mod test {
             }
         );
 
-        let pairs = &[
-            Pair::new(0, E),
-            Pair::new(2, E),
-            Pair::new(5, E),
-            Pair::new(6, E),
-            Pair::new(7, E),
-            Pair::new(8, E),
-            Pair::new(9, E),
-            Pair::new(10, E),
-            Pair::new(11, E),
-            Pair::new(12, E),
-            Pair::new(13, E),
-            Pair::new(14, E),
-            Pair::new(15, E),
-            Pair::new(16, E),
-            Pair::new(17, E),
-            Pair::new(18, E),
-        ];
+        let pairs = pair!(0, 2, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18);
         let g = Generator::new(pairs);
 
         assert_eq!(
@@ -943,12 +767,7 @@ mod test {
 
     #[test]
     fn test_1_range_2_escape_c() {
-        let pairs = &[
-            Pair::new(0, E),
-            Pair::new(2, E),
-            Pair::new(3, E),
-            Pair::new(8, E),
-        ];
+        let pairs = pair!(0, 2, 3, 8);
         let g = Generator::new(pairs);
 
         assert_eq!(
@@ -961,26 +780,7 @@ mod test {
             }
         );
 
-        let pairs = &[
-            Pair::new(0, E),
-            Pair::new(2, E),
-            Pair::new(3, E),
-            Pair::new(4, E),
-            Pair::new(5, E),
-            Pair::new(6, E),
-            Pair::new(7, E),
-            Pair::new(8, E),
-            Pair::new(9, E),
-            Pair::new(10, E),
-            Pair::new(11, E),
-            Pair::new(12, E),
-            Pair::new(13, E),
-            Pair::new(14, E),
-            Pair::new(15, E),
-            Pair::new(16, E),
-            Pair::new(17, E),
-            Pair::new(127, E),
-        ];
+        let pairs = pair!(0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 127);
         let g = Generator::new(pairs);
 
         assert_eq!(
