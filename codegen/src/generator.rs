@@ -1,18 +1,19 @@
 use std::collections::BTreeMap;
-use std::fmt::{Display, Write};
 use std::fs;
 use std::path::Path;
 use std::str;
 
-use crate::ranges::{escape_range, Feature, Switch};
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use serde::Serialize;
 use syn::parse::{Parse, ParseBuffer, ParseStream, Parser};
 use syn::punctuated::Punctuated;
 use syn::token::{Bang, Paren};
-use syn::{parenthesized, File, Token};
+use syn::Lit;
+use syn::{parenthesized, Token};
 use toml::Value;
+
+use crate::ranges::{escape_range, Feature, Switch};
 
 #[derive(Serialize)]
 struct Dep {
@@ -116,7 +117,6 @@ impl Ch {
 
 impl Parse for Ch {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        use syn::Lit;
         let lit: &Lit = &input.parse()?;
         let map_err = |_: ()| syn::Error::new(lit.span(), "Only accept ASCII characters");
         Ok(match lit {
@@ -278,6 +278,7 @@ impl<'a> Generator<'a> {
 
     fn write_cfg_if(&self, buf: &mut String) {}
 
+    #[inline]
     fn ch(&self, i: usize) -> u8 {
         self.pairs[i].ch
     }
@@ -374,6 +375,7 @@ impl<'a> Generator<'a> {
         }
     }
 
+    #[inline]
     fn push_1_ranges_2_equals_at_first(&self, f: usize, l: usize, e: usize) -> Switch {
         Switch::ArBC {
             la: self.ch(l + 1),
@@ -383,6 +385,7 @@ impl<'a> Generator<'a> {
         }
     }
 
+    #[inline]
     fn push_1_ranges_2_equals_at_last(&self, f: usize, l: usize, e: usize) -> Switch {
         Switch::ArBC {
             la: self.ch(0),
@@ -392,6 +395,7 @@ impl<'a> Generator<'a> {
         }
     }
 
+    #[inline]
     fn push_1_ranges_2_equals_at_first_last(&self, f: usize, l: usize, e: usize) -> Switch {
         Switch::ArBC {
             la: self.ch(f + 1),
@@ -401,6 +405,7 @@ impl<'a> Generator<'a> {
         }
     }
 
+    #[inline]
     fn push_2_ranges_1_equals(&self, f: usize, l: usize, e: usize) -> Switch {
         Switch::ArBrC {
             la: self.ch(0),
@@ -411,6 +416,7 @@ impl<'a> Generator<'a> {
         }
     }
 
+    #[inline]
     fn push_2_ranges_1_equals_at_first(&self, f: usize, l: usize, e: usize) -> Switch {
         Switch::ArBrC {
             la: self.ch(f + 1),
@@ -421,6 +427,7 @@ impl<'a> Generator<'a> {
         }
     }
 
+    #[inline]
     fn push_2_ranges_1_equals_at_last(&self, f: usize, l: usize, e: usize) -> Switch {
         Switch::ArBrC {
             la: self.ch(0),
@@ -431,6 +438,7 @@ impl<'a> Generator<'a> {
         }
     }
 
+    #[inline]
     fn push_3_ranges(&self, f: usize, l: usize, e: usize) -> Switch {
         Switch::ArBrCr {
             la: self.ch(0),

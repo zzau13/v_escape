@@ -1,4 +1,4 @@
-use proc_macro2::{Span, TokenStream};
+use proc_macro2::TokenStream;
 use quote::quote;
 use syn::Ident;
 
@@ -23,16 +23,20 @@ fn to_str(f: Feature) -> &'static str {
     }
 }
 
+pub trait WriteMask: Fn(&Ident, &Ident) -> TokenStream + Copy {}
+impl<T: Fn(&Ident, &Ident) -> TokenStream + Copy> WriteMask for T {}
+
 #[derive(Copy, Clone)]
-pub struct ArgLoop<'a> {
+pub struct ArgLoop<'a, F: WriteMask> {
     len: &'a Ident,
     ptr: &'a Ident,
     start_ptr: &'a Ident,
     end_ptr: &'a Ident,
     s: Switch,
+    write_mask: F,
 }
 
-fn to_loop(f: Feature, arg: ArgLoop) -> TokenStream {
+fn to_loop<F: WriteMask>(f: Feature, arg: ArgLoop<F>) -> TokenStream {
     match f {
         Avx2 => avx::loop_range_switch_avx2(arg),
         Sse2 => sse::loop_range_switch_sse(arg),
@@ -51,6 +55,8 @@ pub fn escape_range(s: Switch, f: Feature) -> TokenStream {
         end_ptr,
         start_ptr,
         s,
+        // TODO: switch
+        write_mask: |i: &Ident, c: &Ident| quote! {},
     };
     let loops = to_loop(f, arg);
 

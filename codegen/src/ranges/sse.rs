@@ -1,15 +1,17 @@
 use super::ArgLoop;
+use crate::ranges::WriteMask;
 use proc_macro2::TokenStream;
 use quote::quote;
 
-pub fn loop_range_switch_sse(
+pub fn loop_range_switch_sse<F: WriteMask>(
     ArgLoop {
         s,
         len,
         end_ptr,
         start_ptr,
         ptr,
-    }: ArgLoop,
+        write_mask,
+    }: ArgLoop<F>,
 ) -> TokenStream {
     let translations = s.translations_128();
     quote! {
