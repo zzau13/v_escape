@@ -10,7 +10,7 @@ pub use self::switch::Switch;
 use crate::utils::ident;
 
 #[derive(Copy, Clone)]
-enum Feature {
+pub enum Feature {
     Avx2,
     Sse2,
 }
@@ -39,7 +39,7 @@ fn to_loop(f: Feature, arg: ArgLoop) -> TokenStream {
     }
 }
 
-fn escape_range(s: Switch, f: Feature) -> TokenStream {
+pub fn escape_range(s: Switch, f: Feature) -> TokenStream {
     let feature = to_str(f);
     let len = &ident("len");
     let start_ptr = &ident("start_ptr");
@@ -70,7 +70,7 @@ fn escape_range(s: Switch, f: Feature) -> TokenStream {
                 ($callback:path) => {
                     macro_rules! mask_bodies {
                         ($mask:ident, $at:ident, $cur:ident, $ptr:ident) => {
-                            $callback!($T, $Q, $Q_LEN, $at + $cur, *$ptr.add($cur), start, fmt, bytes, $crate::mask_body);
+                            $callback!($T, $Q, $Q_LEN, $at + $cur, *$ptr.add($cur), start, fmt, bytes, crate::mask_body);
 
                             $mask ^= 1 << $cur;
                             if $mask == 0 {
@@ -82,31 +82,31 @@ fn escape_range(s: Switch, f: Feature) -> TokenStream {
                 };
             }
 
-            $crate::mask_bodies_escaping!($($t)+);
+            crate::mask_bodies_escaping!($($t)+);
 
             macro_rules! write_mask {
                 ($mask:ident, $ptr:ident) => {{
-                    let at = $crate::sub!($ptr, #start_ptr);
+                    let at = crate::sub!($ptr, #start_ptr);
                     let mut cur = $mask.trailing_zeros() as usize;
 
                     loop {
                         mask_bodies!($mask, at, cur, $ptr);
                     }
 
-                    debug_assert_eq!(at, $crate::sub!($ptr, start_ptr))
+                    debug_assert_eq!(at, crate::sub!($ptr, start_ptr))
                 }};
             }
 
             macro_rules! write_forward {
                 ($mask: ident, $align:ident) => {{
-                    let at = $crate::sub!(#ptr, #start_ptr);
+                    let at = crate::sub!(#ptr, #start_ptr);
                     let mut cur = $mask.trailing_zeros() as usize;
 
                     while cur < $align {
                         mask_bodies!($mask, at, cur, ptr);
                     }
 
-                    debug_assert_eq!(at, $crate::sub!(#ptr, #start_ptr))
+                    debug_assert_eq!(at, crate::sub!(#ptr, #start_ptr))
                 }};
             }
 
@@ -115,16 +115,16 @@ fn escape_range(s: Switch, f: Feature) -> TokenStream {
                     macro_rules! fallback {
                         () => {
                             while ptr < end_ptr {
-                                $crate::bodies!(
+                                crate::bodies!(
                                     $T,
                                     $Q,
                                     $Q_LEN,
-                                    $crate::sub!(#ptr, #start_ptr),
+                                    crate::sub!(#ptr, #start_ptr),
                                     *ptr,
                                     start,
                                     fmt,
                                     bytes,
-                                    $crate::mask_body
+                                    crate::mask_body
                                 );
                                 ptr = ptr.offset(1);
                             }
@@ -136,16 +136,16 @@ fn escape_range(s: Switch, f: Feature) -> TokenStream {
                         () => {
                             while ptr < end_ptr {
                                 if *ptr == $T {
-                                    $crate::bodies_exact_one!(
+                                    crate::bodies_exact_one!(
                                         $T,
                                         $Q,
                                         $Q_LEN,
-                                        $crate::sub!(#ptr, #start_ptr),
+                                        crate::sub!(#ptr, #start_ptr),
                                         *#ptr,
                                         start,
                                         fmt,
                                         bytes,
-                                        $crate::mask_body
+                                        crate::mask_body
                                     );
                                 }
                                 ptr = ptr.offset(1);
@@ -155,7 +155,7 @@ fn escape_range(s: Switch, f: Feature) -> TokenStream {
                 };
             }
 
-            $crate::fallback_escaping!($($t)+);
+            crate::fallback_escaping!($($t)+);
 
             #loops
             debug_assert!(start <= #len);
