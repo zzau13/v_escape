@@ -4,7 +4,7 @@ use std::fs;
 use std::path::Path;
 use std::str;
 
-use crate::ranges::Switch;
+use crate::ranges::{escape_range, Feature, Switch};
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use serde::Serialize;
@@ -196,7 +196,7 @@ impl<'a> Generator<'a> {
         let mut buf = TokenStream::new();
 
         self.write_static_table(&mut buf);
-        // self.write_functions(&mut buf);
+        self.write_functions(&mut buf);
         // self.write_cfg_if(&mut buf);
 
         buf
@@ -229,112 +229,54 @@ impl<'a> Generator<'a> {
         })
     }
 
-    fn write_functions(&self, buf: &mut String) {
+    fn write_functions(&self, buf: &mut TokenStream) {
         self.write_scalar(buf);
         self.write_ch(buf);
         self.write_ranges(buf);
     }
 
-    fn write_ch(&self, buf: &mut String) {
+    fn write_ch(&self, buf: &mut TokenStream) {
         let code = if self.pairs.len() == 1 {
-            r#"
-                mod chars {
-                    use super::*;
-                    v_escape::escape_char!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
-                    v_escape::escape_char_ptr!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
-                    v_escape::escape_char_bytes!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
-                }
-            "#
         } else {
-            r#"
-                mod chars {
-                    use super::*;
-                    v_escape::escape_char!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
-                    v_escape::escape_char_ptr!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
-                    v_escape::escape_char_bytes!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
-                }
-            "#
         };
-        buf.push_str(code);
+        buf.extend(quote! {
+            mod chars {
+                use super::*;
+            }
+        })
     }
 
-    fn write_scalar(&self, buf: &mut String) {
+    fn write_scalar(&self, buf: &mut TokenStream) {
         let code = if self.pairs.len() == 1 {
-            r#"
-                mod scalar {
-                    use super::*;
-                    v_escape::escape_scalar!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
-                    v_escape::escape_scalar_ptr!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
-                    v_escape::escape_scalar_bytes!(one V_ESCAPE_CHAR, V_ESCAPE_QUOTES);
-                }
-            "#
         } else {
-            r#"
-                mod scalar {
-                    use super::*;
-                    v_escape::escape_scalar!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
-                    v_escape::escape_scalar_ptr!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
-                    v_escape::escape_scalar_bytes!(V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN);
-                }
-            "#
         };
-        buf.push_str(code);
+        buf.extend(quote! {
+            mod scalar {
+                use super::*;
+            }
+        })
     }
 
-    fn write_ranges(&self, buf: &mut String) {
-        buf.push_str(r#"#[cfg(all(target_arch = "x86_64", not(v_escape_nosimd)))]"#);
-        buf.push_str("mod ranges {");
-
+    fn write_ranges(&self, buf: &mut TokenStream) {
         let ranges = self.calculate_ranges();
+        let mod_avx = escape_range(ranges, Feature::Avx2);
+        let mod_sse = escape_range(ranges, Feature::Sse2);
 
-        for i in &["avx", "sse"] {
-            buf.push_str("pub mod ");
-            buf.push_str(i);
-            buf.push_str(" {");
-            buf.push_str("use super::super::*;");
-            buf.push_str("v_escape::escape_ranges!(");
-            buf.push_str(i);
-            if self.pairs.len() == 1 {
-                buf.push_str("2 (V_ESCAPE_CHAR, V_ESCAPE_QUOTES, V_ESCAPE_LEN) ");
-            } else {
-                buf.push_str("2 (V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN) ");
+        buf.extend(quote! {
+            #[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
+            mod ranges {
+                pub mod avx {
+                    use super::super::*;
+                    #mod_avx
+                }
+                pub mod sse {
+                    use super::super::*;
+                }
             }
-            // self.write_macro_tt(buf, ranges);
-            buf.push_str(");");
-            buf.push_str("v_escape::escape_ranges_ptr!(");
-            buf.push_str(i);
-            if self.pairs.len() == 1 {
-                buf.push_str("2 (V_ESCAPE_CHAR, V_ESCAPE_QUOTES, V_ESCAPE_LEN) ");
-            } else {
-                buf.push_str("2 (V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN) ");
-            }
-            // self.write_macro_tt(buf, ranges);
-            buf.push_str(");");
-            buf.push_str("v_escape::escape_ranges_bytes!(");
-            buf.push_str(i);
-            if self.pairs.len() == 1 {
-                buf.push_str("2 (V_ESCAPE_CHAR, V_ESCAPE_QUOTES, V_ESCAPE_LEN) ");
-            } else {
-                buf.push_str("2 (V_ESCAPE_TABLE, V_ESCAPE_QUOTES, V_ESCAPE_LEN) ");
-            }
-            // self.write_macro_tt(buf, ranges);
-            buf.push_str(");");
-            buf.push('}');
-        }
-        buf.push('}');
+        })
     }
 
     fn write_cfg_if(&self, buf: &mut String) {}
-
-    fn write_macro_tt<T, I>(&self, buf: &mut String, i: I)
-    where
-        T: Display,
-        I: IntoIterator<Item = T>,
-    {
-        for c in i.into_iter() {
-            buf.write_fmt(format_args!("{}, ", c)).unwrap();
-        }
-    }
 
     fn ch(&self, i: usize) -> u8 {
         self.pairs[i].ch

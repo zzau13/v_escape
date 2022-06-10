@@ -112,10 +112,10 @@ pub fn loop_range_switch_avx2(arg: ArgLoop) -> TokenStream {
             debug_assert!(#end_ptr.sub(M256_VECTOR_SIZE) < #ptr);
 
             if #ptr < #end_ptr {
-                let d = M256_VECTOR_SIZE - $crate::sub!(#end_ptr, #ptr);
+                let d = M256_VECTOR_SIZE - crate::sub!(#end_ptr, #ptr);
 
                 let mut mask = ({
-                    debug_assert_eq!(M256_VECTOR_SIZE, $crate::sub!(#end_ptr, #ptr.sub(d)), "Over runs");
+                    debug_assert_eq!(M256_VECTOR_SIZE, crate::sub!(#end_ptr, #ptr.sub(d)), "Over runs");
                     let a = _mm256_loadu_si256(#ptr.sub(d) as *const __m256i);
                     _mm256_movemask_epi8(masking!(a))
                 } as u32).wrapping_shr(d as u32);
