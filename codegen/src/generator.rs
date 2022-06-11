@@ -279,8 +279,8 @@ impl<'a> Generator<'a> {
     fn write_cfg_if(&self, buf: &mut String) {}
 
     #[inline]
-    fn ch(&self, i: usize) -> u8 {
-        self.pairs[i].ch
+    fn ch(&self, i: usize) -> i8 {
+        self.pairs[i].ch as i8
     }
 
     fn calculate_ranges(&self) -> Switch {

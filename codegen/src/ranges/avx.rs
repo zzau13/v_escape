@@ -16,7 +16,9 @@ pub fn loop_range_switch_avx2<F: WriteMask>(arg: ArgLoop<F>) -> TokenStream {
         ptr,
         write_mask,
     } = arg;
-    let translations = s.translations_256();
+    let a = &ident("a");
+    let (translations, masking) = s.translations_256();
+    let masking_a = masking(&quote! { #a });
     let mask = &ident("mask");
     let masked = write_mask(mask, ptr);
 
@@ -33,8 +35,8 @@ pub fn loop_range_switch_avx2<F: WriteMask>(arg: ArgLoop<F>) -> TokenStream {
                 let align = M256_VECTOR_SIZE - (#start_ptr as usize & M256_VECTOR_ALIGN);
                 if align < M256_VECTOR_SIZE {
                     let mut #mask = {
-                        let a = _mm256_loadu_si256(#ptr as *const __m256i);
-                        _mm256_movemask_epi8(masking!(a))
+                        let #a = _mm256_loadu_si256(#ptr as *const __m256i);
+                        _mm256_movemask_epi8(#masking_a)
                     };
 
                     if #mask != 0 {
@@ -48,23 +50,23 @@ pub fn loop_range_switch_avx2<F: WriteMask>(arg: ArgLoop<F>) -> TokenStream {
                 while #ptr <= #end_ptr.sub(LOOP_SIZE) {
                     debug_assert_eq!(0, (#ptr as usize) % M256_VECTOR_SIZE);
                     let cmp_a = {
-                        let a = _mm256_load_si256(#ptr as *const __m256i);
-                        masking!(a)
+                        let #a = _mm256_load_si256(#ptr as *const __m256i);
+                        #masking_a
                     };
 
                     let cmp_b = {
-                        let a = _mm256_load_si256(#ptr.add(M256_VECTOR_SIZE) as *const __m256i);
-                        masking!(a)
+                        let #a = _mm256_load_si256(#ptr.add(M256_VECTOR_SIZE) as *const __m256i);
+                        #masking_a
                     };
 
                     let cmp_c = {
-                        let a = _mm256_load_si256(#ptr.add(M256_VECTOR_SIZE * 2) as *const __m256i);
-                        masking!(a)
+                        let #a = _mm256_load_si256(#ptr.add(M256_VECTOR_SIZE * 2) as *const __m256i);
+                        #masking_a
                     };
 
                     let cmp_d = {
-                        let a = _mm256_load_si256(#ptr.add(M256_VECTOR_SIZE * 3) as *const __m256i);
-                        masking!(a)
+                        let #a = _mm256_load_si256(#ptr.add(M256_VECTOR_SIZE * 3) as *const __m256i);
+                        #masking_a
                     };
 
                     if _mm256_movemask_epi8(_mm256_or_si256(
@@ -104,8 +106,8 @@ pub fn loop_range_switch_avx2<F: WriteMask>(arg: ArgLoop<F>) -> TokenStream {
                 debug_assert_eq!(0, (#ptr as usize) % M256_VECTOR_SIZE);
 
                 let mut #mask = {
-                    let a = _mm256_load_si256(#ptr as *const __m256i);
-                    _mm256_movemask_epi8(masking!(a))
+                    let #a = _mm256_load_si256(#ptr as *const __m256i);
+                    _mm256_movemask_epi8(#masking_a)
                 };
 
                 if #mask != 0 {
@@ -121,8 +123,8 @@ pub fn loop_range_switch_avx2<F: WriteMask>(arg: ArgLoop<F>) -> TokenStream {
 
                 let mut #mask = ({
                     debug_assert_eq!(M256_VECTOR_SIZE, crate::sub!(#end_ptr, #ptr.sub(d)), "Over runs");
-                    let a = _mm256_loadu_si256(#ptr.sub(d) as *const __m256i);
-                    _mm256_movemask_epi8(masking!(a))
+                    let #a = _mm256_loadu_si256(#ptr.sub(d) as *const __m256i);
+                    _mm256_movemask_epi8(#masking_a)
                 } as u32).wrapping_shr(d as u32);
 
                 if #mask != 0 {
