@@ -56,7 +56,18 @@ pub fn escape_range(s: Switch, f: Feature) -> TokenStream {
         start_ptr,
         s,
         // TODO: switch
-        write_mask: |i: &Ident, c: &Ident| quote! {},
+        write_mask: |mask: &Ident, ptr: &Ident| {
+            quote! {
+                let at = crate::sub!(#ptr, #start_ptr);
+                let mut cur = #mask.trailing_zeros() as usize;
+
+                loop {
+                    mask_bodies!(#mask, at, cur, #ptr);
+                }
+
+                debug_assert_eq!(at, #ptr - #start_ptr)
+            }
+        },
     };
     let loops = to_loop(f, arg);
 
@@ -89,19 +100,6 @@ pub fn escape_range(s: Switch, f: Feature) -> TokenStream {
             }
 
             crate::mask_bodies_escaping!($($t)+);
-
-            macro_rules! write_mask {
-                ($mask:ident, $ptr:ident) => {{
-                    let at = crate::sub!($ptr, #start_ptr);
-                    let mut cur = $mask.trailing_zeros() as usize;
-
-                    loop {
-                        mask_bodies!($mask, at, cur, $ptr);
-                    }
-
-                    debug_assert_eq!(at, crate::sub!($ptr, start_ptr))
-                }};
-            }
 
             macro_rules! write_forward {
                 ($mask: ident, $align:ident) => {{

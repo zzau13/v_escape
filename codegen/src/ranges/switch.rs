@@ -5,122 +5,127 @@ use quote::quote;
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Switch {
     A {
-        a: u8,
+        a: i8,
     },
     Ar {
-        la: u8,
-        ra: u8,
+        la: i8,
+        ra: i8,
     },
     AB {
-        a: u8,
-        b: u8,
+        a: i8,
+        b: i8,
     },
     ArB {
-        la: u8,
-        ra: u8,
-        b: u8,
+        la: i8,
+        ra: i8,
+        b: i8,
     },
     ArBr {
-        la: u8,
-        ra: u8,
-        lb: u8,
-        rb: u8,
+        la: i8,
+        ra: i8,
+        lb: i8,
+        rb: i8,
     },
     ABC {
-        a: u8,
-        b: u8,
-        c: u8,
+        a: i8,
+        b: i8,
+        c: i8,
     },
     ArBC {
-        la: u8,
-        ra: u8,
-        b: u8,
-        c: u8,
+        la: i8,
+        ra: i8,
+        b: i8,
+        c: i8,
     },
     ArBrC {
-        la: u8,
-        ra: u8,
-        lb: u8,
-        rb: u8,
-        c: u8,
+        la: i8,
+        ra: i8,
+        lb: i8,
+        rb: i8,
+        c: i8,
     },
     ArBrCr {
-        la: u8,
-        ra: u8,
-        lb: u8,
-        rb: u8,
-        lc: u8,
-        rc: u8,
+        la: i8,
+        ra: i8,
+        lb: i8,
+        rb: i8,
+        lc: i8,
+        rc: i8,
     },
 }
 
 use Switch::*;
 
 impl Switch {
-    pub fn translations_256(&self) -> TokenStream {
+    pub fn translations_256(&self) -> (TokenStream, fn(&TokenStream) -> TokenStream) {
         match *self {
-            ArBC { la, ra, b, c } => quote! {
-                const TRANSLATION_A: i8 = i8::MAX - #ra;
-                const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
-                const B: i8 = #b;
-                const C: i8 = #c;
+            ArBC { la, ra, b, c } => (
+                quote! {
+                    const TRANSLATION_A: i8 = i8::MAX - #ra;
+                    const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
+                    const B: i8 = #b;
+                    const C: i8 = #c;
 
-                let v_translation_a = _mm256_set1_epi8(TRANSLATION_A);
-                let v_below_a = _mm256_set1_epi8(BELOW_A);
-                let v_b = _mm256_set1_epi8(B);
-                let v_c = _mm256_set1_epi8(C);
-
-                macro_rules! masking {
-                    ($a:expr) => {{
+                    let v_translation_a = _mm256_set1_epi8(TRANSLATION_A);
+                    let v_below_a = _mm256_set1_epi8(BELOW_A);
+                    let v_b = _mm256_set1_epi8(B);
+                    let v_c = _mm256_set1_epi8(C);
+                },
+                |a: &TokenStream| {
+                    quote! {
                         _mm256_or_si256(
-                            _mm256_or_si256(_mm256_cmpeq_epi8($a, v_b), _mm256_cmpeq_epi8($a, v_c)),
-                            _mm256_cmpgt_epi8(_mm256_add_epi8($a, v_translation_a), v_below_a),
+                            _mm256_or_si256(_mm256_cmpeq_epi8(#a, v_b), _mm256_cmpeq_epi8(#a, v_c)),
+                            _mm256_cmpgt_epi8(_mm256_add_epi8(#a, v_translation_a), v_below_a),
                         )
-                    }};
-                }
-            },
-            ABC { a, b, c } => quote! {
-                const A: i8 = #a;
-                const B: i8 = #b;
-                const C: i8 = #c;
+                    }
+                },
+            ),
+            ABC { a, b, c } => (
+                quote! {
+                    const A: i8 = #a;
+                    const B: i8 = #b;
+                    const C: i8 = #c;
 
-                let v_a = _mm256_set1_epi8(A);
-                let v_b = _mm256_set1_epi8(B);
-                let v_c = _mm256_set1_epi8(C);
-
-                macro_rules! masking {
-                    ($a:ident) => {{
-                        _mm256_or_si256(
-                            _mm256_or_si256(_mm256_cmpeq_epi8($a, v_a), _mm256_cmpeq_epi8($a, v_b)),
-                            _mm256_cmpeq_epi8($a, v_c),
+                    let v_a = _mm256_set1_epi8(A);
+                    let v_b = _mm256_set1_epi8(B);
+                    let v_c = _mm256_set1_epi8(C);
+                },
+                |a| {
+                    quote! {
+                         _mm256_or_si256(
+                            _mm256_or_si256(_mm256_cmpeq_epi8(#a, v_a), _mm256_cmpeq_epi8(#a, v_b)),
+                            _mm256_cmpeq_epi8(#a, v_c),
                         )
-                    }};
-                }
-            },
-            AB { a, b } => quote! {
-                const A: i8 = $fa;
-                const B: i8 = $fb;
+                    }
+                },
+            ),
+            AB { a, b } => (
+                quote! {
+                    const A: i8 = #a;
+                    const B: i8 = #b;
 
-                let v_a = _mm256_set1_epi8(A);
-                let v_b = _mm256_set1_epi8(B);
+                    let v_a = _mm256_set1_epi8(A);
+                    let v_b = _mm256_set1_epi8(B);
+                },
+                |a| {
+                    quote! {
+                        _mm256_or_si256(_mm256_cmpeq_epi8(#a, v_a), _mm256_cmpeq_epi8(#a, v_b))
+                    }
+                },
+            ),
+            A { a } => (
+                quote! {
+                    const A: i8 = #a;
 
-                macro_rules! masking {
-                    ($a:ident) => {{
-                        _mm256_or_si256(_mm256_cmpeq_epi8($a, v_a), _mm256_cmpeq_epi8($a, v_b))
-                    }};
-                }
-            },
-            A { a } => quote! {
-                const A: i8 = $fa;
+                    let v_a = _mm256_set1_epi8(A);
 
-                let v_a = _mm256_set1_epi8(A);
-
-                macro_rules! masking {
-                    ($a:ident) => {{
-                        _mm256_cmpeq_epi8($a, v_a)
-                    }};
-                }
-            },
+                },
+                |a| {
+                    quote! {
+                        _mm256_cmpeq_epi8(#a, v_a)
+                    }
+                },
+            ),
             ArBrCr {
                 la,
                 ra,
@@ -128,109 +133,114 @@ impl Switch {
                 rb,
                 lc,
                 rc,
-            } => quote! {
-                const TRANSLATION_A: i8 = i8::MAX - #ra;
-                const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
-                const TRANSLATION_B: i8 = i8::MAX - #rb;
-                const BELOW_B: i8 = i8::MAX - (#rb - #lb) - 1;
-                const TRANSLATION_C: i8 = i8::MAX - #rc;
-                const BELOW_C: i8 = i8::MAX - (#rc - #lc) - 1;
+            } => (
+                quote! {
+                    const TRANSLATION_A: i8 = i8::MAX - #ra;
+                    const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
+                    const TRANSLATION_B: i8 = i8::MAX - #rb;
+                    const BELOW_B: i8 = i8::MAX - (#rb - #lb) - 1;
+                    const TRANSLATION_C: i8 = i8::MAX - #rc;
+                    const BELOW_C: i8 = i8::MAX - (#rc - #lc) - 1;
 
-                let v_translation_a = _mm256_set1_epi8(TRANSLATION_A);
-                let v_below_a = _mm256_set1_epi8(BELOW_A);
-                let v_translation_b = _mm256_set1_epi8(TRANSLATION_B);
-                let v_below_b = _mm256_set1_epi8(BELOW_B);
-                let v_translation_c = _mm256_set1_epi8(TRANSLATION_C);
-                let v_below_c = _mm256_set1_epi8(BELOW_C);
-
-                macro_rules! masking {
-                    ($a:expr) => {{
+                    let v_translation_a = _mm256_set1_epi8(TRANSLATION_A);
+                    let v_below_a = _mm256_set1_epi8(BELOW_A);
+                    let v_translation_b = _mm256_set1_epi8(TRANSLATION_B);
+                    let v_below_b = _mm256_set1_epi8(BELOW_B);
+                    let v_translation_c = _mm256_set1_epi8(TRANSLATION_C);
+                    let v_below_c = _mm256_set1_epi8(BELOW_C);
+                },
+                |a| {
+                    quote! {
                         _mm256_or_si256(
                             _mm256_or_si256(
-                                _mm256_cmpgt_epi8(_mm256_add_epi8($a, v_translation_a), v_below_a),
-                                _mm256_cmpgt_epi8(_mm256_add_epi8($a, v_translation_b), v_below_b),
+                                _mm256_cmpgt_epi8(_mm256_add_epi8(#a, v_translation_a), v_below_a),
+                                _mm256_cmpgt_epi8(_mm256_add_epi8(#a, v_translation_b), v_below_b),
                             ),
-                            _mm256_cmpgt_epi8(_mm256_add_epi8($a, v_translation_c), v_below_c),
+                            _mm256_cmpgt_epi8(_mm256_add_epi8(#a, v_translation_c), v_below_c),
                         )
-                    }};
-                }
-            },
-            ArBrC { la, ra, lb, rb, c } => quote! {
-                const TRANSLATION_A: i8 = i8::MAX - #ra;
-                const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
-                const TRANSLATION_B: i8 = i8::MAX - #rb;
-                const BELOW_B: i8 = i8::MAX - (#rb - #lb) - 1;
-                const C: i8 = #c;
+                    }
+                },
+            ),
+            ArBrC { la, ra, lb, rb, c } => (
+                quote! {
+                    const TRANSLATION_A: i8 = i8::MAX - #ra;
+                    const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
+                    const TRANSLATION_B: i8 = i8::MAX - #rb;
+                    const BELOW_B: i8 = i8::MAX - (#rb - #lb) - 1;
+                    const C: i8 = #c;
 
-                let v_translation_a = _mm256_set1_epi8(TRANSLATION_A);
-                let v_below_a = _mm256_set1_epi8(BELOW_A);
-                let v_translation_b = _mm256_set1_epi8(TRANSLATION_B);
-                let v_below_b = _mm256_set1_epi8(BELOW_B);
-                let v_c = _mm256_set1_epi8(C);
-
-                macro_rules! masking {
-                    ($a:expr) => {{
+                    let v_translation_a = _mm256_set1_epi8(TRANSLATION_A);
+                    let v_below_a = _mm256_set1_epi8(BELOW_A);
+                    let v_translation_b = _mm256_set1_epi8(TRANSLATION_B);
+                    let v_below_b = _mm256_set1_epi8(BELOW_B);
+                    let v_c = _mm256_set1_epi8(C);
+                },
+                |a| {
+                    quote! {
                         _mm256_or_si256(
                             _mm256_or_si256(
-                                _mm256_cmpgt_epi8(_mm256_add_epi8($a, v_translation_a), v_below_a),
-                                _mm256_cmpgt_epi8(_mm256_add_epi8($a, v_translation_b), v_below_b),
+                                _mm256_cmpgt_epi8(_mm256_add_epi8(#a, v_translation_a), v_below_a),
+                                _mm256_cmpgt_epi8(_mm256_add_epi8(#a, v_translation_b), v_below_b),
                             ),
-                            _mm256_cmpeq_epi8($a, v_c),
+                            _mm256_cmpeq_epi8(#a, v_c),
                         )
-                    }};
-                }
-            },
-            ArBr { la, ra, lb, rb } => quote! {
-                const TRANSLATION_A: i8 = i8::MAX - #ra;
-                const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
-                const TRANSLATION_B: i8 = i8::MAX - #rb;
-                const BELOW_B: i8 = i8::MAX - (#rb - #lb) - 1;
+                    }
+                },
+            ),
+            ArBr { la, ra, lb, rb } => (
+                quote! {
+                    const TRANSLATION_A: i8 = i8::MAX - #ra;
+                    const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
+                    const TRANSLATION_B: i8 = i8::MAX - #rb;
+                    const BELOW_B: i8 = i8::MAX - (#rb - #lb) - 1;
 
-                let v_translation_a = _mm256_set1_epi8(TRANSLATION_A);
-                let v_below_a = _mm256_set1_epi8(BELOW_A);
-                let v_translation_b = _mm256_set1_epi8(TRANSLATION_B);
-                let v_below_b = _mm256_set1_epi8(BELOW_B);
-
-                macro_rules! masking {
-                    ($a:expr) => {{
+                    let v_translation_a = _mm256_set1_epi8(TRANSLATION_A);
+                    let v_below_a = _mm256_set1_epi8(BELOW_A);
+                    let v_translation_b = _mm256_set1_epi8(TRANSLATION_B);
+                    let v_below_b = _mm256_set1_epi8(BELOW_B);
+                },
+                |a| {
+                    quote! {
                         _mm256_or_si256(
-                            _mm256_cmpgt_epi8(_mm256_add_epi8($a, v_translation_a), v_below_a),
-                            _mm256_cmpgt_epi8(_mm256_add_epi8($a, v_translation_b), v_below_b),
+                            _mm256_cmpgt_epi8(_mm256_add_epi8(#a, v_translation_a), v_below_a),
+                            _mm256_cmpgt_epi8(_mm256_add_epi8(#a, v_translation_b), v_below_b),
                         )
-                    }};
-                }
-            },
-            ArB { la, ra, b } => quote! {
-                const TRANSLATION_A: i8 = i8::MAX - #ra;
-                const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
-                const B: i8 = #b;
+                    }
+                },
+            ),
+            ArB { la, ra, b } => (
+                quote! {
+                    const TRANSLATION_A: i8 = i8::MAX - #ra;
+                    const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
+                    const B: i8 = #b;
 
-                let v_translation_a = _mm256_set1_epi8(TRANSLATION_A);
-                let v_below_a = _mm256_set1_epi8(BELOW_A);
-                let v_b = _mm256_set1_epi8(B);
-
-                macro_rules! masking {
-                    ($a:expr) => {{
+                    let v_translation_a = _mm256_set1_epi8(TRANSLATION_A);
+                    let v_below_a = _mm256_set1_epi8(BELOW_A);
+                    let v_b = _mm256_set1_epi8(B);
+                },
+                |a| {
+                    quote! {
                         _mm256_or_si256(
-                            _mm256_cmpgt_epi8(_mm256_add_epi8($a, v_translation_a), v_below_a),
-                            _mm256_cmpeq_epi8($a, v_b),
+                            _mm256_cmpgt_epi8(_mm256_add_epi8(#a, v_translation_a), v_below_a),
+                            _mm256_cmpeq_epi8(#a, v_b),
                         )
-                    }};
-                }
-            },
-            Ar { la, ra } => quote! {
-                const TRANSLATION_A: i8 = i8::MAX - #ra;
-                const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
+                    }
+                },
+            ),
+            Ar { la, ra } => (
+                quote! {
+                    const TRANSLATION_A: i8 = i8::MAX - #ra;
+                    const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
 
-                let v_translation_a = _mm256_set1_epi8(TRANSLATION_A);
-                let v_below_a = _mm256_set1_epi8(BELOW_A);
-
-                macro_rules! masking {
-                    ($a:expr) => {{
-                        _mm256_cmpgt_epi8(_mm256_add_epi8($a, v_translation_a), v_below_a)
-                    }};
-                }
-            },
+                    let v_translation_a = _mm256_set1_epi8(TRANSLATION_A);
+                    let v_below_a = _mm256_set1_epi8(BELOW_A);
+                },
+                |a| {
+                    quote! {
+                        _mm256_cmpgt_epi8(_mm256_add_epi8(#a, v_translation_a), v_below_a)
+                    }
+                },
+            ),
         }
     }
 
