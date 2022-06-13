@@ -1,4 +1,4 @@
-use proc_macro2::TokenStream;
+use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 
 #[allow(clippy::upper_case_acronyms)]
@@ -57,7 +57,7 @@ pub enum Switch {
 use Switch::*;
 
 impl Switch {
-    pub fn translations_256(&self) -> (TokenStream, fn(&TokenStream) -> TokenStream) {
+    pub fn translations_avx(&self) -> (TokenStream, fn(&Ident) -> TokenStream) {
         match *self {
             ArBC { la, ra, b, c } => (
                 quote! {
@@ -71,7 +71,7 @@ impl Switch {
                     let v_b = _mm256_set1_epi8(B);
                     let v_c = _mm256_set1_epi8(C);
                 },
-                |a: &TokenStream| {
+                |a: &Ident| {
                     quote! {
                         _mm256_or_si256(
                             _mm256_or_si256(_mm256_cmpeq_epi8(#a, v_b), _mm256_cmpeq_epi8(#a, v_c)),

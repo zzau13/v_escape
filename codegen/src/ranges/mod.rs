@@ -2,12 +2,12 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::Ident;
 
+pub use self::switch::Switch;
+use crate::utils::ident;
+
 mod avx;
 mod sse;
 mod switch;
-
-pub use self::switch::Switch;
-use crate::utils::ident;
 
 #[derive(Copy, Clone)]
 pub enum Feature {
@@ -15,13 +15,6 @@ pub enum Feature {
     Sse2,
 }
 use Feature::*;
-
-fn to_str(f: Feature) -> &'static str {
-    match f {
-        Avx2 => "avx2",
-        Sse2 => "sse2",
-    }
-}
 
 pub trait WriteMask: Fn(&Ident, &Ident) -> TokenStream + Copy {}
 impl<T: Fn(&Ident, &Ident) -> TokenStream + Copy> WriteMask for T {}
@@ -36,15 +29,16 @@ pub struct ArgLoop<'a, F: WriteMask> {
     write_mask: F,
 }
 
-fn to_loop<F: WriteMask>(f: Feature, arg: ArgLoop<F>) -> TokenStream {
-    match f {
-        Avx2 => avx::loop_range_switch_avx2(arg),
-        Sse2 => sse::loop_range_switch_sse(arg),
+impl Feature {
+    fn to_impl<F: WriteMask>(self, arg: ArgLoop<F>) -> (&'static str, TokenStream) {
+        match self {
+            Avx2 => ("avx2", avx::loop_avx2(arg)),
+            Sse2 => ("sse2", sse::loop_range_switch_sse(arg)),
+        }
     }
 }
 
 pub fn escape_range(s: Switch, f: Feature) -> TokenStream {
-    let feature = to_str(f);
     let len = &ident("len");
     let start_ptr = &ident("start_ptr");
     let end_ptr = &ident("end_ptr");
@@ -55,7 +49,6 @@ pub fn escape_range(s: Switch, f: Feature) -> TokenStream {
         end_ptr,
         start_ptr,
         s,
-        // TODO: switch
         write_mask: |mask: &Ident, ptr: &Ident| {
             quote! {
                 let at = crate::sub!(#ptr, #start_ptr);
@@ -69,7 +62,7 @@ pub fn escape_range(s: Switch, f: Feature) -> TokenStream {
             }
         },
     };
-    let loops = to_loop(f, arg);
+    let (feature, loops) = f.to_impl(arg);
 
     quote! {
         #[inline]
