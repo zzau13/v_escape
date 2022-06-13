@@ -6,7 +6,7 @@ use crate::utils::ident;
 
 use super::ArgLoop;
 
-pub fn loop_range_switch_avx2<F: WriteMask>(arg: ArgLoop<F>) -> TokenStream {
+pub fn loop_avx2<F: WriteMask>(arg: ArgLoop<F>) -> TokenStream {
     let sse = sse::loop_range_switch_sse(arg);
     let ArgLoop {
         s,
@@ -17,10 +17,10 @@ pub fn loop_range_switch_avx2<F: WriteMask>(arg: ArgLoop<F>) -> TokenStream {
         write_mask,
     } = arg;
     let a = &ident("a");
-    let (translations, masking) = s.translations_256();
-    let masking_a = masking(&quote! { #a });
+    let (ref translations, masking) = s.translations_avx();
+    let masking_a = &masking(a);
     let mask = &ident("mask");
-    let masked = write_mask(mask, ptr);
+    let masked = &write_mask(mask, ptr);
 
     quote! {
         const M256_VECTOR_SIZE: usize = std::mem::size_of::<__m256i>();
