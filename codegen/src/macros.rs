@@ -1,6 +1,7 @@
-use crate::utils::ident;
 use proc_macro2::{Ident, TokenStream};
-use quote::quote;
+use quote::{quote, ToTokens};
+
+use crate::utils::ident;
 
 fn index(a: &Ident, b: &TokenStream) -> TokenStream {
     quote! { *#a.as_ptr().add(#b) }
@@ -104,8 +105,8 @@ pub fn bodies<F: CB>(
     }
 }
 
-fn escape_body_bytes(
-    i: &Ident,
+pub fn escape_body_bytes(
+    i: &TokenStream,
     BodyArg {
         start,
         fmt,
@@ -113,28 +114,30 @@ fn escape_body_bytes(
         quote,
     }: BodyArg,
 ) -> TokenStream {
-    let write_1 = write_bytes(&quote! { &#bytes[#start..#i] }, fmt);
+    let var = &ident("i");
+    let write_1 = write_bytes(&quote! { &#bytes[#start..#var] }, fmt);
     let write_2 = write_bytes(&quote! { #quote.as_bytes() }, fmt);
     quote! {
-        if #start < #i {
+        let #var = #i;
+        if #start < #var {
             #write_1
         }
         #write_2
 
-        #start = #i + 1;
+        #start = #var + 1;
     }
 }
 
 fn mask_body_bytes(i: &TokenStream, arg: BodyArg) -> TokenStream {
     let var = &ident("i");
-    let body = escape_body_bytes(var, arg);
+    let body = escape_body_bytes(&var.to_token_stream(), arg);
     quote! {
         let #var = #i;
         #body
     }
 }
 
-fn write_bytes(bytes: &TokenStream, buf: &Ident) -> TokenStream {
+pub fn write_bytes(bytes: &TokenStream, buf: &Ident) -> TokenStream {
     quote! {
         #buf.extend_from_slice(#bytes);
     }

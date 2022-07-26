@@ -14,7 +14,7 @@ use syn::{parenthesized, Token};
 use toml::Value;
 
 use crate::ranges::{escape_range, Feature, Switch};
-use crate::scalar::{escape_scalar, ArgScalar};
+use crate::scalar::{escape_scalar, escape_scalar_bytes, ArgScalar};
 use crate::utils::ident;
 
 #[derive(Serialize)]
@@ -269,6 +269,7 @@ impl<'a> Generator<'a> {
         let end_ptr = &ident("end_ptr");
         let bytes = &ident("bytes");
         let fmt = &ident("fmt");
+        let len = &ident("len");
         let start = &ident("start");
         let body = escape_scalar(
             ArgScalar {
@@ -278,6 +279,21 @@ impl<'a> Generator<'a> {
                 fmt,
                 start_ptr,
                 start,
+                len,
+                s,
+            },
+            table,
+        );
+
+        let body_bytes = escape_scalar_bytes(
+            ArgScalar {
+                ptr,
+                end_ptr,
+                bytes,
+                fmt,
+                start_ptr,
+                start,
+                len,
                 s,
             },
             table,
@@ -287,13 +303,23 @@ impl<'a> Generator<'a> {
             mod scalar {
                 use super::*;
                 pub unsafe fn escape(#bytes: &[u8], #fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
-                    let len = #bytes.len();
+                    let #len = #bytes.len();
                     let #start_ptr = #bytes.as_ptr();
                     let #end_ptr = #bytes[len..].as_ptr();
                     let mut #ptr = #start_ptr;
                     let mut #start = 0;
                     #body
                     Ok(())
+                }
+
+                #[cfg(features = "bytes-buf")]
+                pub unsafe fn b_escape<B: buf_min::Buffer>(#bytes: &[u8], #fmt: &mut B) {
+                    let #len = #bytes.len();
+                    let #start_ptr = #bytes.as_ptr();
+                    let #end_ptr = #bytes[len..].as_ptr();
+                    let mut #ptr = #start_ptr;
+                    let mut #start = 0;
+                    #body_bytes
                 }
             }
         });
