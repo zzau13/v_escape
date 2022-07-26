@@ -3,6 +3,7 @@ use std::fs;
 use std::path::Path;
 use std::str;
 
+use crate::functions::escape_new;
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use serde::Serialize;
@@ -13,6 +14,7 @@ use syn::Lit;
 use syn::{parenthesized, Token};
 use toml::Value;
 
+use crate::build::build_file;
 use crate::ranges::{escape_range, escape_range_bytes, Feature, Switch};
 use crate::scalar::{escape_scalar, escape_scalar_bytes, ArgScalar};
 use crate::tests::build_tests;
@@ -40,7 +42,7 @@ pub fn generate<P: AsRef<Path>>(dir: P) {
         .insert(
             "buf-min".into(),
             Value::try_from(Dep {
-                version: "",
+                version: "^0.6.1",
                 optional: true,
             })
             .unwrap(),
@@ -63,26 +65,35 @@ pub fn generate<P: AsRef<Path>>(dir: P) {
         .as_str()
         .unwrap();
     let src = dir.join("src");
-    let _test = dir.join("tests");
+    let test = dir.join("tests");
+    if !test.exists() {
+        fs::create_dir(&test).unwrap();
+    }
     let template = src.join("_lib.rs");
     let template_src =
         fs::read_to_string(&template).expect("read template `[INPUT_DIR]/src/_lib.rs`");
     let pairs = parse_template(&template_src);
-    let code = Generator::new(&pairs).build();
+    let mut code = Generator::new(&pairs).build();
+    let name = heck::AsPascalCase(package_name).to_string();
+    let struct_name = &ident(&name);
+    let name = &ident(package_name);
+    code.extend(escape_new(struct_name));
     let code_pretty = prettyplease::unparse(&syn::parse2(code).unwrap());
-    let package_name = heck::AsPascalCase(package_name).to_string();
     let escapes = String::from_utf8(pairs.iter().map(|x| x.ch).collect::<Vec<u8>>()).unwrap();
     let escaped = pairs
         .iter()
         .map(|x| x.quote.as_str())
         .collect::<Vec<&str>>()
         .join("");
-    let code_test = build_tests(&ident(&package_name), escapes, escaped);
+    let code_test = build_tests(name, struct_name, escapes, escaped);
     let code_test_pretty = prettyplease::unparse(&syn::parse2(code_test).unwrap());
-    println!("{}", code_test_pretty);
-    eprintln!("{}", code_pretty);
+    let code_build = build_file();
+    let code_build_pretty = prettyplease::unparse(&syn::parse2(code_build).unwrap());
 
-    // fs::write(&cargo, toml::to_string_pretty(&cargo_value).unwrap()).unwrap();
+    fs::write(&cargo, toml::to_string_pretty(&cargo_value).unwrap()).unwrap();
+    fs::write(src.join("lib.rs"), code_pretty).unwrap();
+    fs::write(test.join("lib.rs"), code_test_pretty).unwrap();
+    fs::write(dir.join("build.rs"), code_build_pretty).unwrap();
 }
 
 fn parse_template(s: &str) -> Vec<Pair> {
@@ -212,7 +223,6 @@ impl<'a> Generator<'a> {
         let tables = &self.write_static_table(&mut buf);
         self.write_utils(&mut buf);
         self.write_functions(tables, &mut buf);
-        // self.write_cfg_if(&mut buf);
 
         buf
     }
@@ -263,15 +273,6 @@ impl<'a> Generator<'a> {
         let switch = self.calculate_ranges();
         self.write_scalar(switch, tables, buf);
         self.write_ranges(switch, tables, buf)
-        // self.write_ch(buf);
-    }
-
-    fn write_ch(&self, buf: &mut TokenStream) {
-        buf.extend(quote! {
-            mod chars {
-                use super::*;
-            }
-        })
     }
 
     fn write_scalar(&self, s: Switch, table: &Tables, buf: &mut TokenStream) {
@@ -358,8 +359,6 @@ impl<'a> Generator<'a> {
             }
         })
     }
-
-    fn write_cfg_if(&self, _buf: &mut String) {}
 
     #[inline]
     fn ch(&self, i: usize) -> i8 {
