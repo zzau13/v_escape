@@ -41,7 +41,7 @@ fn tests() {
     assert_eq!(escape(&empty_heap).to_string(), empty);
     assert_eq!(escape(&cow).to_string(), escaped);
     assert_eq!(escape(&string).to_string(), escaped);
-    assert_eq!(escape(&utf8).to_string(), utf8);
+    assert_eq!(escape(utf8).to_string(), utf8);
     assert_eq!(VJsonescape::from(string_long).to_string(), string_long);
     assert_eq!(
         VJsonescape::from(escapes.repeat(1024).as_ref()).to_string(),
