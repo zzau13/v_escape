@@ -15,6 +15,7 @@ use syn::{parenthesized, Token};
 use toml::Value;
 
 use crate::build::build_file;
+use crate::macros::write_bytes;
 use crate::ranges::{escape_range, escape_range_bytes, Feature, Switch};
 use crate::scalar::{escape_scalar, escape_scalar_bytes, ArgScalar};
 use crate::tests::build_tests;
@@ -291,7 +292,6 @@ impl<'a> Generator<'a> {
                 fmt,
                 start_ptr,
                 start,
-                len,
                 s,
             },
             table,
@@ -305,12 +305,12 @@ impl<'a> Generator<'a> {
                 fmt,
                 start_ptr,
                 start,
-                len,
                 s,
             },
             table,
         );
 
+        let write_1 = write_bytes(&quote! { &#bytes[#start..] }, fmt);
         buf.extend(quote! {
             mod scalar {
                 use super::*;
@@ -321,10 +321,14 @@ impl<'a> Generator<'a> {
                     let mut #ptr = #start_ptr;
                     let mut #start = 0;
                     #body
+                    debug_assert!(start <= len);
+                    if start < len {
+                        fmt.write_str(std::str::from_utf8_unchecked(&bytes[start..len]))?;
+                    }
                     Ok(())
                 }
 
-                #[cfg(features = "bytes-buf")]
+                #[cfg(feature = "bytes-buf")]
                 pub unsafe fn b_escape<B: buf_min::Buffer>(#bytes: &[u8], #fmt: &mut B) {
                     let #len = #bytes.len();
                     let #start_ptr = #bytes.as_ptr();
@@ -332,6 +336,10 @@ impl<'a> Generator<'a> {
                     let mut #ptr = #start_ptr;
                     let mut #start = 0;
                     #body_bytes
+                    debug_assert!(#start <= #len);
+                    if #start < #len {
+                        #write_1
+                    }
                 }
             }
         });
@@ -345,7 +353,7 @@ impl<'a> Generator<'a> {
 
         buf.extend(quote! {
             #[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
-            mod ranges {
+            pub mod ranges {
                 pub mod avx {
                     use super::super::*;
                     #mod_avx

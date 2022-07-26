@@ -36,12 +36,19 @@ fn tests() {
         "\0\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\t\n\u{b}\u{c}\r\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f}\"\\"
             .to_string(),
     );
+    #[cfg(feature = "bytes-buf")]
+    {
+        use v_jsonescape::b_escape;
+        let mut buf = String::new();
+        b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
+        assert_eq!(buf, [short, escaped, short].join(""));
+    }
     assert_eq!(VJsonescape::from(empty).to_string(), empty);
     assert_eq!(VJsonescape::from(escapes).to_string(), escaped);
     assert_eq!(escape(&empty_heap).to_string(), empty);
     assert_eq!(escape(&cow).to_string(), escaped);
     assert_eq!(escape(&string).to_string(), escaped);
-    assert_eq!(escape(utf8).to_string(), utf8);
+    assert_eq!(escape(&utf8).to_string(), utf8);
     assert_eq!(VJsonescape::from(string_long).to_string(), string_long);
     assert_eq!(
         VJsonescape::from(escapes.repeat(1024).as_ref()).to_string(),

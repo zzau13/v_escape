@@ -30,12 +30,19 @@ fn tests() {
     let string_long: &str = &short.repeat(1024);
     let string = "#$%&\\^_{}~".to_string();
     let cow = Cow::Owned("#$%&\\^_{}~".to_string());
+    #[cfg(feature = "bytes-buf")]
+    {
+        use v_latexescape::b_escape;
+        let mut buf = String::new();
+        b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
+        assert_eq!(buf, [short, escaped, short].join(""));
+    }
     assert_eq!(VLatexescape::from(empty).to_string(), empty);
     assert_eq!(VLatexescape::from(escapes).to_string(), escaped);
     assert_eq!(escape(&empty_heap).to_string(), empty);
     assert_eq!(escape(&cow).to_string(), escaped);
     assert_eq!(escape(&string).to_string(), escaped);
-    assert_eq!(escape(utf8).to_string(), utf8);
+    assert_eq!(escape(&utf8).to_string(), utf8);
     assert_eq!(VLatexescape::from(string_long).to_string(), string_long);
     assert_eq!(
         VLatexescape::from(escapes.repeat(1024).as_ref()).to_string(),

@@ -31,7 +31,6 @@ pub fn loop_sse<WM: WriteMask, WF: WriteMask, F: Fallback>(
 
         if #len < M128_VECTOR_SIZE {
             #fall
-            return Ok(())
         } else {
             #translations
             {

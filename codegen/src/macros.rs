@@ -116,7 +116,7 @@ pub fn escape_body_bytes(
 ) -> TokenStream {
     let var = &ident("i");
     let write_1 = write_bytes(&quote! { &#bytes[#start..#var] }, fmt);
-    let write_2 = write_bytes(&quote! { #quote.as_bytes() }, fmt);
+    let write_2 = write_bytes(&quote! { ( #quote ).as_bytes() }, fmt);
     quote! {
         let #var = #i;
         if #start < #var {

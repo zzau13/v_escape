@@ -40,7 +40,13 @@ pub fn build_tests(package: &Ident, name: &Ident, escapes: String, escaped: Stri
     let string_long: &str = &short.repeat(1024);
     let string = #escapes.to_string();
     let cow = Cow::Owned(#escapes.to_string());
-
+    #[cfg(feature = "bytes-buf")]
+    {
+        use #package::b_escape;
+        let mut buf = String::new();
+        b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
+        assert_eq!(buf, [short, escaped, short].join(""));
+    }
     assert_eq!(#name::from(empty).to_string(), empty);
     assert_eq!(#name::from(escapes).to_string(), escaped);
     assert_eq!(escape(&empty_heap).to_string(), empty);

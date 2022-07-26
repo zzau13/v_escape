@@ -54,10 +54,13 @@ mod scalar {
             }
             ptr = ptr.offset(1);
         }
-        fmt.write_str(std::str::from_utf8_unchecked(&bytes[start..]))?;
+        debug_assert!(start <= len);
+        if start < len {
+            fmt.write_str(std::str::from_utf8_unchecked(&bytes[start..len]))?;
+        }
         Ok(())
     }
-    #[cfg(features = "bytes-buf")]
+    #[cfg(feature = "bytes-buf")]
     pub unsafe fn b_escape<B: buf_min::Buffer>(bytes: &[u8], fmt: &mut B) {
         let len = bytes.len();
         let start_ptr = bytes.as_ptr();
@@ -71,7 +74,7 @@ mod scalar {
                 if start < i {
                     fmt.extend_from_slice(&bytes[start..i]);
                 }
-                fmt.extend_from_slice(*V_ESCAPE_QUOTES.as_ptr().add(c as usize).as_bytes());
+                fmt.extend_from_slice((*V_ESCAPE_QUOTES.as_ptr().add(c as usize)).as_bytes());
                 start = i + 1;
             }
             ptr = ptr.offset(1);
@@ -83,7 +86,7 @@ mod scalar {
     }
 }
 #[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
-mod ranges {
+pub mod ranges {
     pub mod avx {
         use super::super::*;
         #[target_feature(enable = "avx2")]
@@ -115,8 +118,6 @@ mod ranges {
                         }
                         ptr = ptr.offset(1);
                     }
-                    fmt.write_str(std::str::from_utf8_unchecked(&bytes[start..]))?;
-                    return Ok(());
                 } else {
                     const TRANSLATION_A: i8 = i8::MAX - 38i8;
                     const BELOW_A: i8 = i8::MAX - (38i8 - 35i8) - 1;
@@ -579,7 +580,7 @@ mod ranges {
             }
             Ok(())
         }
-        #[cfg(features = "bytes-buf")]
+        #[cfg(feature = "bytes-buf")]
         #[target_feature(enable = "avx2")]
         pub unsafe fn b_escape<B: buf_min::Buffer>(bytes: &[u8], fmt: &mut B) {
             #[cfg(target_arch = "x86")]
@@ -605,17 +606,12 @@ mod ranges {
                                 fmt.extend_from_slice(&bytes[start..i]);
                             }
                             fmt.extend_from_slice(
-                                *V_ESCAPE_QUOTES.as_ptr().add(c as usize).as_bytes(),
+                                (*V_ESCAPE_QUOTES.as_ptr().add(c as usize)).as_bytes(),
                             );
                             start = i + 1;
                         }
                         ptr = ptr.offset(1);
                     }
-                    debug_assert!(start <= len);
-                    if start < len {
-                        fmt.extend_from_slice(&bytes[start..]);
-                    }
-                    return Ok(());
                 } else {
                     const TRANSLATION_A: i8 = i8::MAX - 38i8;
                     const BELOW_A: i8 = i8::MAX - (38i8 - 35i8) - 1;
@@ -655,7 +651,7 @@ mod ranges {
                                             fmt.extend_from_slice(&bytes[start..i]);
                                         }
                                         fmt.extend_from_slice(
-                                            *V_ESCAPE_QUOTES.as_ptr().add(c as usize).as_bytes(),
+                                            (*V_ESCAPE_QUOTES.as_ptr().add(c as usize)).as_bytes(),
                                         );
                                         start = i + 1;
                                     }
@@ -695,7 +691,7 @@ mod ranges {
                                         fmt.extend_from_slice(&bytes[start..i]);
                                     }
                                     fmt.extend_from_slice(
-                                        *V_ESCAPE_QUOTES.as_ptr().add(c as usize).as_bytes(),
+                                        (*V_ESCAPE_QUOTES.as_ptr().add(c as usize)).as_bytes(),
                                     );
                                     start = i + 1;
                                 }
@@ -737,7 +733,7 @@ mod ranges {
                                         fmt.extend_from_slice(&bytes[start..i]);
                                     }
                                     fmt.extend_from_slice(
-                                        *V_ESCAPE_QUOTES.as_ptr().add(c as usize).as_bytes(),
+                                        (*V_ESCAPE_QUOTES.as_ptr().add(c as usize)).as_bytes(),
                                     );
                                     start = i + 1;
                                 }
@@ -797,7 +793,7 @@ mod ranges {
                                         fmt.extend_from_slice(&bytes[start..i]);
                                     }
                                     fmt.extend_from_slice(
-                                        *V_ESCAPE_QUOTES.as_ptr().add(c as usize).as_bytes(),
+                                        (*V_ESCAPE_QUOTES.as_ptr().add(c as usize)).as_bytes(),
                                     );
                                     start = i + 1;
                                 }
@@ -900,7 +896,7 @@ mod ranges {
                                             fmt.extend_from_slice(&bytes[start..i]);
                                         }
                                         fmt.extend_from_slice(
-                                            *V_ESCAPE_QUOTES.as_ptr().add(c as usize).as_bytes(),
+                                            (*V_ESCAPE_QUOTES.as_ptr().add(c as usize)).as_bytes(),
                                         );
                                         start = i + 1;
                                     }
@@ -927,7 +923,7 @@ mod ranges {
                                             fmt.extend_from_slice(&bytes[start..i]);
                                         }
                                         fmt.extend_from_slice(
-                                            *V_ESCAPE_QUOTES.as_ptr().add(c as usize).as_bytes(),
+                                            (*V_ESCAPE_QUOTES.as_ptr().add(c as usize)).as_bytes(),
                                         );
                                         start = i + 1;
                                     }
@@ -954,7 +950,7 @@ mod ranges {
                                             fmt.extend_from_slice(&bytes[start..i]);
                                         }
                                         fmt.extend_from_slice(
-                                            *V_ESCAPE_QUOTES.as_ptr().add(c as usize).as_bytes(),
+                                            (*V_ESCAPE_QUOTES.as_ptr().add(c as usize)).as_bytes(),
                                         );
                                         start = i + 1;
                                     }
@@ -981,7 +977,7 @@ mod ranges {
                                             fmt.extend_from_slice(&bytes[start..i]);
                                         }
                                         fmt.extend_from_slice(
-                                            *V_ESCAPE_QUOTES.as_ptr().add(c as usize).as_bytes(),
+                                            (*V_ESCAPE_QUOTES.as_ptr().add(c as usize)).as_bytes(),
                                         );
                                         start = i + 1;
                                     }
@@ -1021,7 +1017,7 @@ mod ranges {
                                     fmt.extend_from_slice(&bytes[start..i]);
                                 }
                                 fmt.extend_from_slice(
-                                    *V_ESCAPE_QUOTES.as_ptr().add(c as usize).as_bytes(),
+                                    (*V_ESCAPE_QUOTES.as_ptr().add(c as usize)).as_bytes(),
                                 );
                                 start = i + 1;
                             }
@@ -1062,7 +1058,7 @@ mod ranges {
                                     fmt.extend_from_slice(&bytes[start..i]);
                                 }
                                 fmt.extend_from_slice(
-                                    *V_ESCAPE_QUOTES.as_ptr().add(c as usize).as_bytes(),
+                                    (*V_ESCAPE_QUOTES.as_ptr().add(c as usize)).as_bytes(),
                                 );
                                 start = i + 1;
                             }
@@ -1110,8 +1106,6 @@ mod ranges {
                     }
                     ptr = ptr.offset(1);
                 }
-                fmt.write_str(std::str::from_utf8_unchecked(&bytes[start..]))?;
-                return Ok(());
             } else {
                 const TRANSLATION_A: i8 = i8::MAX - 38i8;
                 const BELOW_A: i8 = i8::MAX - (38i8 - 35i8) - 1;
@@ -1247,7 +1241,7 @@ mod ranges {
             }
             Ok(())
         }
-        #[cfg(features = "bytes-buf")]
+        #[cfg(feature = "bytes-buf")]
         #[target_feature(enable = "sse2")]
         pub unsafe fn b_escape<B: buf_min::Buffer>(bytes: &[u8], fmt: &mut B) {
             #[cfg(target_arch = "x86")]
@@ -1269,16 +1263,13 @@ mod ranges {
                         if start < i {
                             fmt.extend_from_slice(&bytes[start..i]);
                         }
-                        fmt.extend_from_slice(*V_ESCAPE_QUOTES.as_ptr().add(c as usize).as_bytes());
+                        fmt.extend_from_slice(
+                            (*V_ESCAPE_QUOTES.as_ptr().add(c as usize)).as_bytes(),
+                        );
                         start = i + 1;
                     }
                     ptr = ptr.offset(1);
                 }
-                debug_assert!(start <= len);
-                if start < len {
-                    fmt.extend_from_slice(&bytes[start..]);
-                }
-                return Ok(());
             } else {
                 const TRANSLATION_A: i8 = i8::MAX - 38i8;
                 const BELOW_A: i8 = i8::MAX - (38i8 - 35i8) - 1;
@@ -1318,7 +1309,7 @@ mod ranges {
                                         fmt.extend_from_slice(&bytes[start..i]);
                                     }
                                     fmt.extend_from_slice(
-                                        *V_ESCAPE_QUOTES.as_ptr().add(c as usize).as_bytes(),
+                                        (*V_ESCAPE_QUOTES.as_ptr().add(c as usize)).as_bytes(),
                                     );
                                     start = i + 1;
                                 }
@@ -1357,7 +1348,7 @@ mod ranges {
                                     fmt.extend_from_slice(&bytes[start..i]);
                                 }
                                 fmt.extend_from_slice(
-                                    *V_ESCAPE_QUOTES.as_ptr().add(c as usize).as_bytes(),
+                                    (*V_ESCAPE_QUOTES.as_ptr().add(c as usize)).as_bytes(),
                                 );
                                 start = i + 1;
                             }
@@ -1398,7 +1389,7 @@ mod ranges {
                                     fmt.extend_from_slice(&bytes[start..i]);
                                 }
                                 fmt.extend_from_slice(
-                                    *V_ESCAPE_QUOTES.as_ptr().add(c as usize).as_bytes(),
+                                    (*V_ESCAPE_QUOTES.as_ptr().add(c as usize)).as_bytes(),
                                 );
                                 start = i + 1;
                             }
@@ -1455,7 +1446,7 @@ impl<'a> std::fmt::Display for VLatexescape<'a> {
 /// Because not exist way to build multiple static allocations by type
 /// And it's very expensive check it in runtime
 /// https://github.com/rust-lang/rust/issues/57775
-#[cfg(features = "bytes-buf")]
+#[cfg(feature = "bytes-buf")]
 #[inline]
 pub fn b_escape<B: buf_min::Buffer>(s: &[u8], buf: &mut B) {
     #[allow(unused_unsafe)]
@@ -1496,7 +1487,7 @@ fn _escape(bytes: &[u8], fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
     scalar::escape(bytes, fmt)
 }
 #[inline(always)]
-#[cfg(features = "bytes-buf")]
+#[cfg(feature = "bytes-buf")]
 #[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
 pub unsafe fn _b_escape<B: buf_min::Buffer>(bytes: &[u8], buf: &mut B) {
     #[cfg(not(v_escape_avx))]
@@ -1516,7 +1507,7 @@ pub unsafe fn _b_escape<B: buf_min::Buffer>(bytes: &[u8], buf: &mut B) {
     }
 }
 #[inline(always)]
-#[cfg(features = "bytes-buf")]
+#[cfg(feature = "bytes-buf")]
 #[cfg(not(any(target_arch = "x86_64", target_arch = "x86")))]
 pub unsafe fn _b_escape<B: buf_min::Buffer>(bytes: &[u8], buf: &mut B) {
     scalar::b_escape(bytes, buf)

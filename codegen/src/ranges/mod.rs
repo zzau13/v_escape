@@ -94,7 +94,6 @@ pub fn escape_range(s: Switch, tables: &Tables, f: Feature) -> TokenStream {
                 fmt,
                 start_ptr,
                 start,
-                len,
                 s,
             },
             tables,
@@ -204,7 +203,6 @@ pub fn escape_range_bytes(s: Switch, tables: &Tables, f: Feature) -> TokenStream
                 fmt,
                 start_ptr,
                 start,
-                len,
                 s,
             },
             tables,
@@ -247,7 +245,7 @@ pub fn escape_range_bytes(s: Switch, tables: &Tables, f: Feature) -> TokenStream
     let (feature, loops) = f.to_impl(arg);
     let write_1 = write_bytes(&quote! { &#bytes[#start..] }, fmt);
     quote! {
-        #[cfg(features = "bytes-buf")]
+        #[cfg(feature = "bytes-buf")]
         #[target_feature(enable = #feature)]
         pub unsafe fn b_escape<B: buf_min::Buffer>(#bytes: &[u8], #fmt: &mut B) {
             #[cfg(target_arch = "x86_64")]

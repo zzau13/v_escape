@@ -44,7 +44,7 @@ pub fn escape_new(name: &Ident) -> TokenStream {
         /// Because not exist way to build multiple static allocations by type
         /// And it's very expensive check it in runtime
         /// https://github.com/rust-lang/rust/issues/57775
-        #[cfg(features = "bytes-buf")]
+        #[cfg(feature = "bytes-buf")]
         #[inline]
         pub fn b_escape<B: buf_min::Buffer>(s: &[u8], buf: &mut B) {
             #[allow(unused_unsafe)]
@@ -95,7 +95,7 @@ pub fn escape_new(name: &Ident) -> TokenStream {
 
 
         #[inline(always)]
-        #[cfg(features = "bytes-buf")]
+        #[cfg(feature = "bytes-buf")]
         #[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
         pub unsafe fn _b_escape<B: buf_min::Buffer>(bytes: &[u8], buf: &mut B) {
             #[cfg(not(v_escape_avx))] {
@@ -112,7 +112,7 @@ pub fn escape_new(name: &Ident) -> TokenStream {
         }
 
         #[inline(always)]
-        #[cfg(features = "bytes-buf")]
+        #[cfg(feature = "bytes-buf")]
         #[cfg(not(any(target_arch = "x86_64", target_arch = "x86")))]
         pub unsafe fn _b_escape<B: buf_min::Buffer>(bytes: &[u8], buf: &mut B) {
             scalar::b_escape(bytes, buf)

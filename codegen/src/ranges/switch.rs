@@ -58,6 +58,7 @@ pub enum Switch {
 
 use Switch::*;
 
+#[allow(clippy::from_over_into)]
 impl Into<Bodies> for Switch {
     fn into(self) -> Bodies {
         match self {
