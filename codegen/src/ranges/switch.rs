@@ -1,7 +1,7 @@
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 
-use crate::macros::Bodies;
+use crate::macros::{bodies, Bodies, BodiesArg, CB};
 
 #[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -442,14 +442,7 @@ impl Switch {
         }
     }
 
-    pub fn fallback_escaping(&self) -> TokenStream {
-        match *self {
-            A { .. } => quote! {
-                fallback_callback!(one);
-            },
-            _ => quote! {
-                fallback_callback!(default);
-            },
-        }
+    pub fn fallback_escaping<C: CB>(&self, b: BodiesArg<C>) -> TokenStream {
+        bodies((*self).into(), b)
     }
 }

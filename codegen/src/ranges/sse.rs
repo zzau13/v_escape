@@ -1,10 +1,10 @@
 use super::ArgLoop;
-use crate::ranges::WriteMask;
+use crate::ranges::{Fallback, WriteMask};
 use crate::utils::ident;
 use proc_macro2::TokenStream;
 use quote::quote;
 
-pub fn loop_sse<WM: WriteMask, WF: WriteMask>(
+pub fn loop_sse<WM: WriteMask, WF: WriteMask, F: Fallback>(
     ArgLoop {
         s,
         len,
@@ -13,7 +13,8 @@ pub fn loop_sse<WM: WriteMask, WF: WriteMask>(
         ptr,
         write_mask,
         write_forward,
-    }: ArgLoop<WM, WF>,
+        fallback,
+    }: ArgLoop<WM, WF, F>,
 ) -> TokenStream {
     let (ref translations, masking) = s.translations_sse();
     let a = &ident("a");
@@ -22,13 +23,15 @@ pub fn loop_sse<WM: WriteMask, WF: WriteMask>(
     let masked = &write_mask(mask, ptr);
     let align = &ident("align");
     let masked_forward = &write_forward(mask, align);
+    let fall = fallback();
 
     quote! {
         const M128_VECTOR_SIZE: usize = std::mem::size_of::<__m128i>();
         const M128_VECTOR_ALIGN: usize = M128_VECTOR_SIZE - 1;
 
         if #len < M128_VECTOR_SIZE {
-            // TODO: fallback!();
+            #fall
+            return Ok(())
         } else {
             #translations
             {
@@ -75,18 +78,4 @@ pub fn loop_sse<WM: WriteMask, WF: WriteMask>(
             }
         }
     }
-}
-/// Generate ranges sse2 implementation
-///
-/// ## Following macros must be defined
-/// - `fallback!()`
-///     when length is less than 16
-/// - `write_mask!(mut $mask: {integer}, $ptr: *const u8)`
-///     when bit mask is non equal 0
-/// - `write_forward(mut $mask: {integer}, $until: usize)`
-///     when bit mask is non equal 0  and valid bits until
-///
-#[macro_export]
-macro_rules! loop_range_switch_sse2 {
-    (($len:ident, $ptr:ident, $start_ptr:ident, $end_ptr:ident) $($t:tt, )+) => {};
 }

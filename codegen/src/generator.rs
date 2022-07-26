@@ -6,7 +6,7 @@ use std::str;
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use serde::Serialize;
-use syn::parse::{Parse, ParseBuffer, ParseStream, Parser};
+use syn::parse::{Parse, ParseBuffer, ParseStream};
 use syn::punctuated::Punctuated;
 use syn::token::{Bang, Paren};
 use syn::Lit;
@@ -14,6 +14,7 @@ use syn::{parenthesized, Token};
 use toml::Value;
 
 use crate::ranges::{escape_range, Feature, Switch};
+use crate::scalar::{escape_scalar, ArgScalar};
 use crate::utils::ident;
 
 #[derive(Serialize)]
@@ -49,7 +50,7 @@ pub fn generate<P: AsRef<Path>>(dir: P) {
         .as_table_mut()
         .unwrap()
         .insert("features".into(), Value::from(features));
-    let package_name = cargo_value
+    let _package_name = cargo_value
         .as_table()
         .unwrap()
         .get("package")
@@ -61,7 +62,7 @@ pub fn generate<P: AsRef<Path>>(dir: P) {
         .as_str()
         .unwrap();
     let src = dir.join("src");
-    let test = dir.join("tests");
+    let _test = dir.join("tests");
     let template = src.join("_lib.rs");
     let template_src =
         fs::read_to_string(&template).expect("read template `[INPUT_DIR]/src/_lib.rs`");
@@ -248,9 +249,10 @@ impl<'a> Generator<'a> {
     }
 
     fn write_functions(&self, tables: &Tables, buf: &mut TokenStream) {
-        self.write_scalar(buf);
-        self.write_ch(buf);
-        self.write_ranges(tables, buf);
+        let switch = self.calculate_ranges();
+        self.write_scalar(switch, tables, buf);
+        self.write_ranges(switch, tables, buf)
+        // self.write_ch(buf);
     }
 
     fn write_ch(&self, buf: &mut TokenStream) {
@@ -261,29 +263,45 @@ impl<'a> Generator<'a> {
         })
     }
 
-    fn write_scalar(&self, buf: &mut TokenStream) {
-        let code = if self.pairs.len() == 1 {
-            quote! {
-                mod scalar {
-                    use super::*;
-                    // TODO
+    fn write_scalar(&self, s: Switch, table: &Tables, buf: &mut TokenStream) {
+        let ptr = &ident("ptr");
+        let start_ptr = &ident("start_ptr");
+        let end_ptr = &ident("end_ptr");
+        let bytes = &ident("bytes");
+        let fmt = &ident("fmt");
+        let start = &ident("start");
+        let body = escape_scalar(
+            ArgScalar {
+                ptr,
+                end_ptr,
+                bytes,
+                fmt,
+                start_ptr,
+                start,
+                s,
+            },
+            table,
+        );
+
+        buf.extend(quote! {
+            mod scalar {
+                use super::*;
+                pub unsafe fn escape(#bytes: &[u8], #fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+                    let len = #bytes.len();
+                    let #start_ptr = #bytes.as_ptr();
+                    let #end_ptr = #bytes[len..].as_ptr();
+                    let mut #ptr = #start_ptr;
+                    let mut #start = 0;
+                    #body
+                    Ok(())
                 }
             }
-        } else {
-            quote! {
-                mod scalar {
-                    use super::*;
-                    // TODO 2
-                }
-            }
-        };
-        buf.extend(code);
+        });
     }
 
-    fn write_ranges(&self, tables: &Tables, buf: &mut TokenStream) {
-        let ranges = self.calculate_ranges();
-        let mod_avx = escape_range(ranges, tables, Feature::Avx2);
-        let mod_sse = escape_range(ranges, tables, Feature::Sse2);
+    fn write_ranges(&self, switch: Switch, tables: &Tables, buf: &mut TokenStream) {
+        let mod_avx = escape_range(switch, tables, Feature::Avx2);
+        let mod_sse = escape_range(switch, tables, Feature::Sse2);
 
         buf.extend(quote! {
             #[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
@@ -300,7 +318,7 @@ impl<'a> Generator<'a> {
         })
     }
 
-    fn write_cfg_if(&self, buf: &mut String) {}
+    fn write_cfg_if(&self, _buf: &mut String) {}
 
     #[inline]
     fn ch(&self, i: usize) -> i8 {
