@@ -1,12 +1,9 @@
-use crate::ranges::{Feature, Switch};
 use crate::utils::ident;
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 
 fn index(a: &Ident, b: &TokenStream) -> TokenStream {
-    quote! {
-         unsafe { *#a.as_ptr().add(#b) }
-    }
+    quote! { *#a.as_ptr().add(#b) }
 }
 
 #[derive(Copy, Clone)]
@@ -17,8 +14,8 @@ pub struct BodyArg<'a> {
     quote: &'a TokenStream,
 }
 
-fn escape_body(
-    i: &Ident,
+pub fn escape_body(
+    i: &TokenStream,
     BodyArg {
         start,
         fmt,
@@ -27,27 +24,28 @@ fn escape_body(
     }: BodyArg,
 ) -> TokenStream {
     quote! {
-        if #start < #i {
-            #[allow(unused_unsafe)]
-            #fmt.write_str(unsafe { std::str::from_utf8_unchecked(&#bytes[#start..#i]) })?;
+        let i = #i;
+        if #start < i {
+            #fmt.write_str(std::str::from_utf8_unchecked(&#bytes[#start..i]))?;
         }
         #fmt.write_str(#quote)?;
-        #start = #i + 1;
+        #start = i + 1;
     }
 }
 
 pub fn mask_body(i: &TokenStream, arg: BodyArg) -> TokenStream {
     let var = &ident("i");
-    let body = escape_body(var, arg);
+    let body = escape_body(&quote! { #var }, arg);
     quote! {
         let #var = #i;
         #body
     }
 }
 
-pub trait CB: Fn(&TokenStream, BodyArg) -> TokenStream {}
-impl<T: Fn(&TokenStream, BodyArg) -> TokenStream> CB for T {}
+pub trait CB: Fn(&TokenStream, BodyArg) -> TokenStream + Copy {}
+impl<T: Fn(&TokenStream, BodyArg) -> TokenStream + Copy> CB for T {}
 
+#[derive(Copy, Clone)]
 pub struct BodiesArg<'a, F: CB> {
     pub t: &'a Ident,
     pub q: &'a Ident,

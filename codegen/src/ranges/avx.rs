@@ -1,12 +1,14 @@
 use proc_macro2::TokenStream;
 use quote::quote;
 
-use crate::ranges::{sse, WriteMask};
+use crate::ranges::{sse, Fallback, WriteMask};
 use crate::utils::ident;
 
 use super::ArgLoop;
 
-pub fn loop_avx2<WM: WriteMask, WF: WriteMask>(arg: ArgLoop<WM, WF>) -> TokenStream {
+pub fn loop_avx2<WM: WriteMask, WF: WriteMask, F: Fallback>(
+    arg: ArgLoop<WM, WF, F>,
+) -> TokenStream {
     let sse = sse::loop_sse(arg);
     let ArgLoop {
         s,
@@ -16,6 +18,7 @@ pub fn loop_avx2<WM: WriteMask, WF: WriteMask>(arg: ArgLoop<WM, WF>) -> TokenStr
         ptr,
         write_mask,
         write_forward,
+        ..
     } = arg;
     let (ref translations, masking) = s.translations_avx();
     let a = &ident("a");

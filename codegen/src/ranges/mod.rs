@@ -16,13 +16,17 @@ pub enum Feature {
 }
 use crate::generator::Tables;
 use crate::macros::{bodies, mask_body, BodiesArg};
+use crate::scalar::{escape_scalar, ArgScalar};
 use Feature::*;
 
 pub trait WriteMask: Fn(&Ident, &Ident) -> TokenStream + Copy {}
 impl<T: Fn(&Ident, &Ident) -> TokenStream + Copy> WriteMask for T {}
 
+pub trait Fallback: Fn() -> TokenStream + Copy {}
+impl<T: Fn() -> TokenStream + Copy> Fallback for T {}
+
 #[derive(Copy, Clone)]
-pub struct ArgLoop<'a, WM: WriteMask, WF: WriteMask> {
+pub struct ArgLoop<'a, WM: WriteMask, WF: WriteMask, F: Fallback> {
     len: &'a Ident,
     ptr: &'a Ident,
     start_ptr: &'a Ident,
@@ -30,12 +34,13 @@ pub struct ArgLoop<'a, WM: WriteMask, WF: WriteMask> {
     s: Switch,
     write_mask: WM,
     write_forward: WF,
+    fallback: F,
 }
 
 impl Feature {
-    fn to_impl<WM: WriteMask, WF: WriteMask>(
+    fn to_impl<WM: WriteMask, WF: WriteMask, F: Fallback>(
         self,
-        arg: ArgLoop<WM, WF>,
+        arg: ArgLoop<WM, WF, F>,
     ) -> (&'static str, TokenStream) {
         match self {
             Avx2 => ("avx2", avx::loop_avx2(arg)),
@@ -44,7 +49,7 @@ impl Feature {
     }
 }
 
-pub fn escape_range(s: Switch, (t, q, q_len): &Tables, f: Feature) -> TokenStream {
+pub fn escape_range(s: Switch, tables: &Tables, f: Feature) -> TokenStream {
     let len = &ident("len");
     let start_ptr = &ident("start_ptr");
     let end_ptr = &ident("end_ptr");
@@ -57,9 +62,9 @@ pub fn escape_range(s: Switch, (t, q, q_len): &Tables, f: Feature) -> TokenStrea
     let body = bodies(
         s.into(),
         BodiesArg {
-            t,
-            q,
-            q_len,
+            t: &tables.0,
+            q: &tables.1,
+            q_len: &tables.2,
             i: &quote! { #at + #cur },
             b: &quote! { *#ptr.add(#cur) },
             start,
@@ -78,12 +83,27 @@ pub fn escape_range(s: Switch, (t, q, q_len): &Tables, f: Feature) -> TokenStrea
             #cur = #mask.trailing_zeros() as usize;
         }
     };
+    let fallback = || {
+        escape_scalar(
+            ArgScalar {
+                ptr,
+                end_ptr,
+                bytes,
+                fmt,
+                start_ptr,
+                start,
+                s,
+            },
+            tables,
+        )
+    };
     let arg = ArgLoop {
         len,
         ptr,
         end_ptr,
         start_ptr,
         s,
+        fallback,
         write_mask: |mask: &Ident, ptr: &Ident| {
             let body = mask_bodies(mask);
             quote! {

@@ -1,65 +1,52 @@
-#[macro_export]
-#[doc(hidden)]
-macro_rules! escape_scalar {
-    ($($t:tt)+) => {
-        #[inline]
-        pub fn escape(bytes: &[u8], fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
-            use std::str::from_utf8_unchecked;
+use proc_macro2::{Ident, TokenStream};
+use quote::quote;
 
-            let len = bytes.len();
-            let start_ptr = bytes.as_ptr();
-            let end_ptr = bytes[len..].as_ptr();
+use crate::generator::Tables;
+use crate::macros::{escape_body, BodiesArg};
+use crate::ranges::Switch;
 
-            let mut ptr = start_ptr;
+#[derive(Copy, Clone)]
+pub struct ArgScalar<'a> {
+    pub ptr: &'a Ident,
+    pub start_ptr: &'a Ident,
+    pub end_ptr: &'a Ident,
+    pub bytes: &'a Ident,
+    pub fmt: &'a Ident,
+    pub start: &'a Ident,
+    pub s: Switch,
+}
 
-            let start_ptr = bytes.as_ptr();
-            let mut start = 0;
-
-            unsafe {
-
-            while ptr < end_ptr {
-                macro_rules! _inside {
-                    (impl one $byte:ident, $quote:ident) => {
-                        if $byte == *ptr {
-                            $crate::bodies_exact_one!(
-                                $byte,
-                                $quote,
-                                (),
-                                sub(ptr, start_ptr),
-                                *ptr,
-                                start,
-                                fmt,
-                                bytes,
-                                $crate::escape_body
-                            );
-                        }
-                    };
-                    (impl $T:ident, $Q:ident, $Q_LEN:ident) => {
-                        $crate::bodies!(
-                            $T,
-                            $Q,
-                            $Q_LEN,
-                            sub(ptr, start_ptr),
-                            *ptr,
-                            start,
-                            fmt,
-                            bytes,
-                            $crate::escape_body
-                        );
-                    };
-                }
-
-                _inside!(impl $($t)+);
-
-                ptr = ptr.offset(1);
-            }
-
-            }
-            fmt.write_str(unsafe { from_utf8_unchecked(&bytes[start..]) })?;
-
-            Ok(())
+pub fn escape_scalar(
+    ArgScalar {
+        ptr,
+        start_ptr,
+        end_ptr,
+        bytes,
+        fmt,
+        start,
+        s,
+    }: ArgScalar,
+    (t, q, q_len): &Tables,
+) -> TokenStream {
+    let body = s.fallback_escaping(BodiesArg {
+        t,
+        q,
+        q_len,
+        i: &quote! { sub(#ptr, #start_ptr) },
+        b: &quote! { *ptr },
+        start,
+        fmt,
+        bytes,
+        callback: escape_body,
+    });
+    quote! {
+        while #ptr < #end_ptr {
+            #body
+            #ptr = #ptr.offset(1);
         }
-    };
+
+        #fmt.write_str(std::str::from_utf8_unchecked(&bytes[start..]))?;
+    }
 }
 
 #[macro_export]

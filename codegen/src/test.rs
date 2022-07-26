@@ -23,9 +23,27 @@ fn sub(a: *const u8, b: *const u8) -> usize {
 }
 mod scalar {
     use super::*;
-}
-mod chars {
-    use super::*;
+    pub unsafe fn escape(bytes: &[u8], fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let len = bytes.len();
+        let start_ptr = bytes.as_ptr();
+        let end_ptr = bytes[len..].as_ptr();
+        let mut ptr = start_ptr;
+        let mut start = 0;
+        while ptr < end_ptr {
+            let c = *V_ESCAPE_CHARS.as_ptr().add(*ptr as usize) as usize;
+            if c < V_ESCAPE_LEN {
+                let i = sub(ptr, start_ptr);
+                if start < i {
+                    fmt.write_str(std::str::from_utf8_unchecked(&bytes[start..i]))?;
+                }
+                fmt.write_str(*V_ESCAPE_QUOTES.as_ptr().add(c as usize))?;
+                start = i + 1;
+            }
+            ptr = ptr.offset(1);
+        }
+        fmt.write_str(std::str::from_utf8_unchecked(&bytes[start..]))?;
+        Ok(())
+    }
 }
 #[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
 mod ranges {
@@ -48,6 +66,20 @@ mod ranges {
                 const M128_VECTOR_SIZE: usize = std::mem::size_of::<__m128i>();
                 const M128_VECTOR_ALIGN: usize = M128_VECTOR_SIZE - 1;
                 if len < M128_VECTOR_SIZE {
+                    while ptr < end_ptr {
+                        let c = *V_ESCAPE_CHARS.as_ptr().add(*ptr as usize) as usize;
+                        if c < V_ESCAPE_LEN {
+                            let i = sub(ptr, start_ptr);
+                            if start < i {
+                                fmt.write_str(std::str::from_utf8_unchecked(&bytes[start..i]))?;
+                            }
+                            fmt.write_str(*V_ESCAPE_QUOTES.as_ptr().add(c as usize))?;
+                            start = i + 1;
+                        }
+                        ptr = ptr.offset(1);
+                    }
+                    fmt.write_str(std::str::from_utf8_unchecked(&bytes[start..]))?;
+                    return Ok(());
                 } else {
                     const TRANSLATION_A: i8 = i8::MAX - 39i8;
                     const BELOW_A: i8 = i8::MAX - (39i8 - 34i8) - 1;
@@ -76,20 +108,17 @@ mod ranges {
                                 let at = sub(ptr, start_ptr);
                                 let mut cur = mask.trailing_zeros() as usize;
                                 while cur < align {
-                                    let c = unsafe {
-                                        *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize)
-                                    } as usize;
+                                    let c = *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize)
+                                        as usize;
                                     if c < V_ESCAPE_LEN {
                                         let i = at + cur;
+                                        let i = i;
                                         if start < i {
-                                            #[allow(unused_unsafe)]
-                                            fmt.write_str(unsafe {
-                                                std::str::from_utf8_unchecked(&bytes[start..i])
-                                            })?;
+                                            fmt.write_str(std::str::from_utf8_unchecked(
+                                                &bytes[start..i],
+                                            ))?;
                                         }
-                                        fmt.write_str(unsafe {
-                                            *V_ESCAPE_QUOTES.as_ptr().add(c as usize)
-                                        })?;
+                                        fmt.write_str(*V_ESCAPE_QUOTES.as_ptr().add(c as usize))?;
                                         start = i + 1;
                                     }
                                     mask ^= 1 << cur;
@@ -120,19 +149,16 @@ mod ranges {
                             let mut cur = mask.trailing_zeros() as usize;
                             loop {
                                 let c =
-                                    unsafe { *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize) }
-                                        as usize;
+                                    *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize) as usize;
                                 if c < V_ESCAPE_LEN {
                                     let i = at + cur;
+                                    let i = i;
                                     if start < i {
-                                        #[allow(unused_unsafe)]
-                                        fmt.write_str(unsafe {
-                                            std::str::from_utf8_unchecked(&bytes[start..i])
-                                        })?;
+                                        fmt.write_str(std::str::from_utf8_unchecked(
+                                            &bytes[start..i],
+                                        ))?;
                                     }
-                                    fmt.write_str(unsafe {
-                                        *V_ESCAPE_QUOTES.as_ptr().add(c as usize)
-                                    })?;
+                                    fmt.write_str(*V_ESCAPE_QUOTES.as_ptr().add(c as usize))?;
                                     start = i + 1;
                                 }
                                 mask ^= 1 << cur;
@@ -165,19 +191,16 @@ mod ranges {
                             let mut cur = mask.trailing_zeros() as usize;
                             loop {
                                 let c =
-                                    unsafe { *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize) }
-                                        as usize;
+                                    *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize) as usize;
                                 if c < V_ESCAPE_LEN {
                                     let i = at + cur;
+                                    let i = i;
                                     if start < i {
-                                        #[allow(unused_unsafe)]
-                                        fmt.write_str(unsafe {
-                                            std::str::from_utf8_unchecked(&bytes[start..i])
-                                        })?;
+                                        fmt.write_str(std::str::from_utf8_unchecked(
+                                            &bytes[start..i],
+                                        ))?;
                                     }
-                                    fmt.write_str(unsafe {
-                                        *V_ESCAPE_QUOTES.as_ptr().add(c as usize)
-                                    })?;
+                                    fmt.write_str(*V_ESCAPE_QUOTES.as_ptr().add(c as usize))?;
                                     start = i + 1;
                                 }
                                 mask ^= 1 << cur;
@@ -226,19 +249,16 @@ mod ranges {
                             let mut cur = mask.trailing_zeros() as usize;
                             while cur < align {
                                 let c =
-                                    unsafe { *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize) }
-                                        as usize;
+                                    *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize) as usize;
                                 if c < V_ESCAPE_LEN {
                                     let i = at + cur;
+                                    let i = i;
                                     if start < i {
-                                        #[allow(unused_unsafe)]
-                                        fmt.write_str(unsafe {
-                                            std::str::from_utf8_unchecked(&bytes[start..i])
-                                        })?;
+                                        fmt.write_str(std::str::from_utf8_unchecked(
+                                            &bytes[start..i],
+                                        ))?;
                                     }
-                                    fmt.write_str(unsafe {
-                                        *V_ESCAPE_QUOTES.as_ptr().add(c as usize)
-                                    })?;
+                                    fmt.write_str(*V_ESCAPE_QUOTES.as_ptr().add(c as usize))?;
                                     start = i + 1;
                                 }
                                 mask ^= 1 << cur;
@@ -331,20 +351,17 @@ mod ranges {
                                 let at = sub(ptr, start_ptr);
                                 let mut cur = mask.trailing_zeros() as usize;
                                 loop {
-                                    let c = unsafe {
-                                        *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize)
-                                    } as usize;
+                                    let c = *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize)
+                                        as usize;
                                     if c < V_ESCAPE_LEN {
                                         let i = at + cur;
+                                        let i = i;
                                         if start < i {
-                                            #[allow(unused_unsafe)]
-                                            fmt.write_str(unsafe {
-                                                std::str::from_utf8_unchecked(&bytes[start..i])
-                                            })?;
+                                            fmt.write_str(std::str::from_utf8_unchecked(
+                                                &bytes[start..i],
+                                            ))?;
                                         }
-                                        fmt.write_str(unsafe {
-                                            *V_ESCAPE_QUOTES.as_ptr().add(c as usize)
-                                        })?;
+                                        fmt.write_str(*V_ESCAPE_QUOTES.as_ptr().add(c as usize))?;
                                         start = i + 1;
                                     }
                                     mask ^= 1 << cur;
@@ -361,20 +378,17 @@ mod ranges {
                                 let at = sub(ptr, start_ptr);
                                 let mut cur = mask.trailing_zeros() as usize;
                                 loop {
-                                    let c = unsafe {
-                                        *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize)
-                                    } as usize;
+                                    let c = *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize)
+                                        as usize;
                                     if c < V_ESCAPE_LEN {
                                         let i = at + cur;
+                                        let i = i;
                                         if start < i {
-                                            #[allow(unused_unsafe)]
-                                            fmt.write_str(unsafe {
-                                                std::str::from_utf8_unchecked(&bytes[start..i])
-                                            })?;
+                                            fmt.write_str(std::str::from_utf8_unchecked(
+                                                &bytes[start..i],
+                                            ))?;
                                         }
-                                        fmt.write_str(unsafe {
-                                            *V_ESCAPE_QUOTES.as_ptr().add(c as usize)
-                                        })?;
+                                        fmt.write_str(*V_ESCAPE_QUOTES.as_ptr().add(c as usize))?;
                                         start = i + 1;
                                     }
                                     mask ^= 1 << cur;
@@ -391,20 +405,17 @@ mod ranges {
                                 let at = sub(ptr, start_ptr);
                                 let mut cur = mask.trailing_zeros() as usize;
                                 loop {
-                                    let c = unsafe {
-                                        *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize)
-                                    } as usize;
+                                    let c = *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize)
+                                        as usize;
                                     if c < V_ESCAPE_LEN {
                                         let i = at + cur;
+                                        let i = i;
                                         if start < i {
-                                            #[allow(unused_unsafe)]
-                                            fmt.write_str(unsafe {
-                                                std::str::from_utf8_unchecked(&bytes[start..i])
-                                            })?;
+                                            fmt.write_str(std::str::from_utf8_unchecked(
+                                                &bytes[start..i],
+                                            ))?;
                                         }
-                                        fmt.write_str(unsafe {
-                                            *V_ESCAPE_QUOTES.as_ptr().add(c as usize)
-                                        })?;
+                                        fmt.write_str(*V_ESCAPE_QUOTES.as_ptr().add(c as usize))?;
                                         start = i + 1;
                                     }
                                     mask ^= 1 << cur;
@@ -421,20 +432,17 @@ mod ranges {
                                 let at = sub(ptr, start_ptr);
                                 let mut cur = mask.trailing_zeros() as usize;
                                 loop {
-                                    let c = unsafe {
-                                        *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize)
-                                    } as usize;
+                                    let c = *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize)
+                                        as usize;
                                     if c < V_ESCAPE_LEN {
                                         let i = at + cur;
+                                        let i = i;
                                         if start < i {
-                                            #[allow(unused_unsafe)]
-                                            fmt.write_str(unsafe {
-                                                std::str::from_utf8_unchecked(&bytes[start..i])
-                                            })?;
+                                            fmt.write_str(std::str::from_utf8_unchecked(
+                                                &bytes[start..i],
+                                            ))?;
                                         }
-                                        fmt.write_str(unsafe {
-                                            *V_ESCAPE_QUOTES.as_ptr().add(c as usize)
-                                        })?;
+                                        fmt.write_str(*V_ESCAPE_QUOTES.as_ptr().add(c as usize))?;
                                         start = i + 1;
                                     }
                                     mask ^= 1 << cur;
@@ -465,19 +473,14 @@ mod ranges {
                         let at = sub(ptr, start_ptr);
                         let mut cur = mask.trailing_zeros() as usize;
                         loop {
-                            let c = unsafe { *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize) }
-                                as usize;
+                            let c = *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize) as usize;
                             if c < V_ESCAPE_LEN {
                                 let i = at + cur;
+                                let i = i;
                                 if start < i {
-                                    #[allow(unused_unsafe)]
-                                    fmt.write_str(unsafe {
-                                        std::str::from_utf8_unchecked(&bytes[start..i])
-                                    })?;
+                                    fmt.write_str(std::str::from_utf8_unchecked(&bytes[start..i]))?;
                                 }
-                                fmt.write_str(unsafe {
-                                    *V_ESCAPE_QUOTES.as_ptr().add(c as usize)
-                                })?;
+                                fmt.write_str(*V_ESCAPE_QUOTES.as_ptr().add(c as usize))?;
                                 start = i + 1;
                             }
                             mask ^= 1 << cur;
@@ -509,19 +512,14 @@ mod ranges {
                         let at = sub(ptr, start_ptr);
                         let mut cur = mask.trailing_zeros() as usize;
                         loop {
-                            let c = unsafe { *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize) }
-                                as usize;
+                            let c = *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize) as usize;
                             if c < V_ESCAPE_LEN {
                                 let i = at + cur;
+                                let i = i;
                                 if start < i {
-                                    #[allow(unused_unsafe)]
-                                    fmt.write_str(unsafe {
-                                        std::str::from_utf8_unchecked(&bytes[start..i])
-                                    })?;
+                                    fmt.write_str(std::str::from_utf8_unchecked(&bytes[start..i]))?;
                                 }
-                                fmt.write_str(unsafe {
-                                    *V_ESCAPE_QUOTES.as_ptr().add(c as usize)
-                                })?;
+                                fmt.write_str(*V_ESCAPE_QUOTES.as_ptr().add(c as usize))?;
                                 start = i + 1;
                             }
                             mask ^= 1 << cur;
@@ -557,6 +555,20 @@ mod ranges {
             const M128_VECTOR_SIZE: usize = std::mem::size_of::<__m128i>();
             const M128_VECTOR_ALIGN: usize = M128_VECTOR_SIZE - 1;
             if len < M128_VECTOR_SIZE {
+                while ptr < end_ptr {
+                    let c = *V_ESCAPE_CHARS.as_ptr().add(*ptr as usize) as usize;
+                    if c < V_ESCAPE_LEN {
+                        let i = sub(ptr, start_ptr);
+                        if start < i {
+                            fmt.write_str(std::str::from_utf8_unchecked(&bytes[start..i]))?;
+                        }
+                        fmt.write_str(*V_ESCAPE_QUOTES.as_ptr().add(c as usize))?;
+                        start = i + 1;
+                    }
+                    ptr = ptr.offset(1);
+                }
+                fmt.write_str(std::str::from_utf8_unchecked(&bytes[start..]))?;
+                return Ok(());
             } else {
                 const TRANSLATION_A: i8 = i8::MAX - 39i8;
                 const BELOW_A: i8 = i8::MAX - (39i8 - 34i8) - 1;
@@ -586,19 +598,16 @@ mod ranges {
                             let mut cur = mask.trailing_zeros() as usize;
                             while cur < align {
                                 let c =
-                                    unsafe { *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize) }
-                                        as usize;
+                                    *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize) as usize;
                                 if c < V_ESCAPE_LEN {
                                     let i = at + cur;
+                                    let i = i;
                                     if start < i {
-                                        #[allow(unused_unsafe)]
-                                        fmt.write_str(unsafe {
-                                            std::str::from_utf8_unchecked(&bytes[start..i])
-                                        })?;
+                                        fmt.write_str(std::str::from_utf8_unchecked(
+                                            &bytes[start..i],
+                                        ))?;
                                     }
-                                    fmt.write_str(unsafe {
-                                        *V_ESCAPE_QUOTES.as_ptr().add(c as usize)
-                                    })?;
+                                    fmt.write_str(*V_ESCAPE_QUOTES.as_ptr().add(c as usize))?;
                                     start = i + 1;
                                 }
                                 mask ^= 1 << cur;
@@ -628,19 +637,14 @@ mod ranges {
                         let at = sub(ptr, start_ptr);
                         let mut cur = mask.trailing_zeros() as usize;
                         loop {
-                            let c = unsafe { *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize) }
-                                as usize;
+                            let c = *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize) as usize;
                             if c < V_ESCAPE_LEN {
                                 let i = at + cur;
+                                let i = i;
                                 if start < i {
-                                    #[allow(unused_unsafe)]
-                                    fmt.write_str(unsafe {
-                                        std::str::from_utf8_unchecked(&bytes[start..i])
-                                    })?;
+                                    fmt.write_str(std::str::from_utf8_unchecked(&bytes[start..i]))?;
                                 }
-                                fmt.write_str(unsafe {
-                                    *V_ESCAPE_QUOTES.as_ptr().add(c as usize)
-                                })?;
+                                fmt.write_str(*V_ESCAPE_QUOTES.as_ptr().add(c as usize))?;
                                 start = i + 1;
                             }
                             mask ^= 1 << cur;
@@ -672,19 +676,14 @@ mod ranges {
                         let at = sub(ptr, start_ptr);
                         let mut cur = mask.trailing_zeros() as usize;
                         loop {
-                            let c = unsafe { *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize) }
-                                as usize;
+                            let c = *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize) as usize;
                             if c < V_ESCAPE_LEN {
                                 let i = at + cur;
+                                let i = i;
                                 if start < i {
-                                    #[allow(unused_unsafe)]
-                                    fmt.write_str(unsafe {
-                                        std::str::from_utf8_unchecked(&bytes[start..i])
-                                    })?;
+                                    fmt.write_str(std::str::from_utf8_unchecked(&bytes[start..i]))?;
                                 }
-                                fmt.write_str(unsafe {
-                                    *V_ESCAPE_QUOTES.as_ptr().add(c as usize)
-                                })?;
+                                fmt.write_str(*V_ESCAPE_QUOTES.as_ptr().add(c as usize))?;
                                 start = i + 1;
                             }
                             mask ^= 1 << cur;
