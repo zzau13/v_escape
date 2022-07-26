@@ -15,6 +15,7 @@ use toml::Value;
 
 use crate::ranges::{escape_range, escape_range_bytes, Feature, Switch};
 use crate::scalar::{escape_scalar, escape_scalar_bytes, ArgScalar};
+use crate::tests::build_tests;
 use crate::utils::ident;
 
 #[derive(Serialize)]
@@ -50,7 +51,7 @@ pub fn generate<P: AsRef<Path>>(dir: P) {
         .as_table_mut()
         .unwrap()
         .insert("features".into(), Value::from(features));
-    let _package_name = cargo_value
+    let package_name = cargo_value
         .as_table()
         .unwrap()
         .get("package")
@@ -69,7 +70,17 @@ pub fn generate<P: AsRef<Path>>(dir: P) {
     let pairs = parse_template(&template_src);
     let code = Generator::new(&pairs).build();
     let code_pretty = prettyplease::unparse(&syn::parse2(code).unwrap());
-    println!("{}", code_pretty);
+    let package_name = heck::AsPascalCase(package_name).to_string();
+    let escapes = String::from_utf8(pairs.iter().map(|x| x.ch).collect::<Vec<u8>>()).unwrap();
+    let escaped = pairs
+        .iter()
+        .map(|x| x.quote.as_str())
+        .collect::<Vec<&str>>()
+        .join("");
+    let code_test = build_tests(&ident(&package_name), escapes, escaped);
+    let code_test_pretty = prettyplease::unparse(&syn::parse2(code_test).unwrap());
+    println!("{}", code_test_pretty);
+    eprintln!("{}", code_pretty);
 
     // fs::write(&cargo, toml::to_string_pretty(&cargo_value).unwrap()).unwrap();
 }
