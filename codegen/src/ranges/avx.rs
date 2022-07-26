@@ -6,8 +6,8 @@ use crate::utils::ident;
 
 use super::ArgLoop;
 
-pub fn loop_avx2<F: WriteMask>(arg: ArgLoop<F>) -> TokenStream {
-    let sse = sse::loop_range_switch_sse(arg);
+pub fn loop_avx2<WM: WriteMask, WF: WriteMask>(arg: ArgLoop<WM, WF>) -> TokenStream {
+    let sse = sse::loop_sse(arg);
     let ArgLoop {
         s,
         len,
@@ -15,12 +15,15 @@ pub fn loop_avx2<F: WriteMask>(arg: ArgLoop<F>) -> TokenStream {
         start_ptr,
         ptr,
         write_mask,
+        write_forward,
     } = arg;
-    let a = &ident("a");
     let (ref translations, masking) = s.translations_avx();
+    let a = &ident("a");
     let masking_a = &masking(a);
     let mask = &ident("mask");
     let masked = &write_mask(mask, ptr);
+    let align = &ident("align");
+    let masked_forward = &write_forward(mask, align);
 
     quote! {
         const M256_VECTOR_SIZE: usize = std::mem::size_of::<__m256i>();
@@ -32,17 +35,17 @@ pub fn loop_avx2<F: WriteMask>(arg: ArgLoop<F>) -> TokenStream {
             #translations
             {
                 const M256_VECTOR_ALIGN: usize = M256_VECTOR_SIZE - 1;
-                let align = M256_VECTOR_SIZE - (#start_ptr as usize & M256_VECTOR_ALIGN);
-                if align < M256_VECTOR_SIZE {
+                let #align = M256_VECTOR_SIZE - (#start_ptr as usize & M256_VECTOR_ALIGN);
+                if #align < M256_VECTOR_SIZE {
                     let mut #mask = {
                         let #a = _mm256_loadu_si256(#ptr as *const __m256i);
                         _mm256_movemask_epi8(#masking_a)
                     };
 
                     if #mask != 0 {
-                        write_forward!(mask, align);
+                        #masked_forward
                     }
-                    #ptr = #ptr.add(align);
+                    #ptr = #ptr.add(#align);
                 }
             }
 

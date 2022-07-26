@@ -20,20 +20,24 @@ pub trait WriteMask: Fn(&Ident, &Ident) -> TokenStream + Copy {}
 impl<T: Fn(&Ident, &Ident) -> TokenStream + Copy> WriteMask for T {}
 
 #[derive(Copy, Clone)]
-pub struct ArgLoop<'a, F: WriteMask> {
+pub struct ArgLoop<'a, WM: WriteMask, WF: WriteMask> {
     len: &'a Ident,
     ptr: &'a Ident,
     start_ptr: &'a Ident,
     end_ptr: &'a Ident,
     s: Switch,
-    write_mask: F,
+    write_mask: WM,
+    write_forward: WF,
 }
 
 impl Feature {
-    fn to_impl<F: WriteMask>(self, arg: ArgLoop<F>) -> (&'static str, TokenStream) {
+    fn to_impl<WM: WriteMask, WF: WriteMask>(
+        self,
+        arg: ArgLoop<WM, WF>,
+    ) -> (&'static str, TokenStream) {
         match self {
             Avx2 => ("avx2", avx::loop_avx2(arg)),
-            Sse2 => ("sse2", sse::loop_range_switch_sse(arg)),
+            Sse2 => ("sse2", sse::loop_sse(arg)),
         }
     }
 }
@@ -50,6 +54,7 @@ pub fn escape_range(s: Switch, f: Feature) -> TokenStream {
         start_ptr,
         s,
         write_mask: |mask: &Ident, ptr: &Ident| {
+            // TODO
             quote! {
                 let at = crate::sub!(#ptr, #start_ptr);
                 let mut cur = #mask.trailing_zeros() as usize;
@@ -61,98 +66,35 @@ pub fn escape_range(s: Switch, f: Feature) -> TokenStream {
                 debug_assert_eq!(at, #ptr - #start_ptr)
             }
         },
+        // TODO
+        write_forward: |mask: &Ident, align: &Ident| {
+            quote! {
+                let at = crate::sub!(#ptr, #start_ptr);
+                let mut cur = mask.trailing_zeros() as usize;
+
+                while cur < #align {
+                    mask_bodies!($mask, at, cur, #ptr);
+                }
+
+                debug_assert_eq!(at, #ptr - #start_ptr)
+            }
+        },
     };
     let (feature, loops) = f.to_impl(arg);
 
     quote! {
-        #[inline]
         #[target_feature(enable = #feature)]
         pub unsafe fn escape(bytes: &[u8], fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+            #[cfg(target_arch = "x86_64")]
+            use std::arch::x86_64::*;
+            #[cfg(target_arch = "x86")]
+            use std::arch::x86::*;
 
             let #len = bytes.len();
             let #start_ptr = bytes.as_ptr();
             let #end_ptr = bytes[len..].as_ptr();
             let mut #ptr = #start_ptr;
-
             let mut start = 0;
-
-            macro_rules! mask_bodies_callback {
-                ($callback:path) => {
-                    macro_rules! mask_bodies {
-                        ($mask:ident, $at:ident, $cur:ident, $ptr:ident) => {
-                            $callback!($T, $Q, $Q_LEN, $at + $cur, *$ptr.add($cur), start, fmt, bytes, crate::mask_body);
-
-                            $mask ^= 1 << $cur;
-                            if $mask == 0 {
-                                break;
-                            }
-                            $cur = $mask.trailing_zeros() as usize;
-                        };
-                    }
-                };
-            }
-
-            crate::mask_bodies_escaping!($($t)+);
-
-            macro_rules! write_forward {
-                ($mask: ident, $align:ident) => {{
-                    let at = crate::sub!(#ptr, #start_ptr);
-                    let mut cur = $mask.trailing_zeros() as usize;
-
-                    while cur < $align {
-                        mask_bodies!($mask, at, cur, ptr);
-                    }
-
-                    debug_assert_eq!(at, crate::sub!(#ptr, #start_ptr))
-                }};
-            }
-
-            macro_rules! fallback_callback {
-                (default) => {
-                    macro_rules! fallback {
-                        () => {
-                            while ptr < end_ptr {
-                                crate::bodies!(
-                                    $T,
-                                    $Q,
-                                    $Q_LEN,
-                                    crate::sub!(#ptr, #start_ptr),
-                                    *ptr,
-                                    start,
-                                    fmt,
-                                    bytes,
-                                    crate::mask_body
-                                );
-                                ptr = ptr.offset(1);
-                            }
-                        };
-                    }
-                };
-                (one) => {
-                    macro_rules! fallback {
-                        () => {
-                            while ptr < end_ptr {
-                                if *ptr == $T {
-                                    crate::bodies_exact_one!(
-                                        $T,
-                                        $Q,
-                                        $Q_LEN,
-                                        crate::sub!(#ptr, #start_ptr),
-                                        *#ptr,
-                                        start,
-                                        fmt,
-                                        bytes,
-                                        crate::mask_body
-                                    );
-                                }
-                                ptr = ptr.offset(1);
-                            }
-                        };
-                    }
-                };
-            }
-
-            crate::fallback_escaping!($($t)+);
 
             #loops
             debug_assert!(start <= #len);
