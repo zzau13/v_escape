@@ -1,88 +1,108 @@
-use v_latexescape::LateXEscape;
-
 #[test]
-fn test_escape() {
+fn tests() {
+    use std::borrow::Cow;
+    use std::char::from_u32;
+    use v_latexescape::escape;
+    use v_latexescape::VLatexescape;
+    fn all_utf8_less(less: &str) -> String {
+        assert_eq!(less.len(), less.as_bytes().len());
+        let less = less.as_bytes();
+        let mut buf = String::with_capacity(204_672 - less.len());
+        for i in 0..0x80u8 {
+            if !less.contains(&i) {
+                buf.push(from_u32(i as u32).unwrap())
+            }
+        }
+        for i in 0x80..0xD800 {
+            buf.push(from_u32(i).unwrap());
+        }
+        for i in 0xE000..0x11000 {
+            buf.push(from_u32(i).unwrap());
+        }
+        buf
+    }
     let empty = "";
     let escapes = "#$%&\\^_{}~";
     let escaped = "\\#\\$\\%\\&\\textbackslash{}\\textasciicircum{}\\_\\{\\}\\textasciitilde{}";
-    let string_long: &str = &"foobar".repeat(1024);
-
-    assert_eq!(LateXEscape::from(empty).to_string(), empty);
-
-    assert_eq!(LateXEscape::from("").to_string(), "");
-    assert_eq!(LateXEscape::from("#$%&").to_string(), "\\#\\$\\%\\&");
+    let utf8: &str = &all_utf8_less("#$%&\\^_{}~");
+    let empty_heap = String::new();
+    let short = "foobar";
+    let string_long: &str = &short.repeat(1024);
+    let string = "#$%&\\^_{}~".to_string();
+    let cow = Cow::Owned("#$%&\\^_{}~".to_string());
+    assert_eq!(VLatexescape::from(empty).to_string(), empty);
+    assert_eq!(VLatexescape::from(escapes).to_string(), escaped);
+    assert_eq!(escape(&empty_heap).to_string(), empty);
+    assert_eq!(escape(&cow).to_string(), escaped);
+    assert_eq!(escape(&string).to_string(), escaped);
+    assert_eq!(escape(&utf8).to_string(), utf8);
+    assert_eq!(VLatexescape::from(string_long).to_string(), string_long);
     assert_eq!(
-        LateXEscape::from("bar_^").to_string(),
-        "bar\\_\\textasciicircum{}"
-    );
-    assert_eq!(LateXEscape::from("{foo}").to_string(), "\\{foo\\}");
-    assert_eq!(
-        LateXEscape::from("~\\").to_string(),
-        "\\textasciitilde{}\\textbackslash{}"
-    );
-    assert_eq!(
-        LateXEscape::from("_% of do$llar an&d #HASHES {I} have in ~ \\ latex").to_string(),
-        "\\_\\% of do\\$llar an\\&d \\#HASHES \\{I\\} have in \\textasciitilde{} \
-         \\textbackslash{} latex"
-    );
-    assert_eq!(
-        LateXEscape::from(
-            "_% of do$llar an&d #HASHES {I} have in ~ \\ latex"
-                .repeat(10_000)
-                .as_ref()
-        )
-        .to_string(),
-        "\\_\\% of do\\$llar an\\&d \\#HASHES \\{I\\} have in \\textasciitilde{} \
-         \\textbackslash{} latex"
-            .repeat(10_000)
-    );
-    assert_eq!(
-        LateXEscape::from("#".repeat(16).as_ref()).to_string(),
-        "\\#".repeat(16)
-    );
-    assert_eq!(
-        LateXEscape::from("#".repeat(32).as_ref()).to_string(),
-        "\\#".repeat(32)
-    );
-    assert_eq!(
-        LateXEscape::from("#".repeat(64).as_ref()).to_string(),
-        "\\#".repeat(64)
-    );
-    assert_eq!(
-        LateXEscape::from("#".repeat(128).as_ref()).to_string(),
-        "\\#".repeat(128)
-    );
-    assert_eq!(
-        LateXEscape::from("#".repeat(1024).as_ref()).to_string(),
-        "\\#".repeat(1024)
-    );
-    assert_eq!(
-        LateXEscape::from("#".repeat(129).as_ref()).to_string(),
-        "\\#".repeat(129)
-    );
-    assert_eq!(
-        LateXEscape::from("#".repeat(128 * 2 - 1).as_ref()).to_string(),
-        "\\#".repeat(128 * 2 - 1)
-    );
-    assert_eq!(
-        LateXEscape::from("#".repeat(128 * 8 - 1).as_ref()).to_string(),
-        "\\#".repeat(128 * 8 - 1)
-    );
-    assert_eq!(LateXEscape::from(string_long).to_string(), string_long);
-    assert_eq!(
-        LateXEscape::from([string_long, "#"].join("").as_ref()).to_string(),
-        [string_long, "\\#"].join("")
-    );
-    assert_eq!(
-        LateXEscape::from(["#", string_long].join("").as_ref()).to_string(),
-        ["\\#", string_long].join("")
-    );
-    assert_eq!(
-        LateXEscape::from(escapes.repeat(1024).as_ref()).to_string(),
+        VLatexescape::from(escapes.repeat(1024).as_ref()).to_string(),
         escaped.repeat(1024)
     );
     assert_eq!(
-        LateXEscape::from(
+        VLatexescape::from([short, escapes, short].join("").as_ref()).to_string(),
+        [short, escaped, short].join("")
+    );
+    assert_eq!(
+        VLatexescape::from([escapes, short].join("").as_ref()).to_string(),
+        [escaped, short].join("")
+    );
+    assert_eq!(
+        VLatexescape::from(["f", escapes, short].join("").as_ref()).to_string(),
+        ["f", escaped, short].join("")
+    );
+    assert_eq!(
+        VLatexescape::from(["f", escapes].join("").as_ref()).to_string(),
+        ["f", escaped].join("")
+    );
+    assert_eq!(
+        VLatexescape::from(["fo", escapes].join("").as_ref()).to_string(),
+        ["fo", escaped].join("")
+    );
+    assert_eq!(
+        VLatexescape::from(["fo", escapes, "b"].join("").as_ref()).to_string(),
+        ["fo", escaped, "b"].join("")
+    );
+    assert_eq!(
+        VLatexescape::from(escapes.repeat(2).as_ref()).to_string(),
+        escaped.repeat(2)
+    );
+    assert_eq!(
+        VLatexescape::from(escapes.repeat(3).as_ref()).to_string(),
+        escaped.repeat(3)
+    );
+    assert_eq!(
+        VLatexescape::from(["f", &escapes.repeat(2)].join("").as_ref()).to_string(),
+        ["f", &escaped.repeat(2)].join("")
+    );
+    assert_eq!(
+        VLatexescape::from(["fo", &escapes.repeat(2)].join("").as_ref()).to_string(),
+        ["fo", &escaped.repeat(2)].join("")
+    );
+    assert_eq!(
+        VLatexescape::from(["fo", &escapes.repeat(2), "bar"].join("").as_ref()).to_string(),
+        ["fo", &escaped.repeat(2), "bar"].join("")
+    );
+    assert_eq!(
+        VLatexescape::from(["fo", &escapes.repeat(3), "bar"].join("").as_ref()).to_string(),
+        ["fo", &escaped.repeat(3), "bar"].join("")
+    );
+    assert_eq!(
+        VLatexescape::from([&escapes.repeat(3), "bar"].join("").as_ref()).to_string(),
+        [&escaped.repeat(3), "bar"].join("")
+    );
+    assert_eq!(
+        VLatexescape::from([short, &escapes.repeat(3), "bar"].join("").as_ref()).to_string(),
+        [short, &escaped.repeat(3), "bar"].join("")
+    );
+    assert_eq!(
+        VLatexescape::from([short, &escapes.repeat(5), "bar"].join("").as_ref()).to_string(),
+        [short, &escaped.repeat(5), "bar"].join("")
+    );
+    assert_eq!(
+        VLatexescape::from(
             [string_long, &escapes.repeat(13)]
                 .join("")
                 .repeat(1024)
@@ -92,52 +112,33 @@ fn test_escape() {
         [string_long, &escaped.repeat(13)].join("").repeat(1024)
     );
     assert_eq!(
-        LateXEscape::from([string_long, "#", string_long].join("").as_ref()).to_string(),
-        [string_long, "\\#", string_long].join("")
+        VLatexescape::from([utf8, escapes, short].join("").as_ref()).to_string(),
+        [utf8, escaped, short].join("")
     );
     assert_eq!(
-        LateXEscape::from(
-            [string_long, "#", string_long, escapes, string_long,]
+        VLatexescape::from([utf8, escapes, utf8].join("").as_ref()).to_string(),
+        [utf8, escaped, utf8].join("")
+    );
+    assert_eq!(
+        VLatexescape::from([&utf8.repeat(124), escapes, utf8].join("").as_ref()).to_string(),
+        [&utf8.repeat(124), escaped, utf8].join("")
+    );
+    assert_eq!(
+        VLatexescape::from(
+            [escapes, &utf8.repeat(124), escapes, utf8]
                 .join("")
                 .as_ref()
         )
         .to_string(),
-        [string_long, "\\#", string_long, escaped, string_long,].join("")
-    );
-
-    let string_short = "Lorem ipsum dolor sit amet,#foo>bar&foo\"bar\\foo/bar";
-    let string_short_escaped =
-        "Lorem ipsum dolor sit amet,\\#foo>bar\\&foo\"bar\\textbackslash{}foo/bar";
-    let no_escape = "Lorem ipsum dolor sit amet,";
-    let no_escape_long = r#"
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin scelerisque eu urna in aliquet.
-Phasellus ac nulla a urna sagittis consequat id quis est. Nullam eu ex eget erat accumsan dictum
-ac lobortis urna. Etiam fermentum ut quam at dignissim. Curabitur vestibulum luctus tellus, sit
-amet lobortis augue tempor faucibus. Nullam sed felis eget odio elementum euismod in sit amet massa.
-Vestibulum sagittis purus sit amet eros auctor, sit amet pharetra purus dapibus. Donec ornare metus
-vel dictum porta. Etiam ut nisl nisi. Nullam rutrum porttitor mi. Donec aliquam ac ipsum eget
-hendrerit. Cras faucibus, eros ut pharetra imperdiet, est tellus aliquet felis, eget convallis
-lacus ipsum eget quam. Vivamus orci lorem, maximus ac mi eget, bibendum vulputate massa. In
-vestibulum dui hendrerit, vestibulum lacus sit amet, posuere erat. Vivamus euismod massa diam,
-vulputate euismod lectus vestibulum nec. Donec sit amet massa magna. Nunc ipsum nulla, euismod
-quis lacus at, gravida maximus elit. Duis tristique, nisl nullam.
-    "#;
-
-    assert_eq!(LateXEscape::from(no_escape).to_string(), no_escape);
-    assert_eq!(
-        LateXEscape::from(no_escape_long).to_string(),
-        no_escape_long
+        [escaped, &utf8.repeat(124), escaped, utf8].join("")
     );
     assert_eq!(
-        LateXEscape::from(string_short).to_string(),
-        string_short_escaped
-    );
-    assert_eq!(
-        LateXEscape::from(string_short.repeat(1024).as_ref()).to_string(),
-        string_short_escaped.repeat(1024)
-    );
-    assert_eq!(
-        LateXEscape::from(string_short).to_string(),
-        string_short_escaped
+        VLatexescape::from(
+            [escapes, &utf8.repeat(124), escapes, utf8, escapes]
+                .join("")
+                .as_ref()
+        )
+        .to_string(),
+        [escaped, &utf8.repeat(124), escaped, utf8, escaped].join("")
     );
 }
