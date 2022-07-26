@@ -1,3 +1,4 @@
+use crate::ranges::{Feature, Switch};
 use crate::utils::ident;
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
@@ -17,7 +18,7 @@ fn index(a: &Ident, b: &TokenStream) -> TokenStream {
 }
 
 #[derive(Copy, Clone)]
-struct BodyArg<'a> {
+pub struct BodyArg<'a> {
     start: &'a Ident,
     fmt: &'a Ident,
     bytes: &'a Ident,
@@ -43,7 +44,7 @@ fn escape_body(
     }
 }
 
-fn mask_body(i: &TokenStream, arg: BodyArg) -> TokenStream {
+pub fn mask_body(i: &TokenStream, arg: BodyArg) -> TokenStream {
     let var = &ident("i");
     let body = escape_body(var, arg);
     quote! {
@@ -52,28 +53,28 @@ fn mask_body(i: &TokenStream, arg: BodyArg) -> TokenStream {
     }
 }
 
-trait CB: Fn(&TokenStream, BodyArg) -> TokenStream {}
+pub trait CB: Fn(&TokenStream, BodyArg) -> TokenStream {}
 impl<T: Fn(&TokenStream, BodyArg) -> TokenStream> CB for T {}
 
-struct BodiesArg<'a, F: CB> {
-    t: &'a Ident,
-    q: &'a Ident,
-    q_len: &'a Ident,
-    i: &'a TokenStream,
-    b: &'a TokenStream,
-    start: &'a Ident,
-    fmt: &'a Ident,
-    bytes: &'a Ident,
-    callback: F,
+pub struct BodiesArg<'a, F: CB> {
+    pub t: &'a Ident,
+    pub q: &'a Ident,
+    pub q_len: &'a Ident,
+    pub i: &'a TokenStream,
+    pub b: &'a TokenStream,
+    pub start: &'a Ident,
+    pub fmt: &'a Ident,
+    pub bytes: &'a Ident,
+    pub callback: F,
 }
 
 // TODO: bodies one
-enum Bodies {
+pub enum Bodies {
     Reg,
     Exact,
 }
 
-fn bodies<F: CB>(
+pub fn bodies<F: CB>(
     kind: Bodies,
     BodiesArg {
         t,

@@ -5,6 +5,7 @@ use clap::Parser;
 mod generator;
 mod macros;
 mod ranges;
+mod test;
 mod utils;
 
 /// V_escape codegen

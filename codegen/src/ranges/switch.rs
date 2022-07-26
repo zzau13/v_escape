@@ -1,6 +1,8 @@
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 
+use crate::macros::Bodies;
+
 #[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Switch {
@@ -55,6 +57,15 @@ pub enum Switch {
 }
 
 use Switch::*;
+
+impl Into<Bodies> for Switch {
+    fn into(self) -> Bodies {
+        match self {
+            ArBC { .. } | ArBrCr { .. } | ArBrC { .. } => Bodies::Reg,
+            _ => Bodies::Exact,
+        }
+    }
+}
 
 impl Switch {
     pub fn translations_avx(&self) -> (TokenStream, fn(&Ident) -> TokenStream) {
@@ -441,182 +452,4 @@ impl Switch {
             },
         }
     }
-}
-
-#[macro_export]
-#[doc(hidden)]
-/// Generate mask bodies callback
-///
-/// Defining exact match or false positive
-/// ## The following macros must be defined
-///
-/// * `mask_bodies_callback($callback:path)`
-///     select between `mask_bodies`
-///
-macro_rules! mask_bodies_escaping {
-    ($fa:expr, 128, ) => {
-        mask_bodies_callback!($crate::bodies_exact_one);
-    };
-    ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
-        mask_bodies_callback!($crate::bodies);
-    };
-    ($la:expr, $ra:expr, $lb:expr, $rb:expr, $lc:expr, $rc:expr, ) => {
-        mask_bodies_callback!($crate::bodies);
-    };
-    ($la:expr, $ra:expr, $lb:expr, $rb:expr, $c:expr, ) => {
-        mask_bodies_callback!($crate::bodies);
-    };
-    ($($t:tt)+) => {
-        mask_bodies_callback!($crate::bodies_exact);
-    };
-}
-
-#[macro_export]
-#[doc(hidden)]
-/// Generate mask bodies callback
-///
-/// Defining exact match or false positive
-/// ## The following macros must be defined
-///
-/// * `mask_bodies_callback($callback:path)`
-///     select between `mask_bodies`
-///
-macro_rules! mask_bodies_escaping_ptr {
-    ($fa:expr, 128, ) => {
-        mask_bodies_callback!($crate::bodies_exact_one_ptr);
-    };
-    ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
-        mask_bodies_callback!($crate::bodies_ptr);
-    };
-    ($la:expr, $ra:expr, $lb:expr, $rb:expr, $lc:expr, $rc:expr, ) => {
-        mask_bodies_callback!($crate::bodies_ptr);
-    };
-    ($la:expr, $ra:expr, $lb:expr, $rb:expr, $c:expr, ) => {
-        mask_bodies_callback!($crate::bodies_ptr);
-    };
-    ($($t:tt)+) => {
-        mask_bodies_callback!($crate::bodies_exact_ptr);
-    };
-}
-
-#[macro_export]
-#[doc(hidden)]
-/// Generate mask bodies callback
-///
-/// Defining exact match or false positive
-/// ## The following macros must be defined
-///
-/// * `mask_bodies_callback($callback:path)`
-///     select between `mask_bodies`
-///
-macro_rules! mask_bodies_escaping_bytes {
-    ($fa:expr, 128, ) => {
-        mask_bodies_callback!($crate::bodies_exact_one_bytes);
-    };
-    ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
-        mask_bodies_callback!($crate::bodies_bytes);
-    };
-    ($la:expr, $ra:expr, $lb:expr, $rb:expr, $lc:expr, $rc:expr, ) => {
-        mask_bodies_callback!($crate::bodies_bytes);
-    };
-    ($la:expr, $ra:expr, $lb:expr, $rb:expr, $c:expr, ) => {
-        mask_bodies_callback!($crate::bodies_bytes);
-    };
-    ($($t:tt)+) => {
-        mask_bodies_callback!($crate::bodies_exact_bytes);
-    };
-}
-
-#[macro_export]
-#[doc(hidden)]
-/// Generate mask bodies callback
-///
-/// Defining exact match or false positive
-///
-/// ## The following macros must be defined
-///
-///  * `$crate::switch_main_loop!(impl [024] for ($len:ident, $ptr:ident, $end_ptr:ident)`
-///    switch between main loops in avx
-///
-macro_rules! avx_main_loop {
-    (($len:ident, $ptr:ident, $end_ptr:ident) $($t:tt, )+) => {
-        macro_rules! _inside {
-            ($la:expr, $ra:expr, $fb:expr, $fc:expr, 128, ) => {
-                $crate::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
-            ($fa:expr, $fb:expr, $fc:expr, 128, ) => {
-                $crate::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
-            ($fa:expr, $fb:expr, 128, ) => {
-                $crate::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
-            ($fa:expr, 128, ) => {
-                $crate::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
-            // TODO: https://github.com/rust-lang-nursery/stdsimd/issues/674
-            ($la:expr, $ra:expr, $lb:expr, $rb:expr, $lc:expr, $rc:expr, ) => {
-                $crate::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
-            ($la:expr, $ra:expr, $lb:expr, $rb:expr, $c:expr, ) => {
-                $crate::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
-            ($la:expr, $ra:expr, $lb:expr, $rb:expr, ) => {
-                $crate::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));};
-            ($la:expr, $ra:expr, $b:expr, ) => {
-                $crate::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));
-            };
-            ($la:expr, $ra:expr, ) => {
-                $crate::switch_main_loop!(impl 4 for ($len, $ptr, $end_ptr));
-            };
-        }
-
-        _inside!($($t, )+);
-    };
-}
-
-#[macro_export]
-#[doc(hidden)]
-/// Generate avx main loops
-macro_rules! switch_main_loop {
-    (impl 0 for ($len:ident, $ptr:ident, $end_ptr:ident)) => {
-    };
-    (impl 2 for ($len:ident, $ptr:ident, $end_ptr:ident)) => {
-        const _ONSWITCH_M256_VECTOR_SIZE: usize = std::mem::size_of::<__m256i>();
-        const LOOP_SIZE: usize = 2 * _ONSWITCH_M256_VECTOR_SIZE;
-
-        if LOOP_SIZE <= $len {
-            while $ptr <= $end_ptr.sub(LOOP_SIZE) {
-                debug_assert_eq!(0, ($ptr as usize) % _ONSWITCH_M256_VECTOR_SIZE);
-
-                // Using function `_mm256_load_si256` for faster behavior on aligned bytes.
-                // Getting 2sets of $length `_ONSWITCH_M256_VECTOR_SIZE` each (`LOOP_SIZE=4*_ONSWITCH_M256_VECTOR_SIZE`)
-                let cmp_a = {
-                    let a = _mm256_load_si256($ptr as *const __m256i);
-                    masking!(a)
-                };
-
-                let cmp_b = {
-                    let a = _mm256_load_si256($ptr.add(_ONSWITCH_M256_VECTOR_SIZE) as *const __m256i);
-                    masking!(a)
-                };
-
-                // Combining the 2 sets using `or` logic operator by pairs. Then we write the
-                // mask for the 2 sets of `_ONSWITCH_M256_VECTOR_SIZE` elements each, and make the pointer
-                // point to the next `LOOP_SIZE` elements
-                if _mm256_movemask_epi8(_mm256_or_si256(cmp_a, cmp_b)) != 0
-                {
-                    let mut mask = _mm256_movemask_epi8(cmp_a);
-                    if mask != 0 {
-                        write_mask!(mask, $ptr);
-                    }
-
-                    mask = _mm256_movemask_epi8(cmp_b);
-                    if mask != 0 {
-                        let $ptr = $ptr.add(_ONSWITCH_M256_VECTOR_SIZE);
-                        write_mask!(mask, $ptr);
-                    }
-
-                }
-
-                $ptr = $ptr.add(LOOP_SIZE);
-            }
-        }
-    };
-    (impl 4 for ($len:ident, $ptr:ident, $end_ptr:ident)) => {
-
-    };
 }

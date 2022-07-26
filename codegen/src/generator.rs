@@ -14,6 +14,7 @@ use syn::{parenthesized, Token};
 use toml::Value;
 
 use crate::ranges::{escape_range, Feature, Switch};
+use crate::utils::ident;
 
 #[derive(Serialize)]
 struct Dep {
@@ -183,6 +184,7 @@ impl Builder {
     }
 }
 
+pub type Tables = (Ident, Ident, Ident);
 struct Generator<'a> {
     pairs: &'a [Pair],
 }
@@ -195,22 +197,25 @@ impl<'a> Generator<'a> {
     pub fn build(&self) -> TokenStream {
         let mut buf = TokenStream::new();
 
-        self.write_static_table(&mut buf);
-        self.write_functions(&mut buf);
+        let tables = &self.write_static_table(&mut buf);
+        self.write_functions(tables, &mut buf);
         // self.write_cfg_if(&mut buf);
 
         buf
     }
 
-    fn write_static_table(&self, buf: &mut TokenStream) {
+    fn write_static_table(&self, buf: &mut TokenStream) -> Tables {
         let len = self.pairs.len();
-        let quote = &self.pairs[0].quote;
+        let v_char = ident("V_ESCAPE_CHARS");
+        let v_quotes = ident("V_ESCAPE_QUOTES");
+        let v_len = ident("V_ESCAPE_LEN");
 
         if len == 1 {
             let ch = self.pairs[0].ch;
+            let quote = &self.pairs[0].quote;
             buf.extend(quote! {
-                const V_ESCAPE_CHAR: u8 = #ch;
-                static V_ESCAPE_QUOTES: &str = #quote;
+                const #v_char: u8 = #ch;
+                static #v_quotes: &str = #quote;
             })
         } else {
             let mut chs = Vec::with_capacity(256);
@@ -220,19 +225,21 @@ impl<'a> Generator<'a> {
             }
             let quotes: Vec<&str> = self.pairs.iter().map(|s| s.quote.as_str()).collect();
             buf.extend(quote! {
-                static V_ESCAPE_TABLE: [u8; 256] = [#(#chs),*];
-                static V_ESCAPE_QUOTES: [&str; #len] = [#(#quotes),*];
+                static #v_char: [u8; 256] = [#(#chs),*];
+                static #v_quotes: [&str; #len] = [#(#quotes),*];
             })
         }
         buf.extend(quote! {
-            const V_ESCAPE_LEN: usize = #len;
-        })
+            const #v_len: usize = #len;
+        });
+
+        (v_char, v_quotes, v_len)
     }
 
-    fn write_functions(&self, buf: &mut TokenStream) {
+    fn write_functions(&self, tables: &Tables, buf: &mut TokenStream) {
         self.write_scalar(buf);
         self.write_ch(buf);
-        self.write_ranges(buf);
+        self.write_ranges(tables, buf);
     }
 
     fn write_ch(&self, buf: &mut TokenStream) {
@@ -263,10 +270,10 @@ impl<'a> Generator<'a> {
         buf.extend(code);
     }
 
-    fn write_ranges(&self, buf: &mut TokenStream) {
+    fn write_ranges(&self, tables: &Tables, buf: &mut TokenStream) {
         let ranges = self.calculate_ranges();
-        let mod_avx = escape_range(ranges, Feature::Avx2);
-        let mod_sse = escape_range(ranges, Feature::Sse2);
+        let mod_avx = escape_range(ranges, tables, Feature::Avx2);
+        let mod_sse = escape_range(ranges, tables, Feature::Sse2);
 
         buf.extend(quote! {
             #[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
@@ -277,6 +284,7 @@ impl<'a> Generator<'a> {
                 }
                 pub mod sse {
                     use super::super::*;
+                    #mod_sse
                 }
             }
         })
