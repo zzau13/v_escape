@@ -9,14 +9,16 @@ mod avx;
 mod sse;
 mod switch;
 
+use crate::generator::Tables;
+use crate::macros::{bodies, mask_body, BodiesArg};
+use crate::scalar::{escape_scalar, ArgScalar};
+
 #[derive(Copy, Clone)]
 pub enum Feature {
     Avx2,
     Sse2,
 }
-use crate::generator::Tables;
-use crate::macros::{bodies, mask_body, BodiesArg};
-use crate::scalar::{escape_scalar, ArgScalar};
+
 use Feature::*;
 
 pub trait WriteMask: Fn(&Ident, &Ident) -> TokenStream + Copy {}
@@ -50,7 +52,6 @@ impl Feature {
 }
 
 pub fn escape_range(s: Switch, tables: &Tables, f: Feature) -> TokenStream {
-    let len = &ident("len");
     let start_ptr = &ident("start_ptr");
     let end_ptr = &ident("end_ptr");
     let ptr = &ident("ptr");
@@ -58,6 +59,7 @@ pub fn escape_range(s: Switch, tables: &Tables, f: Feature) -> TokenStream {
     let cur = &ident("cur");
     let start = &ident("start");
     let fmt = &ident("fmt");
+    let len = &ident("len");
     let bytes = &ident("bytes");
     let body = bodies(
         s.into(),
@@ -92,6 +94,7 @@ pub fn escape_range(s: Switch, tables: &Tables, f: Feature) -> TokenStream {
                 fmt,
                 start_ptr,
                 start,
+                len,
                 s,
             },
             tables,

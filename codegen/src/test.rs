@@ -44,6 +44,30 @@ mod scalar {
         fmt.write_str(std::str::from_utf8_unchecked(&bytes[start..]))?;
         Ok(())
     }
+    #[cfg(features = "bytes-buf")]
+    pub unsafe fn b_escape<B: buf_min::Buffer>(bytes: &[u8], fmt: &mut B) {
+        let len = bytes.len();
+        let start_ptr = bytes.as_ptr();
+        let end_ptr = bytes[len..].as_ptr();
+        let mut ptr = start_ptr;
+        let mut start = 0;
+        while ptr < end_ptr {
+            let c = *V_ESCAPE_CHARS.as_ptr().add(*ptr as usize) as usize;
+            if c < V_ESCAPE_LEN {
+                let i = sub(ptr, start_ptr);
+                if start < i {
+                    fmt.extend_from_slice(&bytes[start..i]);
+                }
+                fmt.extend_from_slice(*V_ESCAPE_QUOTES.as_ptr().add(c as usize).as_bytes());
+                start = i + 1;
+            }
+            ptr = ptr.offset(1);
+        }
+        debug_assert!(start <= len);
+        if start < len {
+            fmt.extend_from_slice(&bytes[start..]);
+        }
+    }
 }
 #[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
 mod ranges {
