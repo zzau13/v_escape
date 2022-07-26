@@ -6,7 +6,6 @@ mod generator;
 mod macros;
 mod ranges;
 mod scalar;
-mod test;
 mod utils;
 
 /// V_escape codegen

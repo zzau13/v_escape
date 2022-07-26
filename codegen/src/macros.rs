@@ -128,7 +128,7 @@ pub fn escape_body_bytes(
     }
 }
 
-fn mask_body_bytes(i: &TokenStream, arg: BodyArg) -> TokenStream {
+pub fn mask_body_bytes(i: &TokenStream, arg: BodyArg) -> TokenStream {
     let var = &ident("i");
     let body = escape_body_bytes(&var.to_token_stream(), arg);
     quote! {

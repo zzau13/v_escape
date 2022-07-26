@@ -13,7 +13,7 @@ use syn::Lit;
 use syn::{parenthesized, Token};
 use toml::Value;
 
-use crate::ranges::{escape_range, Feature, Switch};
+use crate::ranges::{escape_range, escape_range_bytes, Feature, Switch};
 use crate::scalar::{escape_scalar, escape_scalar_bytes, ArgScalar};
 use crate::utils::ident;
 
@@ -328,6 +328,8 @@ impl<'a> Generator<'a> {
     fn write_ranges(&self, switch: Switch, tables: &Tables, buf: &mut TokenStream) {
         let mod_avx = escape_range(switch, tables, Feature::Avx2);
         let mod_sse = escape_range(switch, tables, Feature::Sse2);
+        let mod_avx_bytes = escape_range_bytes(switch, tables, Feature::Avx2);
+        let mod_sse_bytes = escape_range_bytes(switch, tables, Feature::Sse2);
 
         buf.extend(quote! {
             #[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
@@ -335,10 +337,12 @@ impl<'a> Generator<'a> {
                 pub mod avx {
                     use super::super::*;
                     #mod_avx
+                    #mod_avx_bytes
                 }
                 pub mod sse {
                     use super::super::*;
                     #mod_sse
+                    #mod_sse_bytes
                 }
             }
         })
