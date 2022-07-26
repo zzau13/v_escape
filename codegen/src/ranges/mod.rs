@@ -87,27 +87,27 @@ pub fn escape_range(s: Switch, (t, q, q_len): &Tables, f: Feature) -> TokenStrea
         write_mask: |mask: &Ident, ptr: &Ident| {
             let body = mask_bodies(mask);
             quote! {
-                let #at = crate::sub!(#ptr, #start_ptr);
+                let #at = sub(#ptr, #start_ptr);
                 let mut #cur = #mask.trailing_zeros() as usize;
 
                 loop {
                     #body
                 }
 
-                debug_assert_eq!(#at, #ptr - #start_ptr)
+                debug_assert_eq!(#at, sub(#ptr,  #start_ptr))
             }
         },
         write_forward: |mask: &Ident, align: &Ident| {
             let body = mask_bodies(mask);
             quote! {
-                let #at = crate::sub!(#ptr, #start_ptr);
+                let #at = sub(#ptr, #start_ptr);
                 let mut #cur = #mask.trailing_zeros() as usize;
 
                 while #cur < #align {
                     #body
                 }
 
-                debug_assert_eq!(#at, #ptr - #start_ptr)
+                debug_assert_eq!(#at, sub(#ptr, #start_ptr))
             }
         },
     };

@@ -16,6 +16,11 @@ static V_ESCAPE_CHARS: [u8; 256] = [
 ];
 static V_ESCAPE_QUOTES: [&str; 6usize] = ["&quot;", "&amp;", "&#x27;", "&#x2f;", "&lt;", "&gt;"];
 const V_ESCAPE_LEN: usize = 6usize;
+#[inline(always)]
+fn sub(a: *const u8, b: *const u8) -> usize {
+    debug_assert!(b <= a);
+    (a as usize) - (b as usize)
+}
 mod scalar {
     use super::*;
 }
@@ -43,39 +48,32 @@ mod ranges {
                 const M128_VECTOR_SIZE: usize = std::mem::size_of::<__m128i>();
                 const M128_VECTOR_ALIGN: usize = M128_VECTOR_SIZE - 1;
                 if len < M128_VECTOR_SIZE {
-                    fallback!();
                 } else {
                     const TRANSLATION_A: i8 = i8::MAX - 39i8;
                     const BELOW_A: i8 = i8::MAX - (39i8 - 34i8) - 1;
                     const TRANSLATION_B: i8 = i8::MAX - 62i8;
                     const BELOW_B: i8 = i8::MAX - (62i8 - 60i8) - 1;
                     const C: i8 = 47i8;
-                    let v_translation_a = _mm128_set1_epi8(TRANSLATION_A);
-                    let v_below_a = _mm128_set1_epi8(BELOW_A);
-                    let v_translation_b = _mm128_set1_epi8(TRANSLATION_B);
-                    let v_below_b = _mm128_set1_epi8(BELOW_B);
-                    let v_c = _mm128_set1_epi8(C);
+                    let v_translation_a = _mm_set1_epi8(TRANSLATION_A);
+                    let v_below_a = _mm_set1_epi8(BELOW_A);
+                    let v_translation_b = _mm_set1_epi8(TRANSLATION_B);
+                    let v_below_b = _mm_set1_epi8(BELOW_B);
+                    let v_c = _mm_set1_epi8(C);
                     {
                         let align = M128_VECTOR_SIZE - (start_ptr as usize & M128_VECTOR_ALIGN);
                         if align < M128_VECTOR_SIZE {
                             let mut mask = {
                                 let a = _mm_loadu_si128(ptr as *const __m128i);
-                                _mm_movemask_epi8(_mm128_or_si128(
-                                    _mm128_or_si128(
-                                        _mm128_cmpgt_epi8(
-                                            _mm128_add_epi8(a, v_translation_a),
-                                            v_below_a,
-                                        ),
-                                        _mm128_cmpgt_epi8(
-                                            _mm128_add_epi8(a, v_translation_b),
-                                            v_below_b,
-                                        ),
+                                _mm_movemask_epi8(_mm_or_si128(
+                                    _mm_or_si128(
+                                        _mm_cmpgt_epi8(_mm_add_epi8(a, v_translation_a), v_below_a),
+                                        _mm_cmpgt_epi8(_mm_add_epi8(a, v_translation_b), v_below_b),
                                     ),
-                                    _mm128_cmpeq_epi8(a, v_c),
+                                    _mm_cmpeq_epi8(a, v_c),
                                 ))
                             };
                             if mask != 0 {
-                                let at = crate::sub!(ptr, start_ptr);
+                                let at = sub(ptr, start_ptr);
                                 let mut cur = mask.trailing_zeros() as usize;
                                 while cur < align {
                                     let c = unsafe {
@@ -100,7 +98,7 @@ mod ranges {
                                     }
                                     cur = mask.trailing_zeros() as usize;
                                 }
-                                debug_assert_eq!(at, ptr - start_ptr)
+                                debug_assert_eq!(at, sub(ptr, start_ptr))
                             }
                             ptr = ptr.add(align);
                         }
@@ -109,22 +107,16 @@ mod ranges {
                         debug_assert_eq!(0, (ptr as usize) % M128_VECTOR_SIZE);
                         let mut mask = {
                             let a = _mm_load_si128(ptr as *const __m128i);
-                            _mm_movemask_epi8(_mm128_or_si128(
-                                _mm128_or_si128(
-                                    _mm128_cmpgt_epi8(
-                                        _mm128_add_epi8(a, v_translation_a),
-                                        v_below_a,
-                                    ),
-                                    _mm128_cmpgt_epi8(
-                                        _mm128_add_epi8(a, v_translation_b),
-                                        v_below_b,
-                                    ),
+                            _mm_movemask_epi8(_mm_or_si128(
+                                _mm_or_si128(
+                                    _mm_cmpgt_epi8(_mm_add_epi8(a, v_translation_a), v_below_a),
+                                    _mm_cmpgt_epi8(_mm_add_epi8(a, v_translation_b), v_below_b),
                                 ),
-                                _mm128_cmpeq_epi8(a, v_c),
+                                _mm_cmpeq_epi8(a, v_c),
                             ))
                         };
                         if mask != 0 {
-                            let at = crate::sub!(ptr, start_ptr);
+                            let at = sub(ptr, start_ptr);
                             let mut cur = mask.trailing_zeros() as usize;
                             loop {
                                 let c =
@@ -149,33 +141,27 @@ mod ranges {
                                 }
                                 cur = mask.trailing_zeros() as usize;
                             }
-                            debug_assert_eq!(at, ptr - start_ptr);
+                            debug_assert_eq!(at, sub(ptr, start_ptr));
                         }
                         ptr = ptr.add(M128_VECTOR_SIZE);
                     }
                     debug_assert!(end_ptr.sub(M128_VECTOR_SIZE) < ptr);
                     if ptr < end_ptr {
-                        let d = M128_VECTOR_SIZE - crate::sub!(end_ptr, ptr);
+                        let d = M128_VECTOR_SIZE - sub(end_ptr, ptr);
                         let mut mask = ({
-                            debug_assert_eq!(M128_VECTOR_SIZE, crate::sub!(end_ptr, ptr.sub(d)));
+                            debug_assert_eq!(M128_VECTOR_SIZE, sub(end_ptr, ptr.sub(d)));
                             let a = _mm_loadu_si128(ptr.sub(d) as *const __m128i);
-                            _mm_movemask_epi8(_mm128_or_si128(
-                                _mm128_or_si128(
-                                    _mm128_cmpgt_epi8(
-                                        _mm128_add_epi8(a, v_translation_a),
-                                        v_below_a,
-                                    ),
-                                    _mm128_cmpgt_epi8(
-                                        _mm128_add_epi8(a, v_translation_b),
-                                        v_below_b,
-                                    ),
+                            _mm_movemask_epi8(_mm_or_si128(
+                                _mm_or_si128(
+                                    _mm_cmpgt_epi8(_mm_add_epi8(a, v_translation_a), v_below_a),
+                                    _mm_cmpgt_epi8(_mm_add_epi8(a, v_translation_b), v_below_b),
                                 ),
-                                _mm128_cmpeq_epi8(a, v_c),
+                                _mm_cmpeq_epi8(a, v_c),
                             ))
                         } as u16)
                             .wrapping_shr(d as u32);
                         if mask != 0 {
-                            let at = crate::sub!(ptr, start_ptr);
+                            let at = sub(ptr, start_ptr);
                             let mut cur = mask.trailing_zeros() as usize;
                             loop {
                                 let c =
@@ -200,7 +186,7 @@ mod ranges {
                                 }
                                 cur = mask.trailing_zeros() as usize;
                             }
-                            debug_assert_eq!(at, ptr - start_ptr)
+                            debug_assert_eq!(at, sub(ptr, start_ptr))
                         }
                     }
                 }
@@ -236,7 +222,7 @@ mod ranges {
                             ))
                         };
                         if mask != 0 {
-                            let at = crate::sub!(ptr, start_ptr);
+                            let at = sub(ptr, start_ptr);
                             let mut cur = mask.trailing_zeros() as usize;
                             while cur < align {
                                 let c =
@@ -261,7 +247,7 @@ mod ranges {
                                 }
                                 cur = mask.trailing_zeros() as usize;
                             }
-                            debug_assert_eq!(at, ptr - start_ptr)
+                            debug_assert_eq!(at, sub(ptr, start_ptr))
                         }
                         ptr = ptr.add(align);
                     }
@@ -342,7 +328,7 @@ mod ranges {
                         {
                             let mut mask = _mm256_movemask_epi8(cmp_a);
                             if mask != 0 {
-                                let at = crate::sub!(ptr, start_ptr);
+                                let at = sub(ptr, start_ptr);
                                 let mut cur = mask.trailing_zeros() as usize;
                                 loop {
                                     let c = unsafe {
@@ -367,12 +353,12 @@ mod ranges {
                                     }
                                     cur = mask.trailing_zeros() as usize;
                                 }
-                                debug_assert_eq!(at, ptr - start_ptr)
+                                debug_assert_eq!(at, sub(ptr, start_ptr))
                             }
                             mask = _mm256_movemask_epi8(cmp_b);
                             if mask != 0 {
                                 let ptr = ptr.add(M256_VECTOR_SIZE);
-                                let at = crate::sub!(ptr, start_ptr);
+                                let at = sub(ptr, start_ptr);
                                 let mut cur = mask.trailing_zeros() as usize;
                                 loop {
                                     let c = unsafe {
@@ -397,12 +383,12 @@ mod ranges {
                                     }
                                     cur = mask.trailing_zeros() as usize;
                                 }
-                                debug_assert_eq!(at, ptr - start_ptr)
+                                debug_assert_eq!(at, sub(ptr, start_ptr))
                             }
                             mask = _mm256_movemask_epi8(cmp_c);
                             if mask != 0 {
                                 let ptr = ptr.add(M256_VECTOR_SIZE * 2);
-                                let at = crate::sub!(ptr, start_ptr);
+                                let at = sub(ptr, start_ptr);
                                 let mut cur = mask.trailing_zeros() as usize;
                                 loop {
                                     let c = unsafe {
@@ -427,12 +413,12 @@ mod ranges {
                                     }
                                     cur = mask.trailing_zeros() as usize;
                                 }
-                                debug_assert_eq!(at, ptr - start_ptr)
+                                debug_assert_eq!(at, sub(ptr, start_ptr))
                             }
                             mask = _mm256_movemask_epi8(cmp_d);
                             if mask != 0 {
                                 let ptr = ptr.add(M256_VECTOR_SIZE * 3);
-                                let at = crate::sub!(ptr, start_ptr);
+                                let at = sub(ptr, start_ptr);
                                 let mut cur = mask.trailing_zeros() as usize;
                                 loop {
                                     let c = unsafe {
@@ -457,7 +443,7 @@ mod ranges {
                                     }
                                     cur = mask.trailing_zeros() as usize;
                                 }
-                                debug_assert_eq!(at, ptr - start_ptr)
+                                debug_assert_eq!(at, sub(ptr, start_ptr))
                             }
                         }
                         ptr = ptr.add(LOOP_SIZE);
@@ -476,7 +462,7 @@ mod ranges {
                         ))
                     };
                     if mask != 0 {
-                        let at = crate::sub!(ptr, start_ptr);
+                        let at = sub(ptr, start_ptr);
                         let mut cur = mask.trailing_zeros() as usize;
                         loop {
                             let c = unsafe { *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize) }
@@ -500,19 +486,15 @@ mod ranges {
                             }
                             cur = mask.trailing_zeros() as usize;
                         }
-                        debug_assert_eq!(at, ptr - start_ptr)
+                        debug_assert_eq!(at, sub(ptr, start_ptr))
                     }
                     ptr = ptr.add(M256_VECTOR_SIZE);
                 }
                 debug_assert!(end_ptr.sub(M256_VECTOR_SIZE) < ptr);
                 if ptr < end_ptr {
-                    let d = M256_VECTOR_SIZE - crate::sub!(end_ptr, ptr);
+                    let d = M256_VECTOR_SIZE - sub(end_ptr, ptr);
                     let mut mask = ({
-                        debug_assert_eq!(
-                            M256_VECTOR_SIZE,
-                            crate::sub!(end_ptr, ptr.sub(d)),
-                            "Over runs"
-                        );
+                        debug_assert_eq!(M256_VECTOR_SIZE, sub(end_ptr, ptr.sub(d)), "Over runs");
                         let a = _mm256_loadu_si256(ptr.sub(d) as *const __m256i);
                         _mm256_movemask_epi8(_mm256_or_si256(
                             _mm256_or_si256(
@@ -524,7 +506,7 @@ mod ranges {
                     } as u32)
                         .wrapping_shr(d as u32);
                     if mask != 0 {
-                        let at = crate::sub!(ptr, start_ptr);
+                        let at = sub(ptr, start_ptr);
                         let mut cur = mask.trailing_zeros() as usize;
                         loop {
                             let c = unsafe { *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize) }
@@ -548,7 +530,7 @@ mod ranges {
                             }
                             cur = mask.trailing_zeros() as usize;
                         }
-                        debug_assert_eq!(at, ptr - start_ptr)
+                        debug_assert_eq!(at, sub(ptr, start_ptr))
                     }
                 }
             }
@@ -575,39 +557,32 @@ mod ranges {
             const M128_VECTOR_SIZE: usize = std::mem::size_of::<__m128i>();
             const M128_VECTOR_ALIGN: usize = M128_VECTOR_SIZE - 1;
             if len < M128_VECTOR_SIZE {
-                fallback!();
             } else {
                 const TRANSLATION_A: i8 = i8::MAX - 39i8;
                 const BELOW_A: i8 = i8::MAX - (39i8 - 34i8) - 1;
                 const TRANSLATION_B: i8 = i8::MAX - 62i8;
                 const BELOW_B: i8 = i8::MAX - (62i8 - 60i8) - 1;
                 const C: i8 = 47i8;
-                let v_translation_a = _mm128_set1_epi8(TRANSLATION_A);
-                let v_below_a = _mm128_set1_epi8(BELOW_A);
-                let v_translation_b = _mm128_set1_epi8(TRANSLATION_B);
-                let v_below_b = _mm128_set1_epi8(BELOW_B);
-                let v_c = _mm128_set1_epi8(C);
+                let v_translation_a = _mm_set1_epi8(TRANSLATION_A);
+                let v_below_a = _mm_set1_epi8(BELOW_A);
+                let v_translation_b = _mm_set1_epi8(TRANSLATION_B);
+                let v_below_b = _mm_set1_epi8(BELOW_B);
+                let v_c = _mm_set1_epi8(C);
                 {
                     let align = M128_VECTOR_SIZE - (start_ptr as usize & M128_VECTOR_ALIGN);
                     if align < M128_VECTOR_SIZE {
                         let mut mask = {
                             let a = _mm_loadu_si128(ptr as *const __m128i);
-                            _mm_movemask_epi8(_mm128_or_si128(
-                                _mm128_or_si128(
-                                    _mm128_cmpgt_epi8(
-                                        _mm128_add_epi8(a, v_translation_a),
-                                        v_below_a,
-                                    ),
-                                    _mm128_cmpgt_epi8(
-                                        _mm128_add_epi8(a, v_translation_b),
-                                        v_below_b,
-                                    ),
+                            _mm_movemask_epi8(_mm_or_si128(
+                                _mm_or_si128(
+                                    _mm_cmpgt_epi8(_mm_add_epi8(a, v_translation_a), v_below_a),
+                                    _mm_cmpgt_epi8(_mm_add_epi8(a, v_translation_b), v_below_b),
                                 ),
-                                _mm128_cmpeq_epi8(a, v_c),
+                                _mm_cmpeq_epi8(a, v_c),
                             ))
                         };
                         if mask != 0 {
-                            let at = crate::sub!(ptr, start_ptr);
+                            let at = sub(ptr, start_ptr);
                             let mut cur = mask.trailing_zeros() as usize;
                             while cur < align {
                                 let c =
@@ -632,7 +607,7 @@ mod ranges {
                                 }
                                 cur = mask.trailing_zeros() as usize;
                             }
-                            debug_assert_eq!(at, ptr - start_ptr)
+                            debug_assert_eq!(at, sub(ptr, start_ptr))
                         }
                         ptr = ptr.add(align);
                     }
@@ -641,16 +616,16 @@ mod ranges {
                     debug_assert_eq!(0, (ptr as usize) % M128_VECTOR_SIZE);
                     let mut mask = {
                         let a = _mm_load_si128(ptr as *const __m128i);
-                        _mm_movemask_epi8(_mm128_or_si128(
-                            _mm128_or_si128(
-                                _mm128_cmpgt_epi8(_mm128_add_epi8(a, v_translation_a), v_below_a),
-                                _mm128_cmpgt_epi8(_mm128_add_epi8(a, v_translation_b), v_below_b),
+                        _mm_movemask_epi8(_mm_or_si128(
+                            _mm_or_si128(
+                                _mm_cmpgt_epi8(_mm_add_epi8(a, v_translation_a), v_below_a),
+                                _mm_cmpgt_epi8(_mm_add_epi8(a, v_translation_b), v_below_b),
                             ),
-                            _mm128_cmpeq_epi8(a, v_c),
+                            _mm_cmpeq_epi8(a, v_c),
                         ))
                     };
                     if mask != 0 {
-                        let at = crate::sub!(ptr, start_ptr);
+                        let at = sub(ptr, start_ptr);
                         let mut cur = mask.trailing_zeros() as usize;
                         loop {
                             let c = unsafe { *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize) }
@@ -674,27 +649,27 @@ mod ranges {
                             }
                             cur = mask.trailing_zeros() as usize;
                         }
-                        debug_assert_eq!(at, ptr - start_ptr);
+                        debug_assert_eq!(at, sub(ptr, start_ptr));
                     }
                     ptr = ptr.add(M128_VECTOR_SIZE);
                 }
                 debug_assert!(end_ptr.sub(M128_VECTOR_SIZE) < ptr);
                 if ptr < end_ptr {
-                    let d = M128_VECTOR_SIZE - crate::sub!(end_ptr, ptr);
+                    let d = M128_VECTOR_SIZE - sub(end_ptr, ptr);
                     let mut mask = ({
-                        debug_assert_eq!(M128_VECTOR_SIZE, crate::sub!(end_ptr, ptr.sub(d)));
+                        debug_assert_eq!(M128_VECTOR_SIZE, sub(end_ptr, ptr.sub(d)));
                         let a = _mm_loadu_si128(ptr.sub(d) as *const __m128i);
-                        _mm_movemask_epi8(_mm128_or_si128(
-                            _mm128_or_si128(
-                                _mm128_cmpgt_epi8(_mm128_add_epi8(a, v_translation_a), v_below_a),
-                                _mm128_cmpgt_epi8(_mm128_add_epi8(a, v_translation_b), v_below_b),
+                        _mm_movemask_epi8(_mm_or_si128(
+                            _mm_or_si128(
+                                _mm_cmpgt_epi8(_mm_add_epi8(a, v_translation_a), v_below_a),
+                                _mm_cmpgt_epi8(_mm_add_epi8(a, v_translation_b), v_below_b),
                             ),
-                            _mm128_cmpeq_epi8(a, v_c),
+                            _mm_cmpeq_epi8(a, v_c),
                         ))
                     } as u16)
                         .wrapping_shr(d as u32);
                     if mask != 0 {
-                        let at = crate::sub!(ptr, start_ptr);
+                        let at = sub(ptr, start_ptr);
                         let mut cur = mask.trailing_zeros() as usize;
                         loop {
                             let c = unsafe { *V_ESCAPE_CHARS.as_ptr().add(*ptr.add(cur) as usize) }
@@ -718,7 +693,7 @@ mod ranges {
                             }
                             cur = mask.trailing_zeros() as usize;
                         }
-                        debug_assert_eq!(at, ptr - start_ptr)
+                        debug_assert_eq!(at, sub(ptr, start_ptr))
                     }
                 }
             }

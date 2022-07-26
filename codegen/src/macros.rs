@@ -3,14 +3,6 @@ use crate::utils::ident;
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 
-// TODO: remove
-fn sub(a: TokenStream, b: TokenStream) -> TokenStream {
-    quote! {
-        debug_assert!(#b <= #a);
-        (#a as usize) - (#b as usize)
-    }
-}
-
 fn index(a: &Ident, b: &TokenStream) -> TokenStream {
     quote! {
          unsafe { *#a.as_ptr().add(#b) }

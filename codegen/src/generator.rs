@@ -198,10 +198,21 @@ impl<'a> Generator<'a> {
         let mut buf = TokenStream::new();
 
         let tables = &self.write_static_table(&mut buf);
+        self.write_utils(&mut buf);
         self.write_functions(tables, &mut buf);
         // self.write_cfg_if(&mut buf);
 
         buf
+    }
+
+    fn write_utils(&self, buf: &mut TokenStream) {
+        buf.extend(quote! {
+            #[inline(always)]
+            fn sub(a: *const u8, b: *const u8) -> usize {
+                debug_assert!(b <= a);
+                (a as usize) - (b as usize)
+            }
+        })
     }
 
     fn write_static_table(&self, buf: &mut TokenStream) -> Tables {
@@ -243,9 +254,6 @@ impl<'a> Generator<'a> {
     }
 
     fn write_ch(&self, buf: &mut TokenStream) {
-        let code = if self.pairs.len() == 1 {
-        } else {
-        };
         buf.extend(quote! {
             mod chars {
                 use super::*;
@@ -258,12 +266,14 @@ impl<'a> Generator<'a> {
             quote! {
                 mod scalar {
                     use super::*;
+                    // TODO
                 }
             }
         } else {
             quote! {
                 mod scalar {
                     use super::*;
+                    // TODO 2
                 }
             }
         };
