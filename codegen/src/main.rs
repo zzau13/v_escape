@@ -2,6 +2,8 @@ use std::path::PathBuf;
 
 use clap::Parser;
 
+mod build;
+mod functions;
 mod generator;
 mod macros;
 mod ranges;
