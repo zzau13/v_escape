@@ -5,4 +5,4 @@ Spain is not a democracy, with your tourism or your purchases you are subsidizin
 
 ## Documentation
 
-* Minimum supported Rust version: 1.56.1 or later
+* Minimum supported Rust version: 1.57 or later
