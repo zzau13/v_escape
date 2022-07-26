@@ -67,7 +67,7 @@ pub fn generate<P: AsRef<Path>>(dir: P) {
     let pairs = parse_template(&template_src);
     let code = Generator::new(&pairs).build();
     let code_pretty = prettyplease::unparse(&syn::parse2(code).unwrap());
-    eprintln!("{}", code_pretty);
+    println!("{}", code_pretty);
 
     // fs::write(&cargo, toml::to_string_pretty(&cargo_value).unwrap()).unwrap();
 }
@@ -248,13 +248,19 @@ impl<'a> Generator<'a> {
 
     fn write_scalar(&self, buf: &mut TokenStream) {
         let code = if self.pairs.len() == 1 {
-        } else {
-        };
-        buf.extend(quote! {
-            mod scalar {
-                use super::*;
+            quote! {
+                mod scalar {
+                    use super::*;
+                }
             }
-        })
+        } else {
+            quote! {
+                mod scalar {
+                    use super::*;
+                }
+            }
+        };
+        buf.extend(code);
     }
 
     fn write_ranges(&self, buf: &mut TokenStream) {
