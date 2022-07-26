@@ -264,16 +264,16 @@ impl Switch {
                     const B: i8 = #b;
                     const C: i8 = #c;
 
-                    let v_translation_a = _mm128_set1_epi8(TRANSLATION_A);
-                    let v_below_a = _mm128_set1_epi8(BELOW_A);
-                    let v_b = _mm128_set1_epi8(B);
-                    let v_c = _mm128_set1_epi8(C);
+                    let v_translation_a = _mm_set1_epi8(TRANSLATION_A);
+                    let v_below_a = _mm_set1_epi8(BELOW_A);
+                    let v_b = _mm_set1_epi8(B);
+                    let v_c = _mm_set1_epi8(C);
                 },
                 |a: &Ident| {
                     quote! {
-                        _mm128_or_si128(
-                            _mm128_or_si128(_mm128_cmpeq_epi8(#a, v_b), _mm128_cmpeq_epi8(#a, v_c)),
-                            _mm128_cmpgt_epi8(_mm128_add_epi8(#a, v_translation_a), v_below_a),
+                        _mm_or_si128(
+                            _mm_or_si128(_mm_cmpeq_epi8(#a, v_b), _mm_cmpeq_epi8(#a, v_c)),
+                            _mm_cmpgt_epi8(_mm_add_epi8(#a, v_translation_a), v_below_a),
                         )
                     }
                 },
@@ -284,15 +284,15 @@ impl Switch {
                     const B: i8 = #b;
                     const C: i8 = #c;
 
-                    let v_a = _mm128_set1_epi8(A);
-                    let v_b = _mm128_set1_epi8(B);
-                    let v_c = _mm128_set1_epi8(C);
+                    let v_a = _mm_set1_epi8(A);
+                    let v_b = _mm_set1_epi8(B);
+                    let v_c = _mm_set1_epi8(C);
                 },
                 |a| {
                     quote! {
-                         _mm128_or_si128(
-                            _mm128_or_si128(_mm128_cmpeq_epi8(#a, v_a), _mm128_cmpeq_epi8(#a, v_b)),
-                            _mm128_cmpeq_epi8(#a, v_c),
+                         _mm_or_si128(
+                            _mm_or_si128(_mm_cmpeq_epi8(#a, v_a), _mm_cmpeq_epi8(#a, v_b)),
+                            _mm_cmpeq_epi8(#a, v_c),
                         )
                     }
                 },
@@ -302,12 +302,12 @@ impl Switch {
                     const A: i8 = #a;
                     const B: i8 = #b;
 
-                    let v_a = _mm128_set1_epi8(A);
-                    let v_b = _mm128_set1_epi8(B);
+                    let v_a = _mm_set1_epi8(A);
+                    let v_b = _mm_set1_epi8(B);
                 },
                 |a| {
                     quote! {
-                        _mm128_or_si128(_mm128_cmpeq_epi8(#a, v_a), _mm128_cmpeq_epi8(#a, v_b))
+                        _mm_or_si128(_mm_cmpeq_epi8(#a, v_a), _mm_cmpeq_epi8(#a, v_b))
                     }
                 },
             ),
@@ -315,12 +315,12 @@ impl Switch {
                 quote! {
                     const A: i8 = #a;
 
-                    let v_a = _mm128_set1_epi8(A);
+                    let v_a = _mm_set1_epi8(A);
 
                 },
                 |a| {
                     quote! {
-                        _mm128_cmpeq_epi8(#a, v_a)
+                        _mm_cmpeq_epi8(#a, v_a)
                     }
                 },
             ),
@@ -340,21 +340,21 @@ impl Switch {
                     const TRANSLATION_C: i8 = i8::MAX - #rc;
                     const BELOW_C: i8 = i8::MAX - (#rc - #lc) - 1;
 
-                    let v_translation_a = _mm128_set1_epi8(TRANSLATION_A);
-                    let v_below_a = _mm128_set1_epi8(BELOW_A);
-                    let v_translation_b = _mm128_set1_epi8(TRANSLATION_B);
-                    let v_below_b = _mm128_set1_epi8(BELOW_B);
-                    let v_translation_c = _mm128_set1_epi8(TRANSLATION_C);
-                    let v_below_c = _mm128_set1_epi8(BELOW_C);
+                    let v_translation_a = _mm_set1_epi8(TRANSLATION_A);
+                    let v_below_a = _mm_set1_epi8(BELOW_A);
+                    let v_translation_b = _mm_set1_epi8(TRANSLATION_B);
+                    let v_below_b = _mm_set1_epi8(BELOW_B);
+                    let v_translation_c = _mm_set1_epi8(TRANSLATION_C);
+                    let v_below_c = _mm_set1_epi8(BELOW_C);
                 },
                 |a| {
                     quote! {
-                        _mm128_or_si128(
-                            _mm128_or_si128(
-                                _mm128_cmpgt_epi8(_mm128_add_epi8(#a, v_translation_a), v_below_a),
-                                _mm128_cmpgt_epi8(_mm128_add_epi8(#a, v_translation_b), v_below_b),
+                        _mm_or_si128(
+                            _mm_or_si128(
+                                _mm_cmpgt_epi8(_mm_add_epi8(#a, v_translation_a), v_below_a),
+                                _mm_cmpgt_epi8(_mm_add_epi8(#a, v_translation_b), v_below_b),
                             ),
-                            _mm128_cmpgt_epi8(_mm128_add_epi8(#a, v_translation_c), v_below_c),
+                            _mm_cmpgt_epi8(_mm_add_epi8(#a, v_translation_c), v_below_c),
                         )
                     }
                 },
@@ -367,20 +367,20 @@ impl Switch {
                     const BELOW_B: i8 = i8::MAX - (#rb - #lb) - 1;
                     const C: i8 = #c;
 
-                    let v_translation_a = _mm128_set1_epi8(TRANSLATION_A);
-                    let v_below_a = _mm128_set1_epi8(BELOW_A);
-                    let v_translation_b = _mm128_set1_epi8(TRANSLATION_B);
-                    let v_below_b = _mm128_set1_epi8(BELOW_B);
-                    let v_c = _mm128_set1_epi8(C);
+                    let v_translation_a = _mm_set1_epi8(TRANSLATION_A);
+                    let v_below_a = _mm_set1_epi8(BELOW_A);
+                    let v_translation_b = _mm_set1_epi8(TRANSLATION_B);
+                    let v_below_b = _mm_set1_epi8(BELOW_B);
+                    let v_c = _mm_set1_epi8(C);
                 },
                 |a| {
                     quote! {
-                        _mm128_or_si128(
-                            _mm128_or_si128(
-                                _mm128_cmpgt_epi8(_mm128_add_epi8(#a, v_translation_a), v_below_a),
-                                _mm128_cmpgt_epi8(_mm128_add_epi8(#a, v_translation_b), v_below_b),
+                        _mm_or_si128(
+                            _mm_or_si128(
+                                _mm_cmpgt_epi8(_mm_add_epi8(#a, v_translation_a), v_below_a),
+                                _mm_cmpgt_epi8(_mm_add_epi8(#a, v_translation_b), v_below_b),
                             ),
-                            _mm128_cmpeq_epi8(#a, v_c),
+                            _mm_cmpeq_epi8(#a, v_c),
                         )
                     }
                 },
@@ -392,16 +392,16 @@ impl Switch {
                     const TRANSLATION_B: i8 = i8::MAX - #rb;
                     const BELOW_B: i8 = i8::MAX - (#rb - #lb) - 1;
 
-                    let v_translation_a = _mm128_set1_epi8(TRANSLATION_A);
-                    let v_below_a = _mm128_set1_epi8(BELOW_A);
-                    let v_translation_b = _mm128_set1_epi8(TRANSLATION_B);
-                    let v_below_b = _mm128_set1_epi8(BELOW_B);
+                    let v_translation_a = _mm_set1_epi8(TRANSLATION_A);
+                    let v_below_a = _mm_set1_epi8(BELOW_A);
+                    let v_translation_b = _mm_set1_epi8(TRANSLATION_B);
+                    let v_below_b = _mm_set1_epi8(BELOW_B);
                 },
                 |a| {
                     quote! {
-                        _mm128_or_si128(
-                            _mm128_cmpgt_epi8(_mm128_add_epi8(#a, v_translation_a), v_below_a),
-                            _mm128_cmpgt_epi8(_mm128_add_epi8(#a, v_translation_b), v_below_b),
+                        _mm_or_si128(
+                            _mm_cmpgt_epi8(_mm_add_epi8(#a, v_translation_a), v_below_a),
+                            _mm_cmpgt_epi8(_mm_add_epi8(#a, v_translation_b), v_below_b),
                         )
                     }
                 },
@@ -412,15 +412,15 @@ impl Switch {
                     const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
                     const B: i8 = #b;
 
-                    let v_translation_a = _mm128_set1_epi8(TRANSLATION_A);
-                    let v_below_a = _mm128_set1_epi8(BELOW_A);
-                    let v_b = _mm128_set1_epi8(B);
+                    let v_translation_a = _mm_set1_epi8(TRANSLATION_A);
+                    let v_below_a = _mm_set1_epi8(BELOW_A);
+                    let v_b = _mm_set1_epi8(B);
                 },
                 |a| {
                     quote! {
-                        _mm128_or_si128(
-                            _mm128_cmpgt_epi8(_mm128_add_epi8(#a, v_translation_a), v_below_a),
-                            _mm128_cmpeq_epi8(#a, v_b),
+                        _mm_or_si128(
+                            _mm_cmpgt_epi8(_mm_add_epi8(#a, v_translation_a), v_below_a),
+                            _mm_cmpeq_epi8(#a, v_b),
                         )
                     }
                 },
@@ -430,12 +430,12 @@ impl Switch {
                     const TRANSLATION_A: i8 = i8::MAX - #ra;
                     const BELOW_A: i8 = i8::MAX - (#ra - #la) - 1;
 
-                    let v_translation_a = _mm128_set1_epi8(TRANSLATION_A);
-                    let v_below_a = _mm128_set1_epi8(BELOW_A);
+                    let v_translation_a = _mm_set1_epi8(TRANSLATION_A);
+                    let v_below_a = _mm_set1_epi8(BELOW_A);
                 },
                 |a| {
                     quote! {
-                        _mm128_cmpgt_epi8(_mm128_add_epi8(#a, v_translation_a), v_below_a)
+                        _mm_cmpgt_epi8(_mm_add_epi8(#a, v_translation_a), v_below_a)
                     }
                 },
             ),

@@ -28,7 +28,7 @@ pub fn loop_sse<WM: WriteMask, WF: WriteMask>(
         const M128_VECTOR_ALIGN: usize = M128_VECTOR_SIZE - 1;
 
         if #len < M128_VECTOR_SIZE {
-            fallback!();
+            // TODO: fallback!();
         } else {
             #translations
             {
@@ -61,10 +61,10 @@ pub fn loop_sse<WM: WriteMask, WF: WriteMask>(
             debug_assert!(#end_ptr.sub(M128_VECTOR_SIZE) < #ptr);
 
             if #ptr < #end_ptr {
-                let d = M128_VECTOR_SIZE - crate::sub!(#end_ptr, #ptr);
+                let d = M128_VECTOR_SIZE - sub(#end_ptr, #ptr);
 
                 let mut #mask = ({
-                    debug_assert_eq!(M128_VECTOR_SIZE, crate::sub!(#end_ptr, #ptr.sub(d)));
+                    debug_assert_eq!(M128_VECTOR_SIZE, sub(#end_ptr, #ptr.sub(d)));
                     let #a = _mm_loadu_si128(#ptr.sub(d) as *const __m128i);
                     _mm_movemask_epi8(#masking_a)
                 } as u16).wrapping_shr(d as u32);
