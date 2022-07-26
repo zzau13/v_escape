@@ -1,5 +1,7 @@
 [workspace]
 members = [
     "codegen",
-    "v_htmlescape"
+    "v_htmlescape",
+    "v_jsonescape",
+    "v_latexescape"
 ]
