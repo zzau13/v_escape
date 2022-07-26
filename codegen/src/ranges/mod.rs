@@ -14,6 +14,8 @@ pub enum Feature {
     Avx2,
     Sse2,
 }
+use crate::generator::Tables;
+use crate::macros::{bodies, mask_body, BodiesArg};
 use Feature::*;
 
 pub trait WriteMask: Fn(&Ident, &Ident) -> TokenStream + Copy {}
@@ -42,11 +44,40 @@ impl Feature {
     }
 }
 
-pub fn escape_range(s: Switch, f: Feature) -> TokenStream {
+pub fn escape_range(s: Switch, (t, q, q_len): &Tables, f: Feature) -> TokenStream {
     let len = &ident("len");
     let start_ptr = &ident("start_ptr");
     let end_ptr = &ident("end_ptr");
     let ptr = &ident("ptr");
+    let at = &ident("at");
+    let cur = &ident("cur");
+    let start = &ident("start");
+    let fmt = &ident("fmt");
+    let bytes = &ident("bytes");
+    let body = bodies(
+        s.into(),
+        BodiesArg {
+            t,
+            q,
+            q_len,
+            i: &quote! { #at + #cur },
+            b: &quote! { *#ptr.add(#cur) },
+            start,
+            fmt,
+            bytes,
+            callback: mask_body,
+        },
+    );
+    let mask_bodies = |mask: &Ident| {
+        quote! {
+            #body
+            #mask ^= 1 << #cur;
+            if #mask == 0 {
+                break;
+            }
+            #cur = #mask.trailing_zeros() as usize;
+        }
+    };
     let arg = ArgLoop {
         len,
         ptr,
@@ -54,29 +85,29 @@ pub fn escape_range(s: Switch, f: Feature) -> TokenStream {
         start_ptr,
         s,
         write_mask: |mask: &Ident, ptr: &Ident| {
-            // TODO
+            let body = mask_bodies(mask);
             quote! {
-                let at = crate::sub!(#ptr, #start_ptr);
-                let mut cur = #mask.trailing_zeros() as usize;
+                let #at = crate::sub!(#ptr, #start_ptr);
+                let mut #cur = #mask.trailing_zeros() as usize;
 
                 loop {
-                    mask_bodies!(#mask, at, cur, #ptr);
+                    #body
                 }
 
-                debug_assert_eq!(at, #ptr - #start_ptr)
+                debug_assert_eq!(#at, #ptr - #start_ptr)
             }
         },
-        // TODO
         write_forward: |mask: &Ident, align: &Ident| {
+            let body = mask_bodies(mask);
             quote! {
-                let at = crate::sub!(#ptr, #start_ptr);
-                let mut cur = mask.trailing_zeros() as usize;
+                let #at = crate::sub!(#ptr, #start_ptr);
+                let mut #cur = #mask.trailing_zeros() as usize;
 
-                while cur < #align {
-                    mask_bodies!($mask, at, cur, #ptr);
+                while #cur < #align {
+                    #body
                 }
 
-                debug_assert_eq!(at, #ptr - #start_ptr)
+                debug_assert_eq!(#at, #ptr - #start_ptr)
             }
         },
     };
@@ -94,153 +125,15 @@ pub fn escape_range(s: Switch, f: Feature) -> TokenStream {
             let #start_ptr = bytes.as_ptr();
             let #end_ptr = bytes[len..].as_ptr();
             let mut #ptr = #start_ptr;
-            let mut start = 0;
+            let mut #start = 0;
 
             #loops
             debug_assert!(start <= #len);
-            if start < #len {
-                fmt.write_str(std::str::from_utf8_unchecked(&bytes[start..#len]))?;
+            if #start < #len {
+                fmt.write_str(std::str::from_utf8_unchecked(&bytes[#start..#len]))?;
             }
 
             Ok(())
         }
     }
-}
-
-#[macro_export]
-#[doc(hidden)]
-macro_rules! escape_ranges_bytes {
-    (avx2 $($t:tt)+) => {
-        #[inline]
-        #[target_feature(enable = "avx2")]
-        $crate::escape_ranges_bytes!(impl $crate::loop_range_switch_avx2 where $($t)+);
-    };
-    (sse2 $($t:tt)+) => {
-        #[inline]
-        #[target_feature(enable = "sse2")]
-        $crate::escape_ranges_bytes!(impl $crate::loop_range_switch_sse2 where $($t)+);
-    };
-    (impl $loops:path where ($T:ident, $Q:ident, $Q_LEN:ident) $($t:tt)+) => {
-        pub unsafe fn b_escape<B: $crate::Buffer>(bytes: &[u8], buf: &mut B) {
-            let len = bytes.len();
-            let start_ptr = bytes.as_ptr();
-            let end_ptr = bytes[len..].as_ptr();
-            let mut ptr = start_ptr;
-
-            let mut start = 0;
-
-            macro_rules! mask_bodies_callback {
-                ($callback:path) => {
-                    // Format bytes in the mask that starts in the current pointer
-                    macro_rules! mask_bodies {
-                        ($mask:ident, $at:ident, $cur:ident, $ptr:ident) => {
-                            // Calls macro `bodies!` at position `$at + $cur`
-                            // of byte `*$ptr` + `$curr` with macro `$crate::mask_body!`
-                            $callback!($T, $Q, $Q_LEN, $at + $cur, *$ptr.add($cur), start, bytes, buf, $crate::mask_body_bytes);
-
-                            // Create binary vector of all zeros except
-                            // position `$curr` and xor operation with `$mask`
-                            $mask ^= 1 << $cur;
-                            // Test vs Check  if `$mask` is empty
-                            if $mask == 0 {
-                                break;
-                            }
-
-                            // Get to the next possible escape character avoiding zeros
-                            $cur = $mask.trailing_zeros() as usize;
-                        };
-                    }
-                };
-            }
-
-            $crate::mask_bodies_escaping_bytes!($($t)+);
-
-            // Macro to write with mask
-            macro_rules! write_mask {
-                ($mask:ident, $ptr:ident) => {{
-                    // Reference to the start of mask
-                    let at = $crate::sub!($ptr, start_ptr);
-                    // Get to the first possible escape character avoiding zeros
-                    let mut cur = $mask.trailing_zeros() as usize;
-
-                    loop {
-                        // Writing in `$fmt` with `$mask`
-                        // The main loop will break when mask == 0
-                        mask_bodies!($mask, at, cur, $ptr);
-                    }
-
-                    debug_assert_eq!(at, $crate::sub!($ptr, start_ptr))
-                }};
-            }
-
-            // Write a sliced mask
-            macro_rules! write_forward {
-                ($mask: ident, $align:ident) => {{
-                    let at = $crate::sub!(ptr, start_ptr);
-                    let mut cur = $mask.trailing_zeros() as usize;
-
-                    while cur < $align {
-                        mask_bodies!($mask, at, cur, ptr);
-                    }
-
-                    debug_assert_eq!(at, $crate::sub!(ptr, start_ptr))
-                }};
-            }
-
-            macro_rules! fallback_callback {
-                (default) => {
-                    macro_rules! fallback {
-                        () => {
-                            while ptr < end_ptr {
-                                $crate::bodies_bytes!(
-                                    $T,
-                                    $Q,
-                                    $Q_LEN,
-                                    $crate::sub!(ptr, start_ptr),
-                                    *ptr,
-                                    start,
-                                    bytes,
-                                    buf,
-                                    $crate::mask_body_bytes
-                                );
-                                ptr = ptr.offset(1);
-                            }
-                        };
-                    }
-                };
-                (one) => {
-                    macro_rules! fallback {
-                        () => {
-                            while ptr < end_ptr {
-                                if *ptr == $T {
-                                    $crate::bodies_exact_one_bytes!(
-                                        $T,
-                                        $Q,
-                                        $Q_LEN,
-                                        $crate::sub!(ptr, start_ptr),
-                                        *ptr,
-                                        start,
-                                        bytes,
-                                        buf,
-                                        $crate::mask_body_bytes
-                                    );
-                                }
-                                ptr = ptr.offset(1);
-                            }
-                        };
-                    }
-                };
-            }
-
-            $crate::fallback_escaping!($($t)+);
-
-            $loops!((len, ptr, start_ptr, end_ptr) $($t)+);
-
-            // Write since start to the end of the slice
-            debug_assert!(start <= len);
-            if start < #len {
-                $crate::write_bytes!(&bytes[start..], buf);
-            }
-        }
-    };
 }
