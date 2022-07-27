@@ -21,7 +21,7 @@ fn sub(a: *const u8, b: *const u8) -> usize {
     debug_assert!(b <= a);
     (a as usize) - (b as usize)
 }
-mod scalar {
+pub mod scalar {
     use super::*;
     pub unsafe fn escape(bytes: &[u8], fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
         let len = bytes.len();

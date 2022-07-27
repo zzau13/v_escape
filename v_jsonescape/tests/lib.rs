@@ -2,8 +2,8 @@
 fn tests() {
     use std::borrow::Cow;
     use std::char::from_u32;
-    use v_jsonescape::escape;
     use v_jsonescape::VJsonescape;
+    use v_jsonescape::{escape, ranges, scalar};
     fn all_utf8_less(less: &str) -> String {
         assert_eq!(less.len(), less.as_bytes().len());
         let less = less.as_bytes();
@@ -36,11 +36,59 @@ fn tests() {
         "\0\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\t\n\u{b}\u{c}\r\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f}\"\\"
             .to_string(),
     );
+    struct FScalar(String);
+    impl std::fmt::Display for FScalar {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            unsafe { scalar::escape(&self.0.as_bytes(), f) }
+        }
+    }
+    let buf = FScalar([short, escapes, short].join("")).to_string();
+    assert_eq!(buf, [short, escaped, short].join(""));
+    struct FAvx(String);
+    impl std::fmt::Display for FAvx {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            unsafe { ranges::avx::escape(&self.0.as_bytes(), f) }
+        }
+    }
+    let buf = FAvx([short, escapes, short].join("")).to_string();
+    assert_eq!(buf, [short, escaped, short].join(""));
+    struct FSse(String);
+    impl std::fmt::Display for FSse {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            unsafe { ranges::sse::escape(&self.0.as_bytes(), f) }
+        }
+    }
+    let buf = FSse([short, escapes, short].join("")).to_string();
+    assert_eq!(buf, [short, escaped, short].join(""));
     #[cfg(feature = "bytes-buf")]
-    {
+    unsafe {
         use v_jsonescape::b_escape;
         let mut buf = String::new();
         b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
+        assert_eq!(buf, [short, escaped, short].join(""));
+        let mut buf = String::new();
+        scalar::b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
+        assert_eq!(buf, [short, escaped, short].join(""));
+        let mut buf = String::new();
+        ranges::avx::b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
+        assert_eq!(buf, [short, escaped, short].join(""));
+        let mut buf = String::new();
+        ranges::sse::b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
+    }
+    #[cfg(feature = "bytes-buf")]
+    unsafe {
+        use v_jsonescape::b_escape;
+        let mut buf = String::new();
+        b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
+        assert_eq!(buf, [short, escaped, short].join(""));
+        let mut buf = String::new();
+        scalar::b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
+        assert_eq!(buf, [short, escaped, short].join(""));
+        let mut buf = String::new();
+        ranges::avx::b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
+        assert_eq!(buf, [short, escaped, short].join(""));
+        let mut buf = String::new();
+        ranges::sse::b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
         assert_eq!(buf, [short, escaped, short].join(""));
     }
     assert_eq!(VJsonescape::from(empty).to_string(), empty);

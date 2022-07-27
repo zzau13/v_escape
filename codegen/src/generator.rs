@@ -312,7 +312,7 @@ impl<'a> Generator<'a> {
 
         let write_1 = write_bytes(&quote! { &#bytes[#start..] }, fmt);
         buf.extend(quote! {
-            mod scalar {
+            pub mod scalar {
                 use super::*;
                 pub unsafe fn escape(#bytes: &[u8], #fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
                     let #len = #bytes.len();
