@@ -2,6 +2,54 @@
 
 All notable changes to this project will be documented in this file.
 
+## [_escape_codegen-v0.1.4] - 2022-07-27
+
+### Miscellaneous Tasks
+
+- Update benchmarks
+- Bump quote from 1.0.10 to 1.0.19
+
+Bumps [quote](https://github.com/dtolnay/quote) from 1.0.10 to 1.0.19.
+- [Release notes](https://github.com/dtolnay/quote/releases)
+- [Commits](https://github.com/dtolnay/quote/compare/1.0.10...1.0.19)
+
+---
+updated-dependencies:
+- dependency-name: quote
+  dependency-type: direct:production
+  update-type: version-update:semver-patch
+...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+- Bump syn from 1.0.91 to 1.0.94
+
+Bumps [syn](https://github.com/dtolnay/syn) from 1.0.91 to 1.0.94.
+- [Release notes](https://github.com/dtolnay/syn/releases)
+- [Commits](https://github.com/dtolnay/syn/compare/1.0.91...1.0.94)
+
+---
+updated-dependencies:
+- dependency-name: syn
+  dependency-type: direct:production
+  update-type: version-update:semver-patch
+...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+- Bump proc-macro2 from 1.0.37 to 1.0.42
+
+Bumps [proc-macro2](https://github.com/dtolnay/proc-macro2) from 1.0.37 to 1.0.42.
+- [Release notes](https://github.com/dtolnay/proc-macro2/releases)
+- [Commits](https://github.com/dtolnay/proc-macro2/compare/1.0.37...1.0.42)
+
+---
+updated-dependencies:
+- dependency-name: proc-macro2
+  dependency-type: direct:production
+  update-type: version-update:semver-patch
+...
+
+Signed-off-by: dependabot[bot] <support@github.com>
+
 ## [_escape_codegen-v0.1.3] - 2022-07-27
 
 ### Bug Fixes
@@ -17,8 +65,20 @@ All notable changes to this project will be documented in this file.
 ### Miscellaneous Tasks
 
 - Add generate script
+- Release 0.1.3
 
 ## [_escape_codegen-v0.1.2] - 2022-07-27
+
+### Miscellaneous Tasks
+
+- (cargo-release) version 0.1.2
+
+- (cargo-release) version 0.15.2
+
+- (cargo-release) version 0.7.2
+
+- (cargo-release) version 0.14.2
+
 
 ## [_escape_codegen-v0.1.1] - 2022-07-27
 
@@ -58,6 +118,518 @@ All notable changes to this project will be documented in this file.
 
 ### Miscellaneous Tasks
 
+- Initial release
+
+- Add coverage
+
+- Update cargo badges
+
+- Optimize cargo.toml
+
+- Bump version to 0.1.1
+
+- Expose escape function and new_escape macro
+
+- Bump version to 0.1.2
+
+- Add inline simd functions
+
+- Add size method
+
+- Add sizing bench
+
+- Update benches
+
+- Optimize avx functions
+
+- Update bench results
+
+- Decouple main loop avx
+
+- Add more tiny cases at benches
+
+- Decouple main loop sse
+
+- Remove criterion of dev-dependencies; fix travis cmd
+
+- Add fmt check
+
+- Use 2018 edition idioms
+
+- Bump version to 0.3.0
+
+- Remove unnecessary extern crate
+
+- Move borrow to arguments in resolve_true
+
+- Add doc for loops::avx
+
+- Add doc for loops::sse
+
+- Add doc for new_escape macros
+
+- Add From<&str>
+
+- Update READMEs
+
+- Clean generated code
+
+- Add coverage to calculate_ranges and fix issues
+
+- Update doc
+
+- Move imports to last macro
+
+- Add empty coverage
+
+- Add assert for min quote len at sized
+
+- Prettify cases at calculate_ranges
+
+- Clean and prettify
+
+- Add character syntax
+
+- Update test and doc
+
+- Documented main macros
+
+- Add support for character in hexadecimal, octal and numbers ascii
+
+- Bump version v_escape_derive to 0.2.0
+
+- Bump version to 0.3.1
+
+- Decouple benches
+
+- Add benches comparative with rocket
+
+- Update travis conf
+
+- Add benches comparative size rocket and askama_escape
+
+- Update travis conf with multiples stages
+
+- Reduce number of benches cases
+
+- Reduce number of bench cases
+
+- Add featured benches
+
+- Add support to remove close delimiter
+
+- Improve try_into_i8 and errors at parser
+
+- Prettify generator
+
+- Improve error management at parser
+
+- Modified documentation lib.rs
+
+- Modified documentation macros.rs
+
+- Modified panic! messages at parser.rs
+
+- Fix fmt
+
+- Modified main macros and minor docs
+
+- Documentation details avx
+
+- Documentation avx minor changes
+
+- Documentation sse.rs
+
+- Add documentation and prettify
+
+- Update readme
+
+- Improve with quote!
+
+- Add one len cases at benches
+
+- Clean generator with write_macro_tt method
+
+- Hidden doc at private macros
+
+- Reorder macros
+
+- Update v_escape test
+
+- Update README
+
+- Bump version to 0.3.2
+
+- Fix avoid double test
+
+- Add actvate mode selection to sse
+
+- Add loop m256_64
+
+- Fix nom macro choice
+
+- Add v_latexescape
+
+- Fix doc and cargo tags
+
+- Update appveyor.yml
+
+- Update travis.yml
+
+- Decouple sized behaviour
+
+- Decouple sized behavior in v_latexescape
+
+- Fix escape body exact
+
+- Fix Latex to LateX
+
+- Fix repository at v_latexescape Cargo.toml
+
+- Update benches
+
+- Add escape function
+
+- Add v_shellescape scalar
+
+- Update README's
+
+- Fix documentation issues
+
+- Bump v_escape to 0.4.0
+
+- Update internal dependencies
+
+- Update comparative benches
+
+- Improve performance at shell windows escape
+
+- Add expose fallback
+
+- Add support at README
+
+- Fix segfault at short slice
+
+- Add support for windows
+
+- Update documentation
+
+- Fix README
+
+- Update licenses
+
+- Bump versions
+
+- Fix Cargo workspace
+
+- Add some checks in parser
+
+- Fix parser and documentation
+
+- Add build stage at CI
+
+- Bump minor version v_escape and v_escape_derive
+
+- Decouple ranges implementations
+
+- Update ranges documentation
+
+- Prettify documentation
+
+- Improve generator
+
+- Fix move avx imports
+
+- Fix fmt
+
+- Fix fmt
+
+- Add benches at more case
+
+- Add switch in ranges avx main loop
+
+- Add coverage
+
+- Add benches v_escape sub-attributes
+
+- Revert exacts algorithms
+
+- Update dependencies
+
+- Fix name of range DI method! in sse2
+
+- Fix rename macros and documentation
+
+- Disable avx functionality in libraries
+
+- Bump version of v_htmlescape and v_latexescape
+
+- Bump version to 0.6
+
+- Decouple fallback! at ranges
+
+- Update rename and documentation at loop_ranges!
+
+- Update travis
+
+- Update README add downloads badge
+
+- Add rust version check
+
+- Bump version to 0.4.2
+
+- Fix bench order
+
+- Fix miss if mask
+
+- Add exact algorithm at ranges
+
+- Improve one replace case
+
+- Update travis conf
+
+- Bump version to 0.7.1
+
+- Remove travis in favor of gitlab ci
+
+- Migrate to gitlab
+
+- Fix badges
+
+- Bump version v_escape_derive
+
+- Remove appveyor badges
+
+- Add TryInto at parser conditions
+
+- Improve parse errors management
+
+- Prettify and reduce
+
+- Update README
+
+- Fix miss argument on panic!
+
+- Add license to sub-crates
+
+- Add coverage for issue #2
+
+- Remove build.rs and fix minor issues
+
+- Bump version to 0.7.3
+
+- Remove version_check dependency
+
+- Fix repository in Cargo.toml
+
+- Bump versions
+
+- Bump version syn, quote and proc-macro2 to 1.0
+
+- Bump version v_escape_derive to 0.5.6
+
+- Typos
+- Update CI
+
+- Add escape char and remove v_shellescape
+
+- Move to is_ascii
+
+- Bump mayor versions
+
+- Fix bump versions
+
+- Add write on pointer implementation
+
+- Remove unnecessary `as_mut`
+
+- Add coverage for extreme cases
+
+- Fuxk travis, add github CI
+
+- Document and remove more as_mut
+
+- Fix benchmarks
+
+- Fix max bound and add more coverage
+
+- Bump mayor versions
+
+- Improve performance v_escape with copy_from_slice
+
+- Bump v_escape version to 0.9.1
+
+- Write with memcopy
+
+- Bump version to 0.9.2
+
+- Remove sse4.2 functions
+
+- Add Disclaimer
+
+- Fix read out bounds
+
+- Bump minor versions
+
+- Simplify offsets pointer
+
+- Reduce number of html escape characters
+
+- Bump version v_htmlescape
+
+- Bump version v_escape
+
+- Revert less html escape characters
+
+- Move to maybe uninit union
+
+- Bump mayor versions
+
+- Fix cargo
+
+- Add b_escape
+
+- Bump major versions
+
+- Fix bad get pointer in b_escape_char
+
+- Bump minor version
+
+- Add v_jsonescape
+
+- Improve get mut ptr
+
+- Bump v_escape version 0.11.2
+
+- Fix bytes char
+
+- Bump v_escape version
+
+- Remove `BytesMut` in favor of `buf-min::Buffer` trait
+
+- Update CI
+
+- Fix use is_x86_feature_detected out x86 arch
+
+- Remove unused attributes
+
+- Use ptr impl for scalar
+
+- Fix scalar::b_escape and add coverage
+
+- Fix fmt
+
+- Remove unnecessary bytes.len()
+
+- Avoid double table check bounds at read
+
+- Bump v_escape version to 0.12.1
+
+- Prettify new_escape! arguments parser
+
+- Update builder modules
+
+- Update README.md
+- Bump minor versions
+
+- Fix crate path outside proc_macro
+
+- Rename `new_escape` to `new`
+
+- Update benches
+
+- Bump versions
+
+- Simplify repeated code
+
+- Clean code and documentation
+
+- Prettify codegen parse arguments
+
+- Remove extern crate statements
+
+- Update std module paths
+
+- Remove import std::fmt
+
+- Bump minor versions
+
+- Update cfg-if requirement from 0.1 to 1.0
+
+Updates the requirements on [cfg-if](https://github.com/alexcrichton/cfg-if) to permit the latest version.
+- [Release notes](https://github.com/alexcrichton/cfg-if/releases)
+- [Commits](https://github.com/alexcrichton/cfg-if/compare/0.1.1...1.0.0)
+
+Signed-off-by: dependabot-preview[bot] <support@dependabot.com>
+- Ban reddit
+- Bump versions
+
+- Add fuzzy coverage in v_latexescape
+
+- Add fuzzy coverage for v_jsonescape and v_htmlescape
+
+- Update Readme
+
+- Update bytes requirement from 0.5 to 0.6
+
+Updates the requirements on [bytes](https://github.com/tokio-rs/bytes) to permit the latest version.
+- [Release notes](https://github.com/tokio-rs/bytes/releases)
+- [Changelog](https://github.com/tokio-rs/bytes/blob/master/CHANGELOG.md)
+- [Commits](https://github.com/tokio-rs/bytes/compare/v0.5.0...v0.6.0)
+
+Signed-off-by: dependabot-preview[bot] <support@dependabot.com>
+- Bump version to 0.13.3
+
+- Bump version to 0.14.0
+
+- Bump major versions
+
+- Update bench
+
+- Fix min version v_escape_derive ~0.8.4
+
+- Bump v_escape version to 0.14.1
+
+- Update `buf-min` dependency
+
+- Bump mayor versions
+
+- Fix v_escape dependency version
+
+- Update buf-min and bump major versions
+
+- Upgrade to GitHub-native Dependabot
+- Update buf-min version
+
+- Decouple bytes crate
+
+- Update CI
+
+- Bump versions
+
+- Remove nom in favor of syn
+
+- Add doctest on README and fix issues
+
+- Remove travis badge and fix minor version issues
+
+- Bump versions
+
+- Update benches
+
+- Remove unnecessary dependencies
+
+- Remove travis badges
+
+- Update rust edition 2021
+
+- Update README.md
+- Update README.md
+- Update README.md
+- Partial show of boring
+
+- Update generator test
+
 - Add sse loop
 - Add write with fmt on ranges
 - Write utils and fix minor issues
@@ -90,8 +662,4 @@ All notable changes to this project will be documented in this file.
 
 - Refactor partial prettify
 
-
-### Readme
-
-- Typos
 
