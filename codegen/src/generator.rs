@@ -314,7 +314,16 @@ impl<'a> Generator<'a> {
         buf.extend(quote! {
             pub mod scalar {
                 use super::*;
-                pub unsafe fn escape(#bytes: &[u8], #fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+                pub struct __Escaped<'a>(&'a[u8]);
+                impl<'a> std::fmt::Display for __Escaped<'a> {
+                    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+                        unsafe { _escape(self.0, fmt) }
+                    }
+                }
+                pub fn escape(s: &str) -> __Escaped {
+                    __Escaped(s.as_bytes())
+                }
+                pub unsafe fn _escape(#bytes: &[u8], #fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
                     let #len = #bytes.len();
                     let #start_ptr = #bytes.as_ptr();
                     let #end_ptr = #bytes[len..].as_ptr();
@@ -329,16 +338,18 @@ impl<'a> Generator<'a> {
                 }
 
                 #[cfg(feature = "bytes-buf")]
-                pub unsafe fn b_escape<B: buf_min::Buffer>(#bytes: &[u8], #fmt: &mut B) {
-                    let #len = #bytes.len();
-                    let #start_ptr = #bytes.as_ptr();
-                    let #end_ptr = #bytes[len..].as_ptr();
-                    let mut #ptr = #start_ptr;
-                    let mut #start = 0;
-                    #body_bytes
-                    debug_assert!(#start <= #len);
-                    if #start < #len {
-                        #write_1
+                pub fn b_escape<B: buf_min::Buffer>(#bytes: &[u8], #fmt: &mut B) {
+                    unsafe {
+                        let #len = #bytes.len();
+                        let #start_ptr = #bytes.as_ptr();
+                        let #end_ptr = #bytes[len..].as_ptr();
+                        let mut #ptr = #start_ptr;
+                        let mut #start = 0;
+                        #body_bytes
+                        debug_assert!(#start <= #len);
+                        if #start < #len {
+                            #write_1
+                        }
                     }
                 }
             }
