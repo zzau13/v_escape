@@ -56,17 +56,21 @@ pub fn build_tests(package: &Ident, name: &Ident, escapes: String, escaped: Stri
             unsafe { ranges::avx::escape(&self.0.as_bytes(), f) }
         }
     }
-    let buf = FAvx([short, escapes, short].join("")).to_string();
-    assert_eq!(buf, [short, escaped, short].join(""));
-
+    if is_x86_feature_detected!("avx2") {
+        let buf = FAvx([short, escapes, short].join("")).to_string();
+        assert_eq!(buf, [short, escaped, short].join(""));
+    }
     struct FSse(String);
     impl std::fmt::Display for FSse {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             unsafe { ranges::sse::escape(&self.0.as_bytes(), f) }
         }
     }
-    let buf = FSse([short, escapes, short].join("")).to_string();
-    assert_eq!(buf, [short, escaped, short].join(""));
+
+    if is_x86_feature_detected!("sse2") {
+        let buf = FSse([short, escapes, short].join("")).to_string();
+        assert_eq!(buf, [short, escaped, short].join(""));
+    }
 
     #[cfg(feature = "bytes-buf")]
     unsafe {
@@ -79,13 +83,17 @@ pub fn build_tests(package: &Ident, name: &Ident, escapes: String, escaped: Stri
         scalar::b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
         assert_eq!(buf, [short, escaped, short].join(""));
 
-        let mut buf = String::new();
-        ranges::avx::b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
-        assert_eq!(buf, [short, escaped, short].join(""));
+        if is_x86_feature_detected!("avx2") {
+            let mut buf = String::new();
+            ranges::avx::b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
+            assert_eq!(buf, [short, escaped, short].join(""));
+        }
 
-        let mut buf = String::new();
-        ranges::sse::b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
-        assert_eq!(buf, [short, escaped, short].join(""));
+        if is_x86_feature_detected!("sse2") {
+            let mut buf = String::new();
+            ranges::sse::b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
+            assert_eq!(buf, [short, escaped, short].join(""));
+        }
     }
     assert_eq!(#name::from(empty).to_string(), empty);
     assert_eq!(#name::from(escapes).to_string(), escaped);
