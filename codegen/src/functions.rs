@@ -68,7 +68,7 @@ pub fn escape_new(name: &Ident) -> TokenStream {
                 } else if is_x86_feature_detected!("sse2") {
                     ranges::sse::escape as usize
                 } else {
-                    scalar::escape as usize
+                    scalar::_escape as usize
                 };
 
                 let slot = unsafe { &*(&FN as *const _ as *const AtomicUsize) };
@@ -90,7 +90,7 @@ pub fn escape_new(name: &Ident) -> TokenStream {
         #[inline(always)]
         #[cfg(not(any(target_arch = "x86_64", target_arch = "x86")))]
         fn _escape(bytes: &[u8], fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
-            scalar::escape(bytes, fmt)
+            scalar::_escape(bytes, fmt)
         }
 
 

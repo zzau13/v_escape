@@ -36,13 +36,7 @@ fn tests() {
         "\0\u{1}\u{2}\u{3}\u{4}\u{5}\u{6}\u{7}\u{8}\t\n\u{b}\u{c}\r\u{e}\u{f}\u{10}\u{11}\u{12}\u{13}\u{14}\u{15}\u{16}\u{17}\u{18}\u{19}\u{1a}\u{1b}\u{1c}\u{1d}\u{1e}\u{1f}\"\\"
             .to_string(),
     );
-    struct FScalar(String);
-    impl std::fmt::Display for FScalar {
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            unsafe { scalar::escape(&self.0.as_bytes(), f) }
-        }
-    }
-    let buf = FScalar([short, escapes, short].join("")).to_string();
+    let buf = scalar::escape(&[short, escapes, short].join("")).to_string();
     assert_eq!(buf, [short, escaped, short].join(""));
     struct FAvx(String);
     impl std::fmt::Display for FAvx {

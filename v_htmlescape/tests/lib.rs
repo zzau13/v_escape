@@ -30,13 +30,7 @@ fn tests() {
     let string_long: &str = &short.repeat(1024);
     let string = "\"&'/<>".to_string();
     let cow = Cow::Owned("\"&'/<>".to_string());
-    struct FScalar(String);
-    impl std::fmt::Display for FScalar {
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            unsafe { scalar::escape(&self.0.as_bytes(), f) }
-        }
-    }
-    let buf = FScalar([short, escapes, short].join("")).to_string();
+    let buf = scalar::escape(&[short, escapes, short].join("")).to_string();
     assert_eq!(buf, [short, escaped, short].join(""));
     struct FAvx(String);
     impl std::fmt::Display for FAvx {

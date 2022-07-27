@@ -30,7 +30,16 @@ fn sub(a: *const u8, b: *const u8) -> usize {
 }
 pub mod scalar {
     use super::*;
-    pub unsafe fn escape(bytes: &[u8], fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+    pub struct __Escaped<'a>(&'a [u8]);
+    impl<'a> std::fmt::Display for __Escaped<'a> {
+        fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+            unsafe { _escape(self.0, fmt) }
+        }
+    }
+    pub fn escape(s: &str) -> __Escaped {
+        __Escaped(s.as_bytes())
+    }
+    pub unsafe fn _escape(bytes: &[u8], fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
         let len = bytes.len();
         let start_ptr = bytes.as_ptr();
         let end_ptr = bytes[len..].as_ptr();
@@ -55,27 +64,29 @@ pub mod scalar {
         Ok(())
     }
     #[cfg(feature = "bytes-buf")]
-    pub unsafe fn b_escape<B: buf_min::Buffer>(bytes: &[u8], fmt: &mut B) {
-        let len = bytes.len();
-        let start_ptr = bytes.as_ptr();
-        let end_ptr = bytes[len..].as_ptr();
-        let mut ptr = start_ptr;
-        let mut start = 0;
-        while ptr < end_ptr {
-            let c = *V_ESCAPE_CHARS.as_ptr().add(*ptr as usize) as usize;
-            if c < V_ESCAPE_LEN {
-                let i = sub(ptr, start_ptr);
-                if start < i {
-                    fmt.extend_from_slice(&bytes[start..i]);
+    pub fn b_escape<B: buf_min::Buffer>(bytes: &[u8], fmt: &mut B) {
+        unsafe {
+            let len = bytes.len();
+            let start_ptr = bytes.as_ptr();
+            let end_ptr = bytes[len..].as_ptr();
+            let mut ptr = start_ptr;
+            let mut start = 0;
+            while ptr < end_ptr {
+                let c = *V_ESCAPE_CHARS.as_ptr().add(*ptr as usize) as usize;
+                if c < V_ESCAPE_LEN {
+                    let i = sub(ptr, start_ptr);
+                    if start < i {
+                        fmt.extend_from_slice(&bytes[start..i]);
+                    }
+                    fmt.extend_from_slice((*V_ESCAPE_QUOTES.as_ptr().add(c as usize)).as_bytes());
+                    start = i + 1;
                 }
-                fmt.extend_from_slice((*V_ESCAPE_QUOTES.as_ptr().add(c as usize)).as_bytes());
-                start = i + 1;
+                ptr = ptr.offset(1);
             }
-            ptr = ptr.offset(1);
-        }
-        debug_assert!(start <= len);
-        if start < len {
-            fmt.extend_from_slice(&bytes[start..]);
+            debug_assert!(start <= len);
+            if start < len {
+                fmt.extend_from_slice(&bytes[start..]);
+            }
         }
     }
 }
@@ -1329,7 +1340,7 @@ fn _escape(bytes: &[u8], fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
         } else if is_x86_feature_detected!("sse2") {
             ranges::sse::escape as usize
         } else {
-            scalar::escape as usize
+            scalar::_escape as usize
         };
         let slot = unsafe { &*(&FN as *const _ as *const AtomicUsize) };
         slot.store(fun, Ordering::Relaxed);
@@ -1346,7 +1357,7 @@ fn _escape(bytes: &[u8], fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
 #[inline(always)]
 #[cfg(not(any(target_arch = "x86_64", target_arch = "x86")))]
 fn _escape(bytes: &[u8], fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
-    scalar::escape(bytes, fmt)
+    scalar::_escape(bytes, fmt)
 }
 #[inline(always)]
 #[cfg(feature = "bytes-buf")]
