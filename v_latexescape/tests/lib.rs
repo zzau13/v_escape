@@ -68,21 +68,6 @@ fn tests() {
         assert_eq!(buf, [short, escaped, short].join(""));
         let mut buf = String::new();
         ranges::sse::b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
-    }
-    #[cfg(feature = "bytes-buf")]
-    unsafe {
-        use v_latexescape::b_escape;
-        let mut buf = String::new();
-        b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
-        assert_eq!(buf, [short, escaped, short].join(""));
-        let mut buf = String::new();
-        scalar::b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
-        assert_eq!(buf, [short, escaped, short].join(""));
-        let mut buf = String::new();
-        ranges::avx::b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
-        assert_eq!(buf, [short, escaped, short].join(""));
-        let mut buf = String::new();
-        ranges::sse::b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
         assert_eq!(buf, [short, escaped, short].join(""));
     }
     assert_eq!(VLatexescape::from(empty).to_string(), empty);
