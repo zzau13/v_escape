@@ -210,7 +210,7 @@ dependencies = [
 
 [[package]]
 name = "v_htmlescape"
-version = "0.15.1"
+version = "0.15.2"
 dependencies = [
  "buf-min",
 ]
