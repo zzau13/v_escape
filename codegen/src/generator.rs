@@ -51,6 +51,22 @@ pub fn generate<P: AsRef<Path>>(dir: P) {
             })
             .unwrap(),
         );
+    let doc: Value = toml::from_str(
+        r"
+    [docs.rs]
+    all-features = true
+    ",
+    )
+    .unwrap();
+    cargo_value
+        .as_table_mut()
+        .unwrap()
+        .get_mut("package")
+        .unwrap()
+        .as_table_mut()
+        .unwrap()
+        .insert("metadata".to_string(), doc);
+
     let mut features = BTreeMap::new();
     features.insert("bytes-buf", vec!["buf-min"]);
     cargo_value

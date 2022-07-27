@@ -23,3 +23,5 @@ readme = 'README.md'
 repository = 'https://github.com/botika/v_escape'
 version = '0.14.5'
 workspace = '..'
+[package.metadata.docs.rs]
+all-features = true
