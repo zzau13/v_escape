@@ -2,10 +2,8 @@ use std::str;
 
 #[macro_use]
 extern crate criterion;
-use criterion::{Bencher, Benchmark, Criterion, Throughput};
+use criterion::{Bencher, BenchmarkGroup, Criterion, Throughput};
 
-#[path = "v_escape.rs"]
-mod v;
 #[path = "v_htmlescape.rs"]
 mod v_html;
 #[path = "v_jsonescape.rs"]
@@ -48,8 +46,9 @@ fn define(
     bench: impl FnMut(&mut Bencher) + 'static,
 ) {
     let tput = Throughput::Bytes(corpus.len() as u64);
-    let benchmark = Benchmark::new(bench_name, bench).throughput(tput);
-    c.bench(group_name, benchmark);
+    let mut benchmark = c.benchmark_group(group_name);
+    benchmark.throughput(tput);
+    benchmark.bench_function(bench_name, bench);
 }
 
 #[rustfmt::skip]
@@ -90,10 +89,6 @@ macro_rules! v_escape {
         use crate::v_latex::escaping as v_l;
         let group = "v_latexescape/Escaping";
         groups!($c, group, v_l);
-
-        use crate::v::escaping as v_e;
-        let group = "v_escape/ascii numbers RANGE/Escaping";
-        groups!($c, group, v_e);
     };
 }
 

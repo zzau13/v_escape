@@ -22,10 +22,6 @@ path = "src/all.rs"
 [dependencies]
 cfg-if = "1.0"
 criterion = "0.3"
-v_escape = { version = "*", path = "../v_escape" }
-v_htmlescape = { version = "*", path = "../v_htmlescape" }
-v_jsonescape = { version = "*", path = "../v_jsonescape" }
-v_latexescape = { version = "*", path = "../v_latexescape" }
-
-[build-dependencies]
-v_escape = { version = "*", path = "../v_escape" }
+v_htmlescape = { version = "*", path = "../v_htmlescape", features = ["bytes-buf"] }
+v_jsonescape = { version = "*", path = "../v_jsonescape", features = ["bytes-buf"] }
+v_latexescape = { version = "*", path = "../v_latexescape", features = ["bytes-buf"] }
