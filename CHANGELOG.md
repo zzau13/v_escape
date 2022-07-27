@@ -2,11 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
-## [unreleased]
+## [_escape_codegen-v0.1.3] - 2022-07-27
 
 ### Bug Fixes
 
 - Tests check instruction exists
+- Rename prerelease hook file
+
+### Features
+
+- Add release tools
+- Expose scalar function safe
+
+### Miscellaneous Tasks
+
+- Add generate script
 
 ## [_escape_codegen-v0.1.2] - 2022-07-27
 

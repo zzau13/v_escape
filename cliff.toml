@@ -51,7 +51,7 @@ commit_parsers = [
 # filter out the commits that are not matched by commit parsers
 filter_commits = false
 # glob pattern for matching git tags
-tag_pattern = "vv_escape_codegen-v[0-9]*"
+tag_pattern = "v_escape_codegen-v[0-9]*"
 # regex for skipping tags
 skip_tags = ""
 # regex for ignoring tags
