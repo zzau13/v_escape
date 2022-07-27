@@ -95,9 +95,9 @@ pub fn generate<P: AsRef<Path>>(dir: P) {
     let code_build_pretty = prettyplease::unparse(&syn::parse2(code_build).unwrap());
 
     fs::write(&cargo, toml::to_string_pretty(&cargo_value).unwrap()).unwrap();
-    fs::write(src.join("lib.rs"), head.to_string() + &code_pretty).unwrap();
-    fs::write(test.join("lib.rs"), head.to_string() + &code_test_pretty).unwrap();
-    fs::write(dir.join("build.rs"), head.to_string() + &code_build_pretty).unwrap();
+    fs::write(src.join("lib.rs"), head.clone() + &code_pretty).unwrap();
+    fs::write(test.join("lib.rs"), head.clone() + &code_test_pretty).unwrap();
+    fs::write(dir.join("build.rs"), head + &code_build_pretty).unwrap();
 }
 
 fn parse_template(s: &str) -> Vec<Pair> {
