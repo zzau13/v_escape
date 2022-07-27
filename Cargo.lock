@@ -202,7 +202,7 @@ checksum = "8ccb82d61f80a663efe1f787a51b16b5a51e3314d6ac365b08639f52387b33f3"
 
 [[package]]
 name = "v_escape_codegen"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "clap",
  "heck",
@@ -216,21 +216,21 @@ dependencies = [
 
 [[package]]
 name = "v_htmlescape"
-version = "0.15.5"
+version = "0.15.6"
 dependencies = [
  "buf-min",
 ]
 
 [[package]]
 name = "v_jsonescape"
-version = "0.7.5"
+version = "0.7.6"
 dependencies = [
  "buf-min",
 ]
 
 [[package]]
 name = "v_latexescape"
-version = "0.14.5"
+version = "0.14.6"
 dependencies = [
  "buf-min",
 ]

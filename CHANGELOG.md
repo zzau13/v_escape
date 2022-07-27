@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [_escape_codegen-v0.1.6] - 2022-07-27
+
+### Features
+
+- Add generate attribute all feature at documentation
+
 ## [_escape_codegen-v0.1.5] - 2022-07-27
 
 ### Features
@@ -12,6 +18,7 @@ All notable changes to this project will be documented in this file.
 ### Miscellaneous Tasks
 
 - Release 0.1.5
+- Release changelog
 
 ## [_escape_codegen-v0.1.4] - 2022-07-27
 
