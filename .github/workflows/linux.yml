@@ -51,7 +51,7 @@ jobs:
         timeout-minutes: 40
         with:
           command: test
-          args: --all --no-fail-fast -- --nocapture
+          args: --all-features
 
       - name: Install cargo-cache
         continue-on-error: true
