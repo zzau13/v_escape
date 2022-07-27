@@ -320,24 +320,26 @@ impl<'a> Generator<'a> {
                 pub struct __Escaped<'a>(&'a[u8]);
                 impl<'a> std::fmt::Display for __Escaped<'a> {
                     fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
-                        unsafe { _escape(self.0, fmt) }
+                        _escape(self.0, fmt)
                     }
                 }
                 pub fn escape(s: &str) -> __Escaped {
                     __Escaped(s.as_bytes())
                 }
-                pub unsafe fn _escape(#bytes: &[u8], #fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
-                    let #len = #bytes.len();
-                    let #start_ptr = #bytes.as_ptr();
-                    let #end_ptr = #bytes[len..].as_ptr();
-                    let mut #ptr = #start_ptr;
-                    let mut #start = 0;
-                    #body
-                    debug_assert!(start <= len);
-                    if start < len {
-                        fmt.write_str(std::str::from_utf8_unchecked(&bytes[start..len]))?;
+                pub fn _escape(#bytes: &[u8], #fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+                    unsafe {
+                        let #len = #bytes.len();
+                        let #start_ptr = #bytes.as_ptr();
+                        let #end_ptr = #bytes[len..].as_ptr();
+                        let mut #ptr = #start_ptr;
+                        let mut #start = 0;
+                        #body
+                        debug_assert!(start <= len);
+                        if start < len {
+                            fmt.write_str(std::str::from_utf8_unchecked(&bytes[start..len]))?;
+                        }
+                        Ok(())
                     }
-                    Ok(())
                 }
 
                 #[cfg(feature = "bytes-buf")]
