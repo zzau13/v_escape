@@ -2,7 +2,7 @@
 status = 'actively-developed'
 [dependencies.buf-min]
 optional = true
-version = '^0.6.1'
+version = '^0.7.0'
 
 [features]
 bytes-buf = ['buf-min']
