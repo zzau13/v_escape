@@ -19,7 +19,7 @@ use crate::macros::write_bytes;
 use crate::ranges::{escape_range, escape_range_bytes, Feature, Switch};
 use crate::scalar::{escape_scalar, escape_scalar_bytes, ArgScalar};
 use crate::tests::build_tests;
-use crate::utils::ident;
+use crate::utils::{ident, BUF_MIN_VERSION};
 
 #[derive(Serialize)]
 struct Dep {
@@ -46,7 +46,7 @@ pub fn generate<P: AsRef<Path>>(dir: P) {
         .insert(
             "buf-min".into(),
             Value::try_from(Dep {
-                version: "^0.6.1",
+                version: BUF_MIN_VERSION,
                 optional: true,
             })
             .unwrap(),
