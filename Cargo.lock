@@ -126,9 +126,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.43"
+version = "1.0.44"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0a2ca2c61bc9f3d74d2886294ab7b9853abd9c1ad903a3ac7815c58989bb7bab"
+checksum = "7bd7356a8122b6c4a24a82b278680c73357984ca2fc79a0f9fa6dea7dced7c58"
 dependencies = [
  "unicode-ident",
 ]
@@ -216,21 +216,21 @@ dependencies = [
 
 [[package]]
 name = "v_htmlescape"
-version = "0.15.7"
+version = "0.15.8"
 dependencies = [
  "buf-min",
 ]
 
 [[package]]
 name = "v_jsonescape"
-version = "0.7.7"
+version = "0.7.8"
 dependencies = [
  "buf-min",
 ]
 
 [[package]]
 name = "v_latexescape"
-version = "0.14.7"
+version = "0.14.8"
 dependencies = [
  "buf-min",
 ]
