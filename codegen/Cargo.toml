@@ -12,7 +12,7 @@ workspace = ".."
 [dependencies]
 syn = "1.0"
 quote = "1.0"
-proc-macro2 = "^1.0.43"
+proc-macro2 = "^1.0.44"
 clap = { version = "3.2", default-features = false, features = ["derive", "std"] }
 toml = "0.5"
 serde = { version = "1.0", features = ["derive"] }
