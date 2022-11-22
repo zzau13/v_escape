@@ -3,9 +3,9 @@
 set -xe
 
 cargo install --path codegen
-v_escape_codegen -i v_latexescape
-v_escape_codegen -i v_jsonescape
-v_escape_codegen -i v_htmlescape
+for i in v_latexescape v_jsonescape v_htmlescape; do
+  ~/.cargo/bin/v_escape_codegen -i $i
+done
 
 cargo fmt
 cargo test --all-features
