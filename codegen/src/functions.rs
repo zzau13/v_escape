@@ -60,6 +60,7 @@ pub fn escape_new(name: &Ident) -> TokenStream {
             use std::mem;
             use std::sync::atomic::{AtomicUsize, Ordering};
             use std::fmt::{self, Formatter};
+            use std::ptr::addr_of;
             static mut FN: fn(&[u8], &mut Formatter) -> fmt::Result = detect;
 
             fn detect(bytes: &[u8], fmt: &mut Formatter) -> fmt::Result {
@@ -71,7 +72,7 @@ pub fn escape_new(name: &Ident) -> TokenStream {
                     scalar::_escape as usize
                 };
 
-                let slot = unsafe { &*(&FN as *const _ as *const AtomicUsize) };
+                let slot = unsafe { &*(addr_of!(FN) as *const _ as *const AtomicUsize) };
                 slot.store(fun, Ordering::Relaxed);
                 unsafe {
                     mem::transmute::<usize, fn(&[u8], &mut Formatter) -> fmt::Result>(fun)(
@@ -81,7 +82,7 @@ pub fn escape_new(name: &Ident) -> TokenStream {
             }
 
             unsafe {
-                let slot = &*(&FN as *const _ as *const AtomicUsize);
+                let slot = &*(addr_of!(FN) as *const _ as *const AtomicUsize);
                 let fun = slot.load(Ordering::Relaxed);
                 mem::transmute::<usize, fn(&[u8], &mut Formatter) -> fmt::Result>(fun)(bytes, fmt)
             }

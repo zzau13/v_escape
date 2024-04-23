@@ -9,7 +9,7 @@ use quote::quote;
 use serde::Serialize;
 use syn::parse::{Parse, ParseBuffer, ParseStream};
 use syn::punctuated::Punctuated;
-use syn::token::{Bang, Paren};
+use syn::token::{Not, Paren};
 use syn::Lit;
 use syn::{parenthesized, Token};
 use toml::Value;
@@ -91,7 +91,7 @@ pub fn generate<P: AsRef<Path>>(dir: P) {
     }
     let template = src.join("_lib.rs");
     let template_src =
-        fs::read_to_string(&template).expect("read template `[INPUT_DIR]/src/_lib.rs`");
+        fs::read_to_string(template).expect("read template `[INPUT_DIR]/src/_lib.rs`");
     let pairs = parse_template(&template_src);
     let mut code = Generator::new(&pairs).build();
     let name = heck::AsPascalCase(package_name).to_string();
@@ -195,7 +195,7 @@ impl Parse for PairBuilder {
 /// Proc macro arguments parser
 struct Builder {
     _path: Ident,
-    _bang_token: Bang,
+    _bang_token: Not,
     _delimiter: Paren,
     pairs: Punctuated<PairBuilder, Token![,]>,
     _dots: Token![;],

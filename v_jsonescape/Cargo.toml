@@ -1,27 +1,29 @@
 [badges.maintenance]
-status = 'actively-developed'
+status = "actively-developed"
+
 [dependencies.buf-min]
 optional = true
-version = '0.7'
+version = "0.7"
 
 [features]
-bytes-buf = ['buf-min']
+bytes-buf = ["buf-min"]
 
 [package]
-authors = ['Juan Aguilar Santillana <mhpoin@gmail.com>']
-description = 'The simd optimized JSON escaping code'
-documentation = 'https://docs.rs/v_jsonescape'
-edition = '2021'
+authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
+description = "The simd optimized JSON escaping code"
+documentation = "https://docs.rs/v_jsonescape"
+edition = "2021"
 keywords = [
-    'json',
-    'escaping',
-    'simd',
+    "json",
+    "escaping",
+    "simd",
 ]
-license = 'MIT/Apache-2.0'
-name = 'v_jsonescape'
-readme = 'README.md'
-repository = 'https://github.com/botika/v_escape'
-version = '0.7.8'
-workspace = '..'
+license = "MIT/Apache-2.0"
+name = "v_jsonescape"
+readme = "README.md"
+repository = "https://github.com/botika/v_escape"
+version = "0.7.9"
+workspace = ".."
+
 [package.metadata.docs.rs]
 all-features = true
