@@ -10,9 +10,9 @@ checksum = "1bec1de6f59aedf83baf9ff929c98f2ad654b97c9510f4e70cf6f661d49fd5b1"
 
 [[package]]
 name = "buf-min"
-version = "0.7.0"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34a3d6bf5a68a5f460baf8a787e1f40dc06a476ebc59a39abab493cba217d9c3"
+checksum = "22d5698cf6842742ed64805705798f8b351fff53fa546fd45c52184bee58dc90"
 
 [[package]]
 name = "clap"
