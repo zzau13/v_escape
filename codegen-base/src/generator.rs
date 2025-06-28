@@ -24,7 +24,7 @@ pub fn parse_template(tokens: TokenStream) -> syn::Result<Vec<Pair>> {
         let p1 = &pairs[i];
         let p2 = &pairs[i + 1];
         // TODO: to syn::Error
-        assert_ne!(p1.ch, p2.ch, "{:?} and {:?} are repeated", p1, p2);
+        assert_ne!(p1.ch, p2.ch, "{p1:?} and {p2:?} are repeated");
     }
 
     Ok(pairs)
@@ -154,7 +154,7 @@ impl Generator<'_> {
             })
         } else {
             let mut chs = Vec::with_capacity(256);
-            let sch = self.pairs[0].ch as u8;
+            let sch = self.pairs[0].ch;
             for i in 0..=255_u8 {
                 let n = self.pairs.binary_search_by(|s| s.ch.cmp(&i)).unwrap_or(len);
                 chs.push(n as u8)

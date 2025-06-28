@@ -18,19 +18,19 @@ impl Pair {
 }
 
 pub(crate) struct Pairs<'a>(pub &'a [Pair]);
-impl<'a> Into<Switch> for Pairs<'a> {
-    fn into(self) -> Switch {
+impl<'a> From<Pairs<'a>> for Switch {
+    fn from(val: Pairs<'a>) -> Self {
         use Switch::*;
-        assert_ne!(self.len(), 0);
+        assert_ne!(val.len(), 0);
 
-        if self.len() == 1 {
-            return A { a: self.ch(0) };
+        if val.len() == 1 {
+            return A { a: val.ch(0) };
         }
-        let e = self.len() - 1;
+        let e = val.len() - 1;
 
         let mut d = vec![];
         for i in 0..e {
-            let diff = self.ch(i + 1) - self.ch(i);
+            let diff = val.ch(i + 1) - val.ch(i);
             if 1 < diff {
                 d.push((i, diff));
             }
@@ -39,35 +39,35 @@ impl<'a> Into<Switch> for Pairs<'a> {
 
         match d.len() {
             0 => Ar {
-                la: self.ch(0),
-                ra: self.ch(e),
+                la: val.ch(0),
+                ra: val.ch(e),
             },
             1 => {
                 if e == 1 {
                     AB {
-                        a: self.ch(0),
-                        b: self.ch(e),
+                        a: val.ch(0),
+                        b: val.ch(e),
                     }
                 } else {
                     let i = d[0].0;
                     if i == 0 {
                         ArB {
-                            la: self.ch(i + 1),
-                            ra: self.ch(e),
-                            b: self.ch(0),
+                            la: val.ch(i + 1),
+                            ra: val.ch(e),
+                            b: val.ch(0),
                         }
                     } else if i + 1 != e {
                         ArBr {
-                            la: self.ch(0),
-                            ra: self.ch(i),
-                            lb: self.ch(i + 1),
-                            rb: self.ch(e),
+                            la: val.ch(0),
+                            ra: val.ch(i),
+                            lb: val.ch(i + 1),
+                            rb: val.ch(e),
                         }
                     } else {
                         ArB {
-                            la: self.ch(0),
-                            ra: self.ch(i),
-                            b: self.ch(i + 1),
+                            la: val.ch(0),
+                            ra: val.ch(i),
+                            b: val.ch(i + 1),
                         }
                     }
                 }
@@ -76,9 +76,9 @@ impl<'a> Into<Switch> for Pairs<'a> {
                 if e <= 2 {
                     assert_eq!(e, 2);
                     return ABC {
-                        a: self.ch(0),
-                        b: self.ch(1),
-                        c: self.ch(2),
+                        a: val.ch(0),
+                        b: val.ch(1),
+                        c: val.ch(2),
                     };
                 }
 
@@ -90,22 +90,22 @@ impl<'a> Into<Switch> for Pairs<'a> {
 
                 if f + 1 == l {
                     if f == 0 {
-                        self.push_1_ranges_2_equals_at_first(f, l, e)
+                        val.push_1_ranges_2_equals_at_first(f, l, e)
                     } else if l + 1 == e {
-                        self.push_1_ranges_2_equals_at_last(f, l, e)
+                        val.push_1_ranges_2_equals_at_last(f, l, e)
                     } else {
-                        self.push_2_ranges_1_equals(f, l, e)
+                        val.push_2_ranges_1_equals(f, l, e)
                     }
                 } else if f == 0 {
                     if l + 1 == e {
-                        self.push_1_ranges_2_equals_at_first_last(f, l, e)
+                        val.push_1_ranges_2_equals_at_first_last(f, l, e)
                     } else {
-                        self.push_2_ranges_1_equals_at_first(f, l, e)
+                        val.push_2_ranges_1_equals_at_first(f, l, e)
                     }
                 } else if l + 1 == e {
-                    self.push_2_ranges_1_equals_at_last(f, l, e)
+                    val.push_2_ranges_1_equals_at_last(f, l, e)
                 } else {
-                    self.push_3_ranges(f, l, e)
+                    val.push_3_ranges(f, l, e)
                 }
             }
         }
