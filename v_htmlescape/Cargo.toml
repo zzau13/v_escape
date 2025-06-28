@@ -1,18 +1,24 @@
 [badges.maintenance]
 status = "actively-developed"
 
-[dependencies.buf-min]
-optional = true
-version = "0.7"
+[dependencies.v_escape-base]
+workspace = true
 
 [features]
-bytes-buf = ["buf-min"]
+alloc = []
+fmt = ["v_escape-base/fmt"]
+std = [
+    "alloc",
+    "string",
+    "fmt",
+]
+string = ["v_escape-base/string"]
 
 [package]
 authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "The simd optimized HTML escaping code"
 documentation = "https://docs.rs/v_htmlescape"
-edition = "2021"
+edition = "2024"
 keywords = [
     "html",
     "escaping",

@@ -4,7 +4,7 @@ name = "v_htmlescape-bench"
 version = "0.0.1"
 authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "Criterion benchmark suite for v_htmlescape."
-edition = "2021"
+edition = "2024"
 license = "MIT/Apache-2.0"
 repository = "https://github.com/botika/v_escape"
 

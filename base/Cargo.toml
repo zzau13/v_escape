@@ -1,0 +1,27 @@
+[package]
+name = "v_escape-base"
+version = "0.1.0"
+edition = "2024"
+
+
+[features]
+default = ["std"]
+# The 'std' feature permits the memchr crate to use the standard library. This
+# permits this crate to use runtime CPU feature detection to automatically
+# accelerate searching via vector instructions. Without the standard library,
+# this automatic detection is not possible.
+std = ["alloc"]
+
+# The 'alloc' feature enables some APIs that require allocation, such as
+# 'Finder::into_owned'. Note that this feature does not enable runtime CPU
+# feature detection. That still requires 'std'.
+alloc = []
+
+# The 'string' feature enables the `escape_string` function.
+string = []
+
+# The 'fmt' feature enables the `escape_fmt` function.
+fmt = []
+
+[package.metadata.docs.rs]
+features = ["std", "alloc", "string", "fmt"]
