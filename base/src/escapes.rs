@@ -20,10 +20,7 @@ pub trait EscapesBuilder {
     ///
     /// # Returns
     /// An instance of a type that implements the `Escapes` trait.
-    ///
-    /// # Safety
-    /// This function is unsafe because it operates simd instructions.
-    unsafe fn new<V: Vector>() -> Self::Escapes<V>;
+    fn new<V: Vector>() -> Self::Escapes<V>;
 }
 
 /// A trait that abstracts masking functions for escape sequences.
@@ -47,10 +44,7 @@ pub trait Escapes: Copy + fmt::Debug {
     ///
     /// # Returns
     /// A vector with the mask applied.
-    ///
-    /// # Safety
-    /// This function is unsafe because it operates simd instructions.
-    unsafe fn masking(&self, v: Self::Vector) -> Self::Vector;
+    fn masking(&self, v: Self::Vector) -> Self::Vector;
 
     /// Returns the escape sequence for a given position in the escaped array.
     ///
@@ -78,9 +72,6 @@ pub trait Escapes: Copy + fmt::Debug {
     ///
     /// # Returns
     /// A `Result` indicating the success or failure of the escape operation.
-    ///
-    /// # Safety
-    /// This function is safe to call, but it internally calls an unsafe function.
     #[inline(always)]
     fn byte_byte_escape<R>(haystack: &str, mut writer: impl Writer<R>) -> Result<(), R> {
         let len = haystack.len();

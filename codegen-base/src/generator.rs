@@ -184,11 +184,12 @@ impl Generator<'_> {
         #[derive(Debug, Clone, Copy)]
         struct Escape<V: Vector> #struct_body
 
+        #[allow(dead_code)]
         struct Builder;
         impl EscapesBuilder for Builder {
             type Escapes<V: Vector> = Escape<V>;
 
-            unsafe fn new<V: Vector>() -> Self::Escapes<V> {
+            fn new<V: Vector>() -> Self::Escapes<V> {
                 #build
             }
         }
@@ -201,7 +202,7 @@ impl Generator<'_> {
             type Vector = V;
 
             #[inline(always)]
-            unsafe fn masking(&self, vector2: V) -> V {
+            fn masking(&self, vector2: V) -> V {
                 #mask_body
             }
 

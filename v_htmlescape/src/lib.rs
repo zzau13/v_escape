@@ -26,10 +26,11 @@ struct Escape<V: Vector> {
     below_b: V,
     c: V,
 }
+#[allow(dead_code)]
 struct Builder;
 impl EscapesBuilder for Builder {
     type Escapes<V: Vector> = Escape<V>;
-    unsafe fn new<V: Vector>() -> Self::Escapes<V> {
+    fn new<V: Vector>() -> Self::Escapes<V> {
         Self::Escapes {
             translation_a: V::splat(88i8 as u8),
             below_a: V::splat(121i8 as u8),
@@ -44,7 +45,7 @@ impl<V: Vector> Escapes for Escape<V> {
     const FALSE_POSITIVE: bool = true;
     type Vector = V;
     #[inline(always)]
-    unsafe fn masking(&self, vector2: V) -> V {
+    fn masking(&self, vector2: V) -> V {
         vector2
             .add(self.translation_a)
             .gt(self.below_a)

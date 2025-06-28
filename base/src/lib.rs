@@ -17,11 +17,11 @@
 //!     a: V,
 //! }
 //!
-//! struct TodoRemoveBuilder;
-//! impl EscapesBuilder for TodoRemoveBuilder {
+//! struct Builder;
+//! impl EscapesBuilder for Builder {
 //!     type Escapes<V: Vector> = Equal<V>;
 //!
-//!     unsafe fn new<V: Vector>() -> Self::Escapes<V> {
+//!     fn new<V: Vector>() -> Self::Escapes<V> {
 //!         Equal { a: V::splat(b'a') }
 //!     }
 //! }
@@ -34,7 +34,7 @@
 //!     type Vector = V;
 //!
 //!     #[inline(always)]
-//!     unsafe fn masking(&self, vector2: V) -> V {
+//!     fn masking(&self, vector2: V) -> V {
 //!         self.a.cmpeq(vector2)
 //!     }
 //!
@@ -54,7 +54,7 @@
 //!     }
 //! }
 //!
-//! escape_builder!(TodoRemoveBuilder);
+//! escape_builder!(Builder);
 //!
 //! let mut buffer = String::new();
 //! let haystack = "a".repeat(64);

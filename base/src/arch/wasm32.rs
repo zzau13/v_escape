@@ -20,7 +20,7 @@ pub fn escape<E: EscapesBuilder, R>(haystack: &str, writer: impl Writer<R>) -> R
 
     // # Safety
     // E::new::<v128>() is unsafe because it operates simd instructions.
-    Generic::new(unsafe { E::new::<WasmVector>() }).escape(haystack, writer)
+    Generic::new(E::new::<WasmVector>()).escape(haystack, writer)
 }
 
 /// A macro for creating a escape functions

@@ -4,11 +4,11 @@ use crate::{Escapes, EscapesBuilder, Vector, generic::Generic, writer::Writer};
 
 /// Returns true if SSE2 is available in the current environment.
 pub fn is_available() -> bool {
-    #[cfg(feature = "std")]
+    #[cfg(target_feature = "sse2")]
     {
-        std::is_x86_feature_detected!("sse2")
+        true
     }
-    #[cfg(not(feature = "std"))]
+    #[cfg(not(target_feature = "sse2"))]
     {
         false
     }
@@ -33,5 +33,5 @@ pub fn escape<E: EscapesBuilder, R>(haystack: &str, writer: impl Writer<R>) -> R
 
     // # Safety
     // E::new::<__m128i>() is unsafe because it operates simd instructions.
-    Generic::new(unsafe { E::new::<SseVector>() }).escape(haystack, writer)
+    Generic::new(E::new::<SseVector>()).escape(haystack, writer)
 }

@@ -66,8 +66,9 @@ fn read_cargo(p: &Path) -> anyhow::Result<(Value, String)> {
         .insert("metadata".to_string(), doc);
 
     let mut features = BTreeMap::new();
-    features.insert("std", vec!["alloc", "string", "fmt"]);
-    features.insert("alloc", vec![]);
+    features.insert("default", vec!["std", "string", "fmt"]);
+    features.insert("std", vec!["v_escape-base/std", "alloc"]);
+    features.insert("alloc", vec!["v_escape-base/alloc"]);
     features.insert("string", vec!["v_escape-base/string"]);
     features.insert("fmt", vec!["v_escape-base/fmt"]);
 
@@ -144,7 +145,6 @@ fn _generate(dir: &Path) -> anyhow::Result<()> {
     );
     // Generate tests
     let code_test = build_tests(&ident(&name), &escapes, &escaped);
-    println!("{}", code_test);
     let code_test_pretty = prettyplease::unparse(
         &syn::parse2(code_test)
             .map_err(|e| anyhow::anyhow!("Failed to parse code to TokenStream: {}", e))?,
