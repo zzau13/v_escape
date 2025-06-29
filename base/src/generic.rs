@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 // Adapted from https://github.com/BurntSushi/memchr/blob/master/src/arch/generic/memchr.rs
 
 use crate::{

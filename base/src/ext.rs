@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 // Adapted from https://github.com/BurntSushi/memchr/blob/master/src/ext.rs
 /// A trait for adding some helper routines to pointers.
 pub(crate) trait Pointer {

@@ -502,7 +502,7 @@ mod wasm_simd128 {
 
         #[inline(always)]
         fn splat(byte: u8) -> Self {
-            unsafe { u8x16_splat(byte) }
+            u8x16_splat(byte)
         }
 
         #[inline(always)]
@@ -517,25 +517,25 @@ mod wasm_simd128 {
 
         #[inline(always)]
         fn movemask(self) -> SensibleMoveMask {
-            SensibleMoveMask(unsafe { u8x16_bitmask(self).into() })
+            SensibleMoveMask(u8x16_bitmask(self).into())
         }
 
         #[inline(always)]
         fn cmpeq(self, vector2: Self) -> Self {
-            unsafe { i8x16_eq(self, vector2) }
+            i8x16_eq(self, vector2)
         }
 
         #[inline(always)]
         fn or(self, vector2: Self) -> Self {
-            unsafe { v128_or(self, vector2) }
+            v128_or(self, vector2)
         }
 
         fn add(self, vector2: Self) -> Self {
-            unsafe { i8x16_add(self, vector2) }
+            i8x16_add(self, vector2)
         }
 
         fn gt(self, vector2: Self) -> Self {
-            unsafe { i8x16_gt(self, vector2) }
+            i8x16_gt(self, vector2)
         }
     }
 }
