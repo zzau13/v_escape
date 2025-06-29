@@ -1,16 +1,11 @@
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 
-pub fn build_tests(package: &Ident, name: &Ident, escapes: String, escaped: String) -> TokenStream {
+pub fn all_utf8_less(less: &str) -> TokenStream {
     quote! {
-        #[test]
-        fn tests() {
-        use #package::#name;
-        use #package::{escape,ranges,scalar};
-        use std::borrow::Cow;
-        use std::char::from_u32;
-
+        #![allow(unused)]
         fn all_utf8_less(less: &str) -> String {
+            use std::char::from_u32;
             assert_eq!(less.len(), less.as_bytes().len());
 
             let less = less.as_bytes();
@@ -30,182 +25,167 @@ pub fn build_tests(package: &Ident, name: &Ident, escapes: String, escaped: Stri
 
             buf
         }
+    }
+}
 
-        let empty = "";
-        let escapes = #escapes;
-        let escaped = #escaped;
-        let utf8: &str = &all_utf8_less(#escapes);
-        let empty_heap = String::new();
-        let short = "foobar";
-        let string_long: &str = &short.repeat(1024);
-        let string = #escapes.to_string();
-        let cow = Cow::Owned(#escapes.to_string());
-
-        let buf = scalar::escape(&[short, escapes, short].join("")).to_string();
-        assert_eq!(buf, [short, escaped, short].join(""));
-
-        struct FAvx(String);
-        impl std::fmt::Display for FAvx {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                unsafe { ranges::avx::escape(&self.0.as_bytes(), f) }
-            }
-        }
-        #[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
-        {
-        if is_x86_feature_detected!("avx2") {
-            let buf = FAvx([short, escapes, short].join("")).to_string();
-            assert_eq!(buf, [short, escaped, short].join(""));
+fn result_string() -> TokenStream {
+    quote! {
+        fn result(haystack: &str) -> String {
+            let mut buf = String::new();
+            escape_string(haystack, &mut buf);
+            buf
         }
     }
-        struct FSse(String);
-        impl std::fmt::Display for FSse {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                unsafe { ranges::sse::escape(&self.0.as_bytes(), f) }
-            }
-        }
-        #[cfg(any(target_arch = "x86_64", target_arch = "x86"))] {
-        if is_x86_feature_detected!("sse2") {
-            let buf = FSse([short, escapes, short].join("")).to_string();
-            assert_eq!(buf, [short, escaped, short].join(""));
-        }
-        }
+}
 
-        #[cfg(feature = "bytes-buf")]
-        unsafe {
-            use #package::b_escape;
-            let mut buf = String::new();
-            b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
-            assert_eq!(buf, [short, escaped, short].join(""));
-
-            let mut buf = String::new();
-            scalar::b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
-            assert_eq!(buf, [short, escaped, short].join(""));
-
-            #[cfg(any(target_arch = "x86_64", target_arch = "x86"))] {
-            if is_x86_feature_detected!("avx2") {
-                let mut buf = String::new();
-                ranges::avx::b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
-                assert_eq!(buf, [short, escaped, short].join(""));
-            }
-
-            if is_x86_feature_detected!("sse2") {
-                let mut buf = String::new();
-                ranges::sse::b_escape([short, escapes, short].join("").as_bytes(), &mut buf);
-                assert_eq!(buf, [short, escaped, short].join(""));
-            }
+fn result_fmt() -> TokenStream {
+    quote! {
+        fn result(haystack: &str) -> String {
+            escape_fmt(haystack).to_string()
         }
+    }
+}
+
+fn tests(escapes: &str, escaped: &str) -> TokenStream {
+    quote! {
+        #[test]
+        fn tests() {
+            use std::borrow::Cow;
+
+            let empty = "";
+            let escapes = #escapes;
+            let escaped = #escaped;
+            let utf8: &str = &all_utf8_less(#escapes);
+            let empty_heap = String::new();
+            let short = "foobar";
+            let string_long: &str = &short.repeat(1024);
+            let string = #escapes;
+            let cow = Cow::Owned(#escapes.to_string());
+
+            assert_eq!(
+                result(&[short, escapes, short].join("")),
+                [short, escaped, short].join("")
+            );
+
+            assert_eq!(result(empty), empty);
+            assert_eq!(result(escapes), escaped);
+            assert_eq!(result(&empty_heap), empty);
+            assert_eq!(result(&cow), escaped);
+            assert_eq!(result(&string), escaped);
+            assert_eq!(result(&utf8), utf8);
+            assert_eq!(result(string_long), string_long);
+            assert_eq!(
+                result(escapes.repeat(1024).as_ref()),
+                escaped.repeat(1024)
+            );
+            assert_eq!(
+                result([short, escapes, short].join("").as_ref()),
+                [short, escaped, short].join("")
+            );
+            assert_eq!(
+                result([escapes, short].join("").as_ref()),
+                [escaped, short].join("")
+            );
+            assert_eq!(
+                result(["f", escapes, short].join("").as_ref()),
+                ["f", escaped, short].join("")
+            );
+            assert_eq!(
+                result(["f", escapes].join("").as_ref()),
+                ["f", escaped].join("")
+            );
+            assert_eq!(
+                result(["fo", escapes].join("").as_ref()),
+                ["fo", escaped].join("")
+            );
+            assert_eq!(
+                result(["fo", escapes, "b"].join("").as_ref()),
+                ["fo", escaped, "b"].join("")
+            );
+            assert_eq!(
+                result(escapes.repeat(2).as_ref()),
+                escaped.repeat(2)
+            );
+            assert_eq!(
+                result(escapes.repeat(3).as_ref()),
+                escaped.repeat(3)
+            );
+            assert_eq!(
+                result(["f", &escapes.repeat(2)].join("").as_ref()),
+                ["f", &escaped.repeat(2)].join("")
+            );
+            assert_eq!(
+                result(["fo", &escapes.repeat(2)].join("").as_ref()),
+                ["fo", &escaped.repeat(2)].join("")
+            );
+            assert_eq!(
+                result(["fo", &escapes.repeat(2), "bar"].join("").as_ref()),
+                ["fo", &escaped.repeat(2), "bar"].join("")
+            );
+            assert_eq!(
+                result(["fo", &escapes.repeat(3), "bar"].join("").as_ref()),
+                ["fo", &escaped.repeat(3), "bar"].join("")
+            );
+            assert_eq!(
+                result([&escapes.repeat(3), "bar"].join("").as_ref()),
+                [&escaped.repeat(3), "bar"].join("")
+            );
+            assert_eq!(
+                result([short, &escapes.repeat(3), "bar"].join("").as_ref()),
+                [short, &escaped.repeat(3), "bar"].join("")
+            );
+            assert_eq!(
+                result([short, &escapes.repeat(5), "bar"].join("").as_ref()),
+                [short, &escaped.repeat(5), "bar"].join("")
+            );
+            assert_eq!(
+                result([string_long, &escapes.repeat(13)].join("").repeat(1024).as_ref()),
+                [string_long, &escaped.repeat(13)].join("").repeat(1024)
+            );
+            assert_eq!(
+                result([utf8, escapes, short].join("").as_ref()),
+                [utf8, escaped, short].join("")
+            );
+            assert_eq!(
+                result([utf8, escapes, utf8].join("").as_ref()),
+                [utf8, escaped, utf8].join("")
+            );
+            assert_eq!(
+                result([&utf8.repeat(124), escapes, utf8].join("").as_ref()),
+                [&utf8.repeat(124), escaped, utf8].join("")
+            );
+            assert_eq!(
+                result([escapes, &utf8.repeat(124), escapes, utf8].join("").as_ref()),
+                [escaped, &utf8.repeat(124), escaped, utf8].join("")
+            );
+            assert_eq!(
+                result([escapes, &utf8.repeat(124), escapes, utf8, escapes].join("").as_ref()),
+                [escaped, &utf8.repeat(124), escaped, utf8, escaped].join("")
+            );
         }
-        assert_eq!(#name::from(empty).to_string(), empty);
-        assert_eq!(#name::from(escapes).to_string(), escaped);
-        assert_eq!(escape(&empty_heap).to_string(), empty);
-        assert_eq!(escape(&cow).to_string(), escaped);
-        assert_eq!(escape(&string).to_string(), escaped);
-        assert_eq!(escape(&utf8).to_string(), utf8);
-        assert_eq!(#name::from(string_long).to_string(), string_long);
-        assert_eq!(
-            #name::from(escapes.repeat(1024).as_ref()).to_string(),
-            escaped.repeat(1024)
-        );
-        assert_eq!(
-            #name::from([short, escapes, short].join("").as_ref()).to_string(),
-            [short, escaped, short].join("")
-        );
-        assert_eq!(
-            #name::from([escapes, short].join("").as_ref()).to_string(),
-            [escaped, short].join("")
-        );
-        assert_eq!(
-            #name::from(["f", escapes, short].join("").as_ref()).to_string(),
-            ["f", escaped, short].join("")
-        );
-        assert_eq!(
-            #name::from(["f", escapes].join("").as_ref()).to_string(),
-            ["f", escaped].join("")
-        );
-        assert_eq!(
-            #name::from(["fo", escapes].join("").as_ref()).to_string(),
-            ["fo", escaped].join("")
-        );
-        assert_eq!(
-            #name::from(["fo", escapes, "b"].join("").as_ref()).to_string(),
-            ["fo", escaped, "b"].join("")
-        );
-        assert_eq!(
-            #name::from(escapes.repeat(2).as_ref()).to_string(),
-            escaped.repeat(2)
-        );
-        assert_eq!(
-            #name::from(escapes.repeat(3).as_ref()).to_string(),
-            escaped.repeat(3)
-        );
-        assert_eq!(
-        #name::from(["f", &escapes.repeat(2)].join("").as_ref()).to_string(),
-        ["f", &escaped.repeat(2)].join("")
-        );
-        assert_eq!(
-        #name::from(["fo", &escapes.repeat(2)].join("").as_ref()).to_string(),
-        ["fo", &escaped.repeat(2)].join("")
-        );
-        assert_eq!(
-        #name::from(["fo", &escapes.repeat(2), "bar"].join("").as_ref()).to_string(),
-        ["fo", &escaped.repeat(2), "bar"].join("")
-        );
-        assert_eq!(
-        #name::from(["fo", &escapes.repeat(3), "bar"].join("").as_ref()).to_string(),
-        ["fo", &escaped.repeat(3), "bar"].join("")
-        );
-        assert_eq!(
-        #name::from([&escapes.repeat(3), "bar"].join("").as_ref()).to_string(),
-        [&escaped.repeat(3), "bar"].join("")
-        );
-        assert_eq!(
-        #name::from([short, &escapes.repeat(3), "bar"].join("").as_ref()).to_string(),
-        [short, &escaped.repeat(3), "bar"].join("")
-        );
-        assert_eq!(
-        #name::from([short, &escapes.repeat(5), "bar"].join("").as_ref()).to_string(),
-        [short, &escaped.repeat(5), "bar"].join("")
-        );
-        assert_eq!(
-        #name::from(
-        [string_long, &escapes.repeat(13)]
-        .join("")
-        .repeat(1024)
-        .as_ref()
-        )
-        .to_string(),
-        [string_long, &escaped.repeat(13)].join("").repeat(1024)
-        );
-        assert_eq!(
-        #name::from([utf8, escapes, short].join("").as_ref()).to_string(),
-        [utf8, escaped, short].join("")
-        );
-        assert_eq!(
-        #name::from([utf8, escapes, utf8].join("").as_ref()).to_string(),
-        [utf8, escaped, utf8].join("")
-        );
-        assert_eq!(
-        #name::from([&utf8.repeat(124), escapes, utf8].join("").as_ref()).to_string(),
-        [&utf8.repeat(124), escaped, utf8].join("")
-        );
-        assert_eq!(
-        #name::from(
-        [escapes, &utf8.repeat(124), escapes, utf8]
-        .join("")
-        .as_ref()
-        )
-        .to_string(),
-        [escaped, &utf8.repeat(124), escaped, utf8].join("")
-        );
-        assert_eq!(
-        #name::from(
-        [escapes, &utf8.repeat(124), escapes, utf8, escapes]
-        .join("")
-        .as_ref()
-        )
-        .to_string(),
-        [escaped, &utf8.repeat(124), escaped, utf8, escaped].join("")
-        );
-                }
+    }
+}
+
+pub fn build_tests(package: &Ident, escapes: &str, escaped: &str) -> TokenStream {
+    let all_utf8_less = all_utf8_less(escapes);
+    let tests = tests(escapes, escaped);
+    let result_string = result_string();
+    let result_fmt = result_fmt();
+    quote! {
+        #all_utf8_less
+        #[cfg(feature = "string")]
+        mod string {
+            use super::*;
+            use #package::escape_string;
+            #result_string
+            #tests
         }
+        #[cfg(feature = "fmt")]
+        mod fmt {
+            use super::*;
+            use #package::escape_fmt;
+            #result_fmt
+            #tests
+        }
+    }
 }

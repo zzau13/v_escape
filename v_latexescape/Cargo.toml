@@ -1,18 +1,28 @@
 [badges.maintenance]
 status = "actively-developed"
 
-[dependencies.buf-min]
-optional = true
-version = "0.7"
+[dependencies.v_escape-base]
+workspace = true
 
 [features]
-bytes-buf = ["buf-min"]
+alloc = ["v_escape-base/alloc"]
+default = [
+    "std",
+    "string",
+    "fmt",
+]
+fmt = ["v_escape-base/fmt"]
+std = [
+    "v_escape-base/std",
+    "alloc",
+]
+string = ["v_escape-base/string"]
 
 [package]
 authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "The simd optimized LaTeX escaping code"
 documentation = "https://docs.rs/v_latexescape"
-edition = "2021"
+edition = "2024"
 keywords = [
     "latex",
     "escaping",
@@ -21,7 +31,7 @@ keywords = [
 license = "MIT/Apache-2.0"
 name = "v_latexescape"
 readme = "README.md"
-repository = "https://github.com/botika/v_escape"
+repository = "https://github.com/zzau13/v_escape"
 version = "0.14.9"
 workspace = ".."
 

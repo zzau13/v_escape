@@ -1,0 +1,229 @@
+name: ci
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+  push:
+    branches:
+      - main
+      - master
+  schedule:
+    - cron: "00 01 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  # Baseline testing across a number of different targets.
+  test:
+    env:
+      # For some builds, we use cross to test on 32-bit and big-endian
+      # systems.
+      CARGO: cargo
+      # When CARGO is set to CROSS, TARGET is set to `--target matrix.target`.
+      # Note that we only use cross on Linux, so setting a target on a
+      # different OS will just use normal cargo.
+      TARGET: ""
+      # Bump this as appropriate. We pin to a version to make sure CI
+      # continues to work as cross releases in the past have broken things
+      # in subtle ways.
+      CROSS_VERSION: v0.2.5
+      # Make quickcheck run more tests for hopefully better coverage.
+      QUICKCHECK_TESTS: 100000
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - build: stable
+            os: ubuntu-latest
+            rust: stable
+          - build: beta
+            os: ubuntu-latest
+            rust: beta
+          - build: nightly
+            os: ubuntu-latest
+            rust: nightly
+          - build: macos
+            os: macos-latest
+            rust: stable
+            target: aarch64-apple-darwin
+          - build: win-msvc
+            os: windows-latest
+            rust: stable
+          - build: win-gnu
+            os: windows-latest
+            rust: stable-x86_64-gnu
+          - build: stable-x86
+            os: ubuntu-latest
+            rust: stable
+            target: i686-unknown-linux-gnu
+          # This is kind of a stand-in for Apple silicon since we can't currently
+          # use GitHub Actions with Apple silicon.
+          - build: stable-aarch64
+            os: ubuntu-latest
+            rust: stable
+            target: aarch64-unknown-linux-gnu
+          - build: stable-powerpc64
+            os: ubuntu-latest
+            rust: stable
+            target: powerpc64-unknown-linux-gnu
+          - build: stable-s390x
+            os: ubuntu-latest
+            rust: stable
+            target: s390x-unknown-linux-gnu
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+      - name: Use Cross
+        if: matrix.os == 'ubuntu-latest' && matrix.target != ''
+        run: |
+          # In the past, new releases of 'cross' have broken CI. So for now, we
+          # pin it. We also use their pre-compiled binary releases because cross
+          # has over 100 dependencies and takes a bit to compile.
+          dir="$RUNNER_TEMP/cross-download"
+          mkdir "$dir"
+          echo "$dir" >> $GITHUB_PATH
+          cd "$dir"
+          curl -LO "https://github.com/cross-rs/cross/releases/download/$CROSS_VERSION/cross-x86_64-unknown-linux-musl.tar.gz"
+          tar xf cross-x86_64-unknown-linux-musl.tar.gz
+          echo "CARGO=cross" >> $GITHUB_ENV
+          echo "TARGET=--target ${{ matrix.target }}" >> $GITHUB_ENV
+      - name: Show command used for Cargo
+        run: |
+          echo "cargo command is: ${{ env.CARGO }}"
+          echo "target flag is: ${{ env.TARGET }}"
+      - name: Show CPU info for debugging
+        if: matrix.os == 'ubuntu-latest'
+        run: lscpu
+      - name: Basic build
+        run: ${{ env.CARGO }} build --verbose $TARGET
+      - name: Build docs
+        run: ${{ env.CARGO }} doc --verbose $TARGET
+      - name: Show byte order for debugging
+        run: ${{ env.CARGO }} test --verbose $TARGET byte_order --all-features -- --nocapture
+      - name: Run tests
+        run: ${{ env.CARGO }} test --verbose --all-features
+      - name: Run tests without any features enabled (core-only)
+        run: ${{ env.CARGO }} test --verbose --no-default-features --features fmt,string
+
+  # Setup and run tests on the wasm32-wasip2 target via wasmtime
+  wasm:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - target-feature: -simd128
+          - target-feature: +simd128
+    env:
+      # The version of wasmtime to download and install.
+      WASMTIME_VERSION: 30.0.2
+      CARGO_BUILD_TARGET: wasm32-wasip2
+      RUSTFLAGS: -Ctarget-feature=${{ matrix.target-feature }}
+      CARGO_TARGET_WASM32_WASIP2_RUNNER: wasmtime run --wasm simd --
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+      - name: Add wasm32-wasi target
+        run: rustup target add wasm32-wasip2
+      - name: Download and install Wasmtime
+        run: |
+          curl -LO https://github.com/bytecodealliance/wasmtime/releases/download/v$WASMTIME_VERSION/wasmtime-v$WASMTIME_VERSION-x86_64-linux.tar.xz
+          tar xvf wasmtime-v$WASMTIME_VERSION-x86_64-linux.tar.xz
+          echo `pwd`/wasmtime-v$WASMTIME_VERSION-x86_64-linux >> $GITHUB_PATH
+      - name: Basic build
+        run: cargo build --verbose --all-features
+      - name: Run tests
+        run: cargo test --verbose --all-features
+      - name: Run tests without any features enabled (core-only)
+        run: cargo test --verbose --no-default-features --features fmt,string
+
+  # This job uses a target to build on x86-64 but *without*
+  # SSE/AVX target features. This is relevant for virtually all OS kernels.
+  build-for-x86-64-but-non-sse-target:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          targets: x86_64-unknown-none
+      - name: Build for x86_64-unknown-none with only 'alloc' enabled
+        run: cd base && cargo build --verbose --no-default-features --features alloc,fmt,string --target x86_64-unknown-none
+      - name: Run tests for x86_64-unknown-linux-gnu without SSE
+        run: cd base && cargo test --verbose --all-features
+        env:
+          RUSTFLAGS: -C target-feature=-mmx,-sse,-sse2,-sse3,-ssse3,-sse4.1,-sse4.2,-3dnow,-3dnowa,-avx,-avx2,+soft-float
+      - name: Run tests for x86_64-unknown-linux-gnu without SSE with only 'alloc' enabled
+        run: cd base && cargo test --verbose --no-default-features --features alloc,fmt,string
+        env:
+          RUSTFLAGS: -C target-feature=-mmx,-sse,-sse2,-sse3,-ssse3,-sse4.1,-sse4.2,-3dnow,-3dnowa,-avx,-avx2,+soft-float
+
+  msrv:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.85.0
+      - name: Basic build
+        run: cargo build --verbose --all-features
+      - name: Build docs
+        run: cargo doc --verbose --all-features
+
+  miri:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          # We use nightly here so that we can use miri I guess?
+          toolchain: nightly
+          components: miri
+      - name: Run full test suite
+        run: cargo miri test --verbose --all-features
+
+  # Tests that everything is clippy-linted correctly.
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          components: clippy
+      - name: Check clippy
+        run: |
+          cargo clippy --all --all-features
+
+  # Tests that everything is formatted correctly.
+  rustfmt:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          components: rustfmt
+      - name: Check formatting
+        run: |
+          cargo fmt --all -- --check

@@ -1,10 +1,10 @@
 use criterion::Bencher;
-use v_htmlescape::b_escape;
+use v_htmlescape::escape_string;
 
-pub fn escaping(corpus: &'static [u8]) -> impl FnMut(&mut Bencher) + 'static {
+pub fn escaping(corpus: &str) -> impl FnMut(&mut Bencher) {
     move |b: &mut Bencher| {
-        let mut writer = String::with_capacity(corpus.len());
+        let mut buf = String::with_capacity(corpus.len());
 
-        b.iter(|| b_escape(corpus, &mut writer));
+        b.iter(|| escape_string(corpus, &mut buf));
     }
 }

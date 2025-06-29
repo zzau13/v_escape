@@ -1,7 +1,15 @@
 [workspace]
 members = [
+    "base",
     "codegen",
+    "codegen-base",
     "v_htmlescape",
+    "v_latexescape",
     "v_jsonescape",
-    "v_latexescape"
 ]
+resolver = "2"
+
+
+[workspace.dependencies]
+v_escape-base = { path = "./base" }
+v_escape-codegen-base = { path = "./codegen-base" }
