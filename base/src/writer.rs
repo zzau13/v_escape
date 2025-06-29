@@ -132,7 +132,7 @@ macro_rules! struct_display {
 #[cfg(feature = "string")]
 macro_rules! builder_string {
     ($name:ident, $fn:path, $fn_name:ident, $builder:ty) => {
-        fn $name(haystack: &str, buffer: &mut String) {
+        pub fn $name(haystack: &str, buffer: &mut String) {
             use $fn;
             let writer = |s: &str| {
                 buffer.push_str(s);
