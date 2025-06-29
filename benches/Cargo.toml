@@ -21,7 +21,7 @@ path = "src/all.rs"
 
 [dependencies]
 cfg-if = "1.0"
-criterion = "0.5"
+criterion = "0.6"
 v_htmlescape = { version = "*", path = "../v_htmlescape" }
 v_jsonescape = { version = "*", path = "../v_jsonescape" }
 v_latexescape = { version = "*", path = "../v_latexescape" }
