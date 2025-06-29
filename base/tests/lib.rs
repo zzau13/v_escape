@@ -1,6 +1,16 @@
 #![cfg(all(feature = "string", feature = "fmt"))]
 use v_escape_base::{Escapes, EscapesBuilder, Vector, escape_builder};
 
+// For debugging, particularly in CI, print out the byte order of the current
+// target.
+#[test]
+fn byte_order() {
+    #[cfg(target_endian = "little")]
+    std::eprintln!("LITTLE ENDIAN");
+    #[cfg(target_endian = "big")]
+    std::eprintln!("BIG ENDIAN");
+}
+
 mod no_false_positive {
     use super::*;
 
