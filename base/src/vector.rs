@@ -230,7 +230,7 @@ impl MoveMask for () {
     }
 }
 
-#[cfg(all(target_arch = "x86_64", target_feature = "sse2"))]
+#[cfg(target_arch = "x86_64")]
 mod x86sse2 {
     use core::arch::x86_64::*;
 
@@ -336,7 +336,7 @@ mod x86avx2 {
     }
 }
 
-#[cfg(all(target_arch = "aarch64", target_feature = "neon"))]
+#[cfg(target_arch = "aarch64")]
 mod aarch64neon {
     use core::arch::aarch64::*;
 

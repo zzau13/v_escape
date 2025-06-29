@@ -31,7 +31,5 @@ pub fn escape<E: EscapesBuilder, R>(haystack: &str, writer: impl Writer<R>) -> R
         return <E::Escapes<()> as Escapes>::byte_byte_escape(haystack, writer);
     }
 
-    // # Safety
-    // E::new::<__m128i>() is unsafe because it operates simd instructions.
     Generic::new(E::new::<SseVector>()).escape(haystack, writer)
 }

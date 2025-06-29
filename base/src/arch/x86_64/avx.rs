@@ -47,12 +47,8 @@ pub fn escape<E: EscapesBuilder, R>(haystack: &str, mut writer: impl Writer<R>) 
         if len < SseVector::BYTES {
             return <E::Escapes<()> as Escapes>::byte_byte_escape(haystack, &mut writer);
         }
-        // # Safety
-        // E::new::<__m128i>() is unsafe because it operates simd instructions.
         return Generic::new(E::new::<SseVector>()).escape(haystack, writer);
     }
 
-    // # Safety
-    // E::new::<__m256i>() is unsafe because it operates simd instructions.
-    Generic::new(E::new::<__m256i>()).escape(haystack, writer)
+    Generic::new(E::new::<AvxVector>()).escape(haystack, writer)
 }
