@@ -1,9 +1,9 @@
 # Ignore the target directory, which contains compiled files
-/target/
+target/
 
 # Ignore Cargo.lock for libraries, but not for applications
 # If this is a library, uncomment the following line
-/Cargo.lock
+Cargo.lock
 
 # Ignore build artifacts
 **/*.rs.bk
