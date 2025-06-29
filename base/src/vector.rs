@@ -350,19 +350,19 @@ mod aarch64neon {
 
         #[inline(always)]
         fn splat(byte: u8) -> Self {
-            unsafe { vdupq_n_u8(byte as i8) }
+            unsafe { vdupq_n_s8(byte as i8) }
         }
 
         #[inline(always)]
         unsafe fn load_aligned(data: *const u8) -> Self {
-            // I've tried `data.cast::<int8x16_t>().read()` instead, but
+            // I've tried `data.cast::<uint8x16_t>().read()` instead, but
             // couldn't observe any benchmark differences.
             unsafe { Self::load_unaligned(data) }
         }
 
         #[inline(always)]
         unsafe fn load_unaligned(data: *const u8) -> Self {
-            unsafe { vld1q_s8(data as *const i8) }
+            vld1q_s8(data as *const i8)
         }
 
         #[inline(always)]
@@ -403,7 +403,7 @@ mod aarch64neon {
 
         #[inline(always)]
         fn gt(self, vector2: Self) -> Self {
-            unsafe { vcgtq_s8(self, vector2) }
+            unsafe { vreinterpretq_s8_u8(vcgtq_s8(self, vector2)) }
         }
     }
 
