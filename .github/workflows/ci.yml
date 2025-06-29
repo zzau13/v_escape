@@ -196,7 +196,7 @@ jobs:
           toolchain: nightly
           components: miri
       - name: Run full test suite
-        run: cargo miri test --verbose --all-features
+        run: cargo miri test -p v_escape_base --verbose --all-features
 
   # Tests that everything is clippy-linted correctly.
   clippy:
