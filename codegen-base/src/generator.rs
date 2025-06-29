@@ -1,4 +1,4 @@
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use quote::{TokenStreamExt, quote};
 use syn::{
     Ident, Lit, Token, parenthesized,
@@ -9,7 +9,7 @@ use syn::{
 
 use crate::{
     pairs::{Pair, Pairs},
-    switch::{self, Switch},
+    switch::{self, Masking, Switch},
 };
 
 /// Parse template and return pairs
@@ -23,8 +23,9 @@ pub fn parse_template(tokens: TokenStream) -> syn::Result<Vec<Pair>> {
     for i in 0..pairs.len() - 1 {
         let p1 = &pairs[i];
         let p2 = &pairs[i + 1];
-        // TODO: to syn::Error
-        assert_ne!(p1.ch, p2.ch, "{p1:?} and {p2:?} are repeated");
+        if p1.ch == p2.ch {
+            return Err(syn::Error::new(Span::call_site(), "Repeated character"));
+        }
     }
 
     Ok(pairs)
@@ -74,7 +75,10 @@ impl Parse for PairBuilder {
     }
 }
 
-/// TODO: documentation
+/// A parser for macro invocation syntax that extracts character-to-escape-sequence mappings.
+///
+/// This struct parses the macro invocation format like `escape!(path, (b'"' -> "&quot;", b'<' -> "&lt;"))`
+/// and extracts the character-escape sequence pairs for code generation.
 struct Builder {
     _path: Ident,
     _bang_token: Not,
@@ -109,10 +113,17 @@ impl Builder {
     }
 }
 
-/// TODO: documentation
+/// Type alias for the three identifiers used in generated static tables.
+///
+/// Represents the tuple of (V_ESCAPE_CHARS, V_ESCAPE_QUOTES, V_ESCAPE_LEN) identifiers
+/// that are used to name the generated lookup tables for character escaping.
 pub(crate) type Tables = (Ident, Ident, Ident);
 
-/// TODO: documentation
+/// Code generator that creates Rust code for character escaping functionality.
+///
+/// This struct takes a slice of character-escape sequence pairs and generates
+/// the corresponding Rust code including static lookup tables and trait implementations
+/// for efficient character escaping at runtime.
 pub(crate) struct Generator<'a> {
     pairs: &'a [Pair],
 }
@@ -173,11 +184,14 @@ impl Generator<'_> {
     }
 
     fn write_impl(&self, buf: &mut TokenStream) {
-        let switch: Switch = Pairs(self.pairs).into();
-        let (struct_body, build, mask_body) = switch.masking();
         let escape_len = self.pairs.len();
-        // TODO: check false positive
-        let false_positive = true;
+        let switch: Switch = Pairs(self.pairs).into();
+        let Masking {
+            struct_body,
+            build,
+            mask_body,
+            false_positive,
+        } = switch.into();
         let q = quote! {
         use v_escape_base::{escape_builder, Escapes, EscapesBuilder, Vector};
 

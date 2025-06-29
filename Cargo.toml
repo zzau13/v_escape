@@ -9,6 +9,7 @@ members = [
 ]
 resolver = "2"
 
+
 [workspace.dependencies]
 v_escape-base = { path = "./base" }
 v_escape-codegen-base = { path = "./codegen-base" }

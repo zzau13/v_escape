@@ -47,7 +47,7 @@ impl EscapesBuilder for Builder {
 }
 impl<V: Vector> Escapes for Escape<V> {
     const ESCAPE_LEN: usize = 34usize;
-    const FALSE_POSITIVE: bool = true;
+    const FALSE_POSITIVE: bool = false;
     type Vector = V;
     #[inline(always)]
     fn masking(&self, vector2: V) -> V {

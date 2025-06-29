@@ -70,16 +70,38 @@ impl Into<Bodies> for Switch {
     }
 }
 
-impl Switch {
-    // Returns constructor and mask function body
-    pub fn masking(&self) -> (TokenStream, TokenStream, TokenStream) {
+pub(crate) struct Masking {
+    pub struct_body: TokenStream,
+    pub build: TokenStream,
+    pub mask_body: TokenStream,
+    pub false_positive: bool,
+}
+
+impl Masking {
+    fn new(
+        struct_body: TokenStream,
+        build: TokenStream,
+        mask_body: TokenStream,
+        false_positive: bool,
+    ) -> Self {
+        Self {
+            struct_body,
+            build,
+            mask_body,
+            false_positive,
+        }
+    }
+}
+
+impl From<Switch> for Masking {
+    fn from(switch: Switch) -> Self {
         use Switch::*;
 
-        match *self {
+        match switch {
             ArBC { la, ra, b, c } => {
                 let translation_a: i8 = i8::MAX - ra;
                 let below_a: i8 = i8::MAX - (ra - la) - 1;
-                (
+                Masking::new(
                     quote! {{
                         translation_a: V,
                         below_a: V,
@@ -99,9 +121,10 @@ impl Switch {
                             .or(vector2.cmpeq(self.b))
                             .or(vector2.cmpeq(self.c))
                     },
+                    false,
                 )
             }
-            ABC { a, b, c } => (
+            ABC { a, b, c } => Masking::new(
                 quote! {{
                     a: V,
                     b: V,
@@ -114,15 +137,14 @@ impl Switch {
                         c: V::splat(#c as u8),
                     }
                 },
-                {
-                    quote! {
+                quote! {
                         vector2.cmpeq(self.a)
                             .or(vector2.cmpeq(self.b))
                             .or(vector2.cmpeq(self.c))
-                    }
                 },
+                false,
             ),
-            AB { a, b } => (
+            AB { a, b } => Masking::new(
                 quote! {{
                     a: V,
                     b: V
@@ -133,14 +155,13 @@ impl Switch {
                         b: V::splat(#b as u8),
                     }
                 },
-                {
-                    quote! {
+                quote! {
                         vector2.cmpeq(self.a)
                             .or(vector2.cmpeq(self.b))
-                    }
                 },
+                false,
             ),
-            A { a } => (
+            A { a } => Masking::new(
                 quote! {{
                     a: V
                 }},
@@ -149,11 +170,10 @@ impl Switch {
                         a: V::splat(#a as u8),
                     }
                 },
-                {
-                    quote! {
-                        vector2.cmpeq(self.a)
-                    }
+                quote! {
+                    vector2.cmpeq(self.a)
                 },
+                false,
             ),
             ArBrCr {
                 la,
@@ -169,7 +189,7 @@ impl Switch {
                 let below_b: i8 = i8::MAX - (rb - lb) - 1;
                 let translation_c: i8 = i8::MAX - rc;
                 let below_c: i8 = i8::MAX - (rc - lc) - 1;
-                (
+                Masking::new(
                     quote! {{
                         translation_a: V,
                         below_a: V,
@@ -188,13 +208,12 @@ impl Switch {
                             below_c: V::splat(#below_c as u8),
                         }
                     },
-                    {
-                        quote! {
-                            vector2.add(self.translation_a).gt(self.below_a)
-                                .or(vector2.add(self.translation_b).gt(self.below_b))
-                                .or(vector2.add(self.translation_c).gt(self.below_c))
-                        }
+                    quote! {
+                        vector2.add(self.translation_a).gt(self.below_a)
+                            .or(vector2.add(self.translation_b).gt(self.below_b))
+                            .or(vector2.add(self.translation_c).gt(self.below_c))
                     },
+                    true,
                 )
             }
             ArBrC { la, ra, lb, rb, c } => {
@@ -202,7 +221,7 @@ impl Switch {
                 let below_a: i8 = i8::MAX - (ra - la) - 1;
                 let translation_b: i8 = i8::MAX - rb;
                 let below_b: i8 = i8::MAX - (rb - lb) - 1;
-                (
+                Masking::new(
                     quote! {{
                         translation_a: V,
                         below_a: V,
@@ -219,13 +238,12 @@ impl Switch {
                             c: V::splat(#c as u8),
                         }
                     },
-                    {
-                        quote! {
-                            vector2.add(self.translation_a).gt(self.below_a)
-                                .or(vector2.add(self.translation_b).gt(self.below_b))
-                                .or(vector2.cmpeq(self.c))
-                        }
+                    quote! {
+                        vector2.add(self.translation_a).gt(self.below_a)
+                            .or(vector2.add(self.translation_b).gt(self.below_b))
+                            .or(vector2.cmpeq(self.c))
                     },
+                    true,
                 )
             }
             ArBr { la, ra, lb, rb } => {
@@ -233,7 +251,7 @@ impl Switch {
                 let below_a: i8 = i8::MAX - (ra - la) - 1;
                 let translation_b: i8 = i8::MAX - rb;
                 let below_b: i8 = i8::MAX - (rb - lb) - 1;
-                (
+                Masking::new(
                     quote! {{
                         translation_a: V,
                         below_a: V,
@@ -248,18 +266,17 @@ impl Switch {
                             below_b: V::splat(#below_b as u8),
                         }
                     },
-                    {
-                        quote! {
-                            vector2.add(self.translation_a).gt(self.below_a)
-                                .or(vector2.add(self.translation_b).gt(self.below_b))
-                        }
+                    quote! {
+                        vector2.add(self.translation_a).gt(self.below_a)
+                            .or(vector2.add(self.translation_b).gt(self.below_b))
                     },
+                    false,
                 )
             }
             ArB { la, ra, b } => {
                 let translation_a: i8 = i8::MAX - ra;
                 let below_a: i8 = i8::MAX - (ra - la) - 1;
-                (
+                Masking::new(
                     quote! {{
                         translation_a: V,
                         below_a: V,
@@ -272,18 +289,17 @@ impl Switch {
                             b: V::splat(#b as u8),
                         }
                     },
-                    {
-                        quote! {
-                            vector2.add(self.translation_a).gt(self.below_a)
-                                .or(vector2.cmpeq(self.b))
-                        }
+                    quote! {
+                        vector2.add(self.translation_a).gt(self.below_a)
+                            .or(vector2.cmpeq(self.b))
                     },
+                    false,
                 )
             }
             Ar { la, ra } => {
                 let translation_a: i8 = i8::MAX - ra;
                 let below_a: i8 = i8::MAX - (ra - la) - 1;
-                (
+                Masking::new(
                     quote! {{
                         translation_a: V,
                         below_a: V
@@ -294,15 +310,12 @@ impl Switch {
                             below_a: V::splat(#below_a as u8),
                         }
                     },
-                    {
-                        quote! {
-                            vector2.add(self.translation_a).gt(self.below_a)
-                        }
+                    quote! {
+                        vector2.add(self.translation_a).gt(self.below_a)
                     },
+                    false,
                 )
             }
         }
     }
-
-    // TODO: Implement fallback escaping
 }

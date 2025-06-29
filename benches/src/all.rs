@@ -2,7 +2,7 @@ use std::str;
 
 #[macro_use]
 extern crate criterion;
-use criterion::{Bencher, BenchmarkGroup, Criterion, Throughput};
+use criterion::{Bencher, Criterion, Throughput};
 
 #[path = "v_htmlescape.rs"]
 mod v_html;
@@ -11,38 +11,38 @@ mod v_json;
 #[path = "v_latexescape.rs"]
 mod v_latex;
 
-static HUGE: &[u8] = include_bytes!("../data/sherlock-holmes-huge.txt");
+static HUGE: &str = include_str!("../data/sherlock-holmes-huge.txt");
 // escapable characters replaced by 'a'
-static HUGE_ED: &[u8] = include_bytes!("../data/sherlock-holmes-escaped-huge.txt");
+static HUGE_ED: &str = include_str!("../data/sherlock-holmes-escaped-huge.txt");
 
-static SMALL: &[u8] = include_bytes!("../data/sherlock-holmes-small.txt");
+static SMALL: &str = include_str!("../data/sherlock-holmes-small.txt");
 // escapable characters replaced by 'a'
-static SMALL_ED: &[u8] = include_bytes!("../data/sherlock-holmes-escaped-small.txt");
+static SMALL_ED: &str = include_str!("../data/sherlock-holmes-escaped-small.txt");
 
-static TINY: &[u8] = include_bytes!("../data/sherlock-holmes-tiny.txt");
+static TINY: &str = include_str!("../data/sherlock-holmes-tiny.txt");
 // same size
-static TINY_ED: &[u8] = include_bytes!("../data/sherlock-holmes-escaped-tiny.txt");
+static TINY_ED: &str = include_str!("../data/sherlock-holmes-escaped-tiny.txt");
 
-static VERY_TINY: &[u8] = b"ab>cdefghijklmnopqrstuvw<xyz";
+static VERY_TINY: &str = "ab>cdefghijklmnopqrstuvw<xyz";
 // escapable characters replaced by '.'
-static VERY_TINY_ED: &[u8] = b"ab.cdefghijklmnopqrstuvw.xyz";
+static VERY_TINY_ED: &str = "ab.cdefghijklmnopqrstuvw.xyz";
 
 // Bad cases
-static ULTRA_TINY: &[u8] = b"abcd<ef";
+static ULTRA_TINY: &str = "abcd<ef";
 // escapable characters replaced by '.'
-static ULTRA_TINY_ED: &[u8] = b"abcd.ef";
+static ULTRA_TINY_ED: &str = "abcd.ef";
 
-static ONE: &[u8] = b"<";
+static ONE: &str = "<";
 // escapable characters replaced by '1'
-static ONE_ED: &[u8] = b"1";
+static ONE_ED: &str = "1";
 
-static EMPTY: &[u8] = &[];
+static EMPTY: &str = "";
 
 fn define(
     c: &mut Criterion,
     group_name: &str,
     bench_name: &str,
-    corpus: &[u8],
+    corpus: &str,
     bench: impl FnMut(&mut Bencher) + 'static,
 ) {
     let tput = Throughput::Bytes(corpus.len() as u64);
@@ -96,12 +96,12 @@ macro_rules! std_writing {
     ($c:ident) => {
         use std::fmt::Write;
 
-        fn writing(corpus: &'static [u8]) -> impl FnMut(&mut Bencher) + 'static {
+        fn writing(corpus: &str) -> impl FnMut(&mut Bencher) {
             move |b: &mut Bencher| {
                 let mut writer = String::with_capacity(corpus.len());
 
                 b.iter(|| {
-                    let _ = write!(writer, "{}", unsafe { str::from_utf8_unchecked(corpus) });
+                    let _ = write!(writer, "{}", corpus);
                 });
             }
         }

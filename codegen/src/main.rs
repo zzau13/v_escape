@@ -74,7 +74,6 @@ fn read_cargo(p: &Path) -> anyhow::Result<(Value, String)> {
 
     cargo_mut.insert("features".into(), Value::from(features));
 
-    // TODO: if not exist, create it
     if !cargo_mut.contains_key("dependencies") {
         cargo_mut.insert(
             "dependencies".into(),
