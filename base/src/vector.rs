@@ -362,7 +362,7 @@ mod aarch64neon {
 
         #[inline(always)]
         unsafe fn load_unaligned(data: *const u8) -> Self {
-            vld1q_s8(data as *const i8)
+            unsafe { vld1q_s8(data as *const i8) }
         }
 
         #[inline(always)]
