@@ -1,8 +1,5 @@
 /// A module for x86_64 escape functions
-#[cfg(all(
-    target_arch = "x86_64",
-    any(target_feature = "sse2", target_feature = "avx2")
-))]
+#[cfg(target_arch = "x86_64")]
 #[macro_use]
 pub mod x86_64;
 
@@ -24,10 +21,7 @@ pub mod fallback;
 /// # Parameters
 /// - `$builder`: The type [`crate::EscapesBuilder`] of the builder
 #[cfg(not(any(
-    all(
-        target_arch = "x86_64",
-        any(target_feature = "sse2", target_feature = "avx2")
-    ),
+    target_arch = "x86_64",
     target_arch = "aarch64",
     all(target_arch = "wasm32", target_feature = "simd128")
 )))]
