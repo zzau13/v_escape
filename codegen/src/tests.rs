@@ -28,6 +28,16 @@ pub fn all_utf8_less() -> TokenStream {
     }
 }
 
+fn result_bytes() -> TokenStream {
+    quote! {
+        fn result(haystack: &str) -> String {
+            let mut buf = Vec::new();
+            escape_bytes(haystack, &mut buf);
+            String::from_utf8(buf).unwrap()
+        }
+    }
+}
+
 fn result_string() -> TokenStream {
     quote! {
         fn result(haystack: &str) -> String {
@@ -171,6 +181,7 @@ pub fn build_tests(package: &Ident, escapes: &str, escaped: &str) -> TokenStream
     let tests = tests(escapes, escaped);
     let result_string = result_string();
     let result_fmt = result_fmt();
+    let result_bytes = result_bytes();
     quote! {
         #all_utf8_less
         #[cfg(feature = "string")]
@@ -185,6 +196,13 @@ pub fn build_tests(package: &Ident, escapes: &str, escaped: &str) -> TokenStream
             use super::*;
             use #package::escape_fmt;
             #result_fmt
+            #tests
+        }
+        #[cfg(feature = "bytes")]
+        mod bytes {
+            use super::*;
+            use #package::escape_bytes;
+            #result_bytes
             #tests
         }
     }

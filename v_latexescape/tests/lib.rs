@@ -268,3 +268,129 @@ mod fmt {
         );
     }
 }
+#[cfg(feature = "bytes")]
+mod bytes {
+    use super::*;
+    use v_latexescape::escape_bytes;
+    fn result(haystack: &str) -> String {
+        let mut buf = Vec::new();
+        escape_bytes(haystack, &mut buf);
+        String::from_utf8(buf).unwrap()
+    }
+    #[test]
+    fn tests() {
+        use std::borrow::Cow;
+        let empty = "";
+        let escapes = "#$%&\\^_{}~";
+        let escaped = "\\#\\$\\%\\&\\textbackslash{}\\textasciicircum{}\\_\\{\\}\\textasciitilde{}";
+        let utf8: &str = &all_utf8_less("#$%&\\^_{}~");
+        let empty_heap = String::new();
+        let short = "foobar";
+        let string_long: &str = &short.repeat(1024);
+        let string = "#$%&\\^_{}~";
+        let cow = Cow::Owned("#$%&\\^_{}~".to_string());
+        assert_eq!(
+            result(&[short, escapes, short].join("")),
+            [short, escaped, short].join("")
+        );
+        assert_eq!(result(empty), empty);
+        assert_eq!(result(escapes), escaped);
+        assert_eq!(result(&empty_heap), empty);
+        assert_eq!(result(&cow), escaped);
+        assert_eq!(result(&string), escaped);
+        assert_eq!(result(&utf8), utf8);
+        assert_eq!(result(string_long), string_long);
+        assert_eq!(result(escapes.repeat(1024).as_ref()), escaped.repeat(1024));
+        assert_eq!(
+            result([short, escapes, short].join("").as_ref()),
+            [short, escaped, short].join("")
+        );
+        assert_eq!(
+            result([escapes, short].join("").as_ref()),
+            [escaped, short].join("")
+        );
+        assert_eq!(
+            result(["f", escapes, short].join("").as_ref()),
+            ["f", escaped, short].join("")
+        );
+        assert_eq!(
+            result(["f", escapes].join("").as_ref()),
+            ["f", escaped].join("")
+        );
+        assert_eq!(
+            result(["fo", escapes].join("").as_ref()),
+            ["fo", escaped].join("")
+        );
+        assert_eq!(
+            result(["fo", escapes, "b"].join("").as_ref()),
+            ["fo", escaped, "b"].join("")
+        );
+        assert_eq!(result(escapes.repeat(2).as_ref()), escaped.repeat(2));
+        assert_eq!(result(escapes.repeat(3).as_ref()), escaped.repeat(3));
+        assert_eq!(
+            result(["f", &escapes.repeat(2)].join("").as_ref()),
+            ["f", &escaped.repeat(2)].join("")
+        );
+        assert_eq!(
+            result(["fo", &escapes.repeat(2)].join("").as_ref()),
+            ["fo", &escaped.repeat(2)].join("")
+        );
+        assert_eq!(
+            result(["fo", &escapes.repeat(2), "bar"].join("").as_ref()),
+            ["fo", &escaped.repeat(2), "bar"].join("")
+        );
+        assert_eq!(
+            result(["fo", &escapes.repeat(3), "bar"].join("").as_ref()),
+            ["fo", &escaped.repeat(3), "bar"].join("")
+        );
+        assert_eq!(
+            result([&escapes.repeat(3), "bar"].join("").as_ref()),
+            [&escaped.repeat(3), "bar"].join("")
+        );
+        assert_eq!(
+            result([short, &escapes.repeat(3), "bar"].join("").as_ref()),
+            [short, &escaped.repeat(3), "bar"].join("")
+        );
+        assert_eq!(
+            result([short, &escapes.repeat(5), "bar"].join("").as_ref()),
+            [short, &escaped.repeat(5), "bar"].join("")
+        );
+        assert_eq!(
+            result(
+                [string_long, &escapes.repeat(13)]
+                    .join("")
+                    .repeat(1024)
+                    .as_ref()
+            ),
+            [string_long, &escaped.repeat(13)].join("").repeat(1024)
+        );
+        assert_eq!(
+            result([utf8, escapes, short].join("").as_ref()),
+            [utf8, escaped, short].join("")
+        );
+        assert_eq!(
+            result([utf8, escapes, utf8].join("").as_ref()),
+            [utf8, escaped, utf8].join("")
+        );
+        assert_eq!(
+            result([&utf8.repeat(124), escapes, utf8].join("").as_ref()),
+            [&utf8.repeat(124), escaped, utf8].join("")
+        );
+        assert_eq!(
+            result(
+                [escapes, &utf8.repeat(124), escapes, utf8]
+                    .join("")
+                    .as_ref()
+            ),
+            [escaped, &utf8.repeat(124), escaped, utf8].join("")
+        );
+        assert_eq!(
+            result(
+                [escapes, &utf8.repeat(124), escapes, utf8, escapes]
+                    .join("")
+                    .as_ref()
+            ),
+            [escaped, &utf8.repeat(124), escaped, utf8, escaped].join("")
+        );
+    }
+}

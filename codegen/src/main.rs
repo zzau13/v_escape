@@ -37,12 +37,12 @@ Example usage:
   cargo init --lib
   cat <<EOF > src/_lib.rs
   new!(
-      b'<' -> \"&lt;\",
-      b'>' -> \"&gt;\",
-      b'&' -> \"&amp;\",
-      b'\"' -> \"&quot;\",
-      b'\\'' -> \"&#x27;\",
-      b'/' -> \"&#x2f;\"
+      '&' -> \"&amp;\",
+      '/' -> \"&#x2f;\",
+      '<' -> \"&lt;\",
+      '>' -> \"&gt;\",
+      '\"' -> \"&quot;\",
+      '\\'' -> \"&#x27;\"
   );
   EOF
   v_escape-codegen -i .",
