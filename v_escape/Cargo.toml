@@ -1,0 +1,18 @@
+[package]
+name = "v_escape"
+version = "0.1.0"
+edition = "2024"
+
+[features]
+default = ["alloc", "fmt", "string", "std"]
+std = ["v_escape-base/std", "alloc"]
+alloc = ["v_escape-base/alloc"]
+fmt = ["v_escape-base/fmt"]
+string = ["v_escape-base/string"]
+
+[dependencies]
+v_escape-base = { workspace = true }
+v_escape-proc-macro = { workspace = true }
+
+[package.metadata.docs.rs]
+all-features = true

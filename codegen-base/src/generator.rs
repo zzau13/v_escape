@@ -126,11 +126,15 @@ pub(crate) type Tables = (Ident, Ident, Ident);
 /// for efficient character escaping at runtime.
 pub(crate) struct Generator<'a> {
     pairs: &'a [Pair],
+    crate_name: Ident,
 }
 
 impl Generator<'_> {
-    pub fn new(pairs: &[Pair]) -> Generator<'_> {
-        Generator { pairs }
+    pub fn new<'a>(pairs: &'a [Pair], crate_name: &str) -> Generator<'a> {
+        Generator {
+            pairs,
+            crate_name: Ident::new(crate_name, Span::call_site()),
+        }
     }
 
     /// Builds a TokenStream containing the generated code for character escaping.
@@ -192,8 +196,9 @@ impl Generator<'_> {
             mask_body,
             false_positive,
         } = switch.into();
+        let crate_name = &self.crate_name;
         let q = quote! {
-        use v_escape_base::{escape_builder, Escapes, EscapesBuilder, Vector};
+        use #crate_name::{escape_builder, Escapes, EscapesBuilder, Vector};
 
         #[derive(Debug, Clone, Copy)]
         struct Escape<V: Vector> #struct_body

@@ -1,7 +1,7 @@
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 
-pub fn all_utf8_less(less: &str) -> TokenStream {
+pub fn all_utf8_less() -> TokenStream {
     quote! {
         #![allow(unused)]
         fn all_utf8_less(less: &str) -> String {
@@ -167,7 +167,7 @@ fn tests(escapes: &str, escaped: &str) -> TokenStream {
 }
 
 pub fn build_tests(package: &Ident, escapes: &str, escaped: &str) -> TokenStream {
-    let all_utf8_less = all_utf8_less(escapes);
+    let all_utf8_less = all_utf8_less();
     let tests = tests(escapes, escaped);
     let result_string = result_string();
     let result_fmt = result_fmt();

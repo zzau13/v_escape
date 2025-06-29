@@ -1,4 +1,4 @@
-#![allow(unused)]
+#![doc = include_str!("../README.md")]
 use std::{
     collections::BTreeMap,
     fmt::Debug,
@@ -14,19 +14,43 @@ use toml::Value;
 
 use clap::Parser;
 
-use codegen_base::generate as generate_base;
+use v_escape_codegen_base::generate as generate_base;
 mod tests;
 
-pub fn ident(s: &str) -> Ident {
+fn ident(s: &str) -> Ident {
     Ident::new(s, Span::call_site())
 }
 
-/// V_escape codegen
+/// V_escape codegen - A tool for generating escape functions
 #[derive(Parser, Debug)]
-#[clap(author, version, about, long_about = None)]
+#[clap(
+    author,
+    version,
+    about = "Generate escape functions from template files",
+    long_about = "A tool for generating SIMD-optimized escape functions from template files. 
+    
+Creates a new crate with escape_fmt and escape_string functions based on character mappings defined in src/_lib.rs.
+
+Example usage:
+  mkdir my_escape
+  cd my_escape
+  cargo init --lib
+  cat <<EOF > src/_lib.rs
+  new!(
+      b'<' -> \"&lt;\",
+      b'>' -> \"&gt;\",
+      b'&' -> \"&amp;\",
+      b'\"' -> \"&quot;\",
+      b'\\'' -> \"&#x27;\",
+      b'/' -> \"&#x2f;\"
+  );
+  EOF
+  v_escape-codegen -i .",
+    after_help = "For more information, see: https://github.com/zzau13/v_escape"
+)]
 struct Args {
-    /// Input directory file
-    #[clap(short, long, default_value = "./")]
+    /// Input directory containing the crate to generate
+    #[clap(short, long, default_value = "./", value_name = "DIR")]
     pub input_dir: PathBuf,
 }
 
@@ -58,7 +82,7 @@ fn read_cargo(p: &Path) -> anyhow::Result<(Value, String)> {
         .as_table_mut()
         .ok_or_else(|| anyhow::anyhow!("Expected a table for cargo_value"))?;
 
-    let package_table = cargo_mut
+    cargo_mut
         .get_mut("package")
         .ok_or_else(|| anyhow::anyhow!("Expected a package section in Cargo.toml"))?
         .as_table_mut()
@@ -135,6 +159,7 @@ fn _generate(dir: &Path) -> anyhow::Result<()> {
         template_src
             .parse::<TokenStream>()
             .map_err(|e| anyhow::anyhow!("Failed to parse template source: {}", e))?,
+        "v_escape_base",
     )?;
 
     // Prettify code

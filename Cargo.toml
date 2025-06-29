@@ -3,9 +3,11 @@ members = [
     "base",
     "codegen",
     "codegen-base",
+    "v_escape",
+    "proc-macro",
     "v_htmlescape",
-    "v_latexescape",
     "v_jsonescape",
+    "v_latexescape",
 ]
 resolver = "2"
 
@@ -13,3 +15,7 @@ resolver = "2"
 [workspace.dependencies]
 v_escape-base = { path = "./base" }
 v_escape-codegen-base = { path = "./codegen-base" }
+v_escape-proc-macro = { path = "./proc-macro" }
+syn = "2"
+quote = "1"
+proc-macro2 = "^1.0.81"

@@ -1,5 +1,5 @@
 [package]
-name = "v_escape_codegen"
+name = "v_escape-codegen"
 version = "0.1.9"
 authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "Code generator package for v_escape"
@@ -10,9 +10,9 @@ repository = "https://github.com/zzau13/v_escape"
 workspace = ".."
 
 [dependencies]
-syn = "2"
-proc-macro2 = "^1.0.81"
-quote = "1"
+proc-macro2 = { workspace = true }
+quote = { workspace = true }
+syn = { workspace = true }
 clap = { version = "4", default-features = false, features = ["derive", "std"] }
 toml = "0"
 serde = { version = "1", features = ["derive"] }
@@ -20,4 +20,4 @@ prettyplease = "0"
 heck = "0"
 anyhow = "1"
 
-codegen-base = { version = "*", path = "../codegen-base" }
+v_escape-codegen-base = { workspace = true }

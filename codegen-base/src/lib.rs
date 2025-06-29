@@ -7,9 +7,12 @@ mod generator;
 mod pairs;
 mod switch;
 
-pub fn generate(tokens: TokenStream) -> syn::Result<(TokenStream, (String, String))> {
+pub fn generate(
+    tokens: TokenStream,
+    crate_name: &str,
+) -> syn::Result<(TokenStream, (String, String))> {
     let pairs = parse_template(tokens)?;
-    let generator = Generator::new(&pairs);
+    let generator = Generator::new(&pairs, crate_name);
     let generated = generator.build();
     let (escapes, escaped): (Vec<u8>, Vec<String>) =
         pairs.into_iter().map(|p| (p.ch, p.quote)).unzip();

@@ -4,7 +4,7 @@ set -xe
 
 cargo install --path codegen
 for i in v_latexescape v_jsonescape v_htmlescape; do
-  ~/.cargo/bin/v_escape_codegen -i $i
+  ~/.cargo/bin/v_escape-codegen -i $i
 done
 
 cargo fmt
