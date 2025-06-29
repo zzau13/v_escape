@@ -6,10 +6,12 @@ workspace = true
 
 [features]
 alloc = ["v_escape-base/alloc"]
+bytes = ["v_escape-base/bytes"]
 default = [
     "std",
     "string",
     "fmt",
+    "bytes",
 ]
 fmt = ["v_escape-base/fmt"]
 std = [

@@ -4,9 +4,10 @@ version = "0.1.0"
 edition = "2024"
 
 [features]
-default = ["alloc", "fmt", "string", "std"]
+default = ["alloc", "fmt", "string", "std", "bytes"]
 std = ["v_escape-base/std", "alloc"]
 alloc = ["v_escape-base/alloc"]
+bytes = ["v_escape-base/bytes"]
 fmt = ["v_escape-base/fmt"]
 string = ["v_escape-base/string"]
 

@@ -5,7 +5,7 @@ edition = "2024"
 
 
 [features]
-default = ["std"]
+default = ["std", "bytes", "string", "fmt"]
 # The 'std' feature permits the memchr crate to use the standard library. This
 # permits this crate to use runtime CPU feature detection to automatically
 # accelerate searching via vector instructions. Without the standard library,
@@ -23,5 +23,8 @@ string = []
 # The 'fmt' feature enables the `escape_fmt` function.
 fmt = []
 
+# The 'bytes' feature enables the `escape_bytes` function.
+bytes = []
+
 [package.metadata.docs.rs]
-features = ["std", "alloc", "string", "fmt"]
+features = ["std", "alloc", "string", "fmt", "bytes"]

@@ -37,6 +37,12 @@ macro_rules! escape_builder {
             $builder
         ));
 
+        $crate::struct_bytes!($crate::builder_bytes!(
+            escape_bytes,
+            $crate::arch::wasm32::escape,
+            escape,
+            $builder
+        ));
         $crate::struct_display!(
             escape_fmt,
             escape_fmt_internal,

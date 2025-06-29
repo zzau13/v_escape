@@ -1,3 +1,11 @@
+#![deny(missing_docs)]
+
+//! Procedural macro crate for v_escape
+//!
+//! This crate provides the `escape!` procedural macro for generating SIMD-optimized
+//! escape functions from character mappings. The macro generates both `escape_string`
+//! and `escape_fmt` functions that can be used for efficient string escaping.
+
 use proc_macro2::TokenStream;
 use quote::quote;
 use v_escape_codegen_base::generate;

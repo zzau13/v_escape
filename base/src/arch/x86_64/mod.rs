@@ -105,5 +105,12 @@ macro_rules! escape_builder {
             $builder,
             String
         ));
+
+        $crate::struct_bytes!($crate::ifun!(
+            escape_bytes,
+            $crate::builder_bytes,
+            $builder,
+            Vec<u8>
+        ));
     };
 }

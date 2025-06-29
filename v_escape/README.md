@@ -25,5 +25,6 @@ assert_eq!(escaped, "Hello,&lt; world!&quot;");
 
 - `fmt`: Enables the `escape_fmt` function.
 - `string`: Enables the `escape_string` function.
+- `bytes`: Enables the `escape_bytes` function.
 - `std`: Enables the `std` library features.
 - `alloc`: Enables the `alloc` library features.

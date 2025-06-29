@@ -41,4 +41,5 @@ Generate a new crate with `escape_fmt` and `escape_string` functions.
 - `alloc`: Enables the `alloc` library features.
 - `fmt`: Enables the `escape_fmt` function.
 - `string`: Enables the `escape_string` function.
+- `bytes`: Enables the `escape_bytes` function.
 - `std`: Enables the `std` library features.

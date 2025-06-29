@@ -90,11 +90,12 @@ fn read_cargo(p: &Path) -> anyhow::Result<(Value, String)> {
         .insert("metadata".to_string(), doc);
 
     let mut features = BTreeMap::new();
-    features.insert("default", vec!["std", "string", "fmt"]);
+    features.insert("default", vec!["std", "string", "fmt", "bytes"]);
     features.insert("std", vec!["v_escape-base/std", "alloc"]);
     features.insert("alloc", vec!["v_escape-base/alloc"]);
     features.insert("string", vec!["v_escape-base/string"]);
     features.insert("fmt", vec!["v_escape-base/fmt"]);
+    features.insert("bytes", vec!["v_escape-base/bytes"]);
 
     cargo_mut.insert("features".into(), Value::from(features));
 

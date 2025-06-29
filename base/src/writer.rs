@@ -158,3 +158,42 @@ macro_rules! struct_string {
 macro_rules! struct_string {
     ($($tt:tt)*) => {};
 }
+
+/// A macro for creating a builder function that appends a Vector to a `Vector`.
+///
+/// # Parameters
+/// - `$name`: The name of the builder function.
+/// - `$fn`: The function to use for the builder.
+/// - `$fn_name`: The name of the function to use for the builder.
+/// - `$builder`: The type of the builder.
+#[doc(hidden)]
+#[macro_export]
+#[cfg(feature = "bytes")]
+macro_rules! builder_bytes {
+    ($name:ident, $fn:path, $fn_name:ident, $builder:ty) => {
+        pub fn $name(haystack: &str, buffer: &mut Vec<u8>) {
+            use $fn;
+            let writer = |s: &str| {
+                buffer.extend_from_slice(s.as_bytes());
+                Ok::<(), ()>(())
+            };
+            let _ = $fn_name::<$builder, _>(haystack, writer);
+        }
+    };
+}
+
+#[doc(hidden)]
+#[macro_export]
+#[cfg(feature = "bytes")]
+macro_rules! struct_bytes {
+    ($($tt:tt)*) => {
+        $($tt)*;
+    };
+}
+
+#[cfg(not(feature = "bytes"))]
+#[macro_export]
+#[doc(hidden)]
+macro_rules! struct_bytes {
+    ($($tt:tt)*) => {};
+}

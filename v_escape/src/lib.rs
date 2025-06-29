@@ -1,3 +1,4 @@
+#![deny(missing_docs)]
 #![doc = include_str!("../README.md")]
 
 pub use v_escape_base::{Escapes, EscapesBuilder, Vector, escape_builder};

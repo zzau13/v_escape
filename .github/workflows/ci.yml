@@ -109,7 +109,7 @@ jobs:
       - name: Run tests
         run: ${{ env.CARGO }} test --verbose --all-features
       - name: Run tests without any features enabled (core-only)
-        run: ${{ env.CARGO }} test --verbose --no-default-features --features fmt,string
+        run: ${{ env.CARGO }} test --verbose --no-default-features --features fmt,string,bytes
 
   # Setup and run tests on the wasm32-wasip2 target via wasmtime
   wasm:
@@ -144,7 +144,7 @@ jobs:
       - name: Run tests
         run: cargo test --verbose --all-features
       - name: Run tests without any features enabled (core-only)
-        run: cargo test --verbose --no-default-features --features fmt,string
+        run: cargo test --verbose --no-default-features --features fmt,string,bytes
 
   # This job uses a target to build on x86-64 but *without*
   # SSE/AVX target features. This is relevant for virtually all OS kernels.
@@ -159,7 +159,7 @@ jobs:
           toolchain: stable
           targets: x86_64-unknown-none
       - name: Build for x86_64-unknown-none with only 'alloc' enabled
-        run: cd base && cargo build --verbose --no-default-features --features alloc,fmt,string --target x86_64-unknown-none
+        run: cd base && cargo build --verbose --no-default-features --features alloc,fmt,string,bytes --target x86_64-unknown-none
       - name: Run tests for x86_64-unknown-linux-gnu without SSE
         run: cd base && cargo test --verbose --all-features
         env:
@@ -210,7 +210,7 @@ jobs:
           components: clippy
       - name: Check clippy
         run: |
-          cargo clippy --all --all-features
+          cargo clippy --all --all-features -- -D warnings
 
   # Tests that everything is formatted correctly.
   rustfmt:
