@@ -105,12 +105,12 @@ fn tests(escapes: &str, escaped: &str) -> TokenStream {
                 ["f", escaped].join("")
             );
             assert_eq!(
-                result(["fo", escapes].join("").as_ref()),
-                ["fo", escaped].join("")
+                result(["do", escapes].join("").as_ref()),
+                ["do", escaped].join("")
             );
             assert_eq!(
-                result(["fo", escapes, "b"].join("").as_ref()),
-                ["fo", escaped, "b"].join("")
+                result(["do", escapes, "b"].join("").as_ref()),
+                ["do", escaped, "b"].join("")
             );
             assert_eq!(
                 result(escapes.repeat(2).as_ref()),
@@ -125,16 +125,16 @@ fn tests(escapes: &str, escaped: &str) -> TokenStream {
                 ["f", &escaped.repeat(2)].join("")
             );
             assert_eq!(
-                result(["fo", &escapes.repeat(2)].join("").as_ref()),
-                ["fo", &escaped.repeat(2)].join("")
+                result(["do", &escapes.repeat(2)].join("").as_ref()),
+                ["do", &escaped.repeat(2)].join("")
             );
             assert_eq!(
-                result(["fo", &escapes.repeat(2), "bar"].join("").as_ref()),
-                ["fo", &escaped.repeat(2), "bar"].join("")
+                result(["do", &escapes.repeat(2), "bar"].join("").as_ref()),
+                ["do", &escaped.repeat(2), "bar"].join("")
             );
             assert_eq!(
-                result(["fo", &escapes.repeat(3), "bar"].join("").as_ref()),
-                ["fo", &escaped.repeat(3), "bar"].join("")
+                result(["do", &escapes.repeat(3), "bar"].join("").as_ref()),
+                ["do", &escaped.repeat(3), "bar"].join("")
             );
             assert_eq!(
                 result([&escapes.repeat(3), "bar"].join("").as_ref()),

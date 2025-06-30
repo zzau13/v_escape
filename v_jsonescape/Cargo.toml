@@ -7,17 +7,9 @@ workspace = true
 [features]
 alloc = ["v_escape-base/alloc"]
 bytes = ["v_escape-base/bytes"]
-default = [
-    "std",
-    "string",
-    "fmt",
-    "bytes",
-]
+default = ["std", "string", "fmt", "bytes"]
 fmt = ["v_escape-base/fmt"]
-std = [
-    "v_escape-base/std",
-    "alloc",
-]
+std = ["v_escape-base/std", "alloc"]
 string = ["v_escape-base/string"]
 
 [package]
@@ -25,16 +17,12 @@ authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "The simd optimized JSON escaping code"
 documentation = "https://docs.rs/v_jsonescape"
 edition = "2024"
-keywords = [
-    "json",
-    "escaping",
-    "simd",
-]
+keywords = ["json", "escaping", "simd"]
 license = "MIT/Apache-2.0"
 name = "v_jsonescape"
 readme = "README.md"
 repository = "https://github.com/zzau13/v_escape"
-version = "0.7.9"
+version = "0.7.8"
 workspace = ".."
 
 [package.metadata.docs.rs]

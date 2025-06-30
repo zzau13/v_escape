@@ -2,7 +2,7 @@
 
 # v_escape_codegen
 
-> The simd optimized escape code
+The simd optimized escape code
 
 ## Documentation
 

@@ -1,2 +1,30 @@
-pre-release-commit-message = "chore: release"
-allow-branch = ["master"]
+# Configuration for cargo-release
+# https://github.com/crate-ci/cargo-release
+# Supports workspaces using cargo's native flags, like --workspace or --package
+
+# Allowed branches for releases
+allow-branch = ["main", "master"]
+
+# Push changes to remote
+push = true
+
+# Tag the release
+tag = true
+
+# Tag name format - usando package name con version (formato: package-vX.Y.Z)
+tag-name = "{{package}}-v{{version}}"
+
+# Tag message
+tag-message = "Release {{package}} {{version}}"
+
+# Pre-release commit message
+pre-release-commit-message = "chore: prepare for {{package}} {{version}}"
+
+# Pre-release hook para generar changelog
+pre-release-hook = [
+    "git-cliff",
+    "--tag",
+    "{{package}}-v{{version}}",
+    "--output",
+    "CHANGELOG.md",
+]
