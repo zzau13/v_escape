@@ -85,7 +85,6 @@ where
 
             let align = E::Vector::BYTES - (start.to_usize() & E::Vector::ALIGN);
             if align > 0 {
-                std::println!("align: {}", align);
                 let x = E::Vector::load_unaligned(start);
                 let mask = self.escapes.masking(x).movemask();
                 self.write_mask_unaligned(mask, start, align, &mut written, writer)?;
@@ -94,10 +93,7 @@ where
             // Set `cur` to the first V-aligned pointer greater than `start`.
             let mut cur = start.add(align);
             debug_assert!(cur > start && end.sub(E::Vector::BYTES) >= start);
-            std::println!("cur: {}", cur.to_usize());
-            std::println!("end: {}", end.to_usize());
-            std::println!("len: {}", len);
-            std::println!("Self::LOOP_SIZE: {}", Self::LOOP_SIZE);
+
             if len >= Self::LOOP_SIZE {
                 while cur <= end.sub(Self::LOOP_SIZE) {
                     debug_assert_eq!(0, cur.to_usize() % E::Vector::BYTES);
@@ -139,25 +135,23 @@ where
             }
             // Handle any leftovers after the aligned loop above.
             while cur <= end.sub(E::Vector::BYTES) {
-                std::println!("End cur: {}", cur.to_usize());
                 debug_assert!(end.distance(cur) >= E::Vector::BYTES);
                 let v = E::Vector::load_aligned(cur);
                 let mask = self.escapes.masking(v).movemask();
-                std::println!("mask: {:?}", mask);
+
                 self.write_mask(mask, cur, &mut written, writer)?;
                 cur = cur.add(E::Vector::BYTES);
             }
 
             // Handle any remaining bytes that are less than a full vector's worth.
             if cur < end {
-                std::println!("Remaining cur: {}", cur.to_usize());
                 debug_assert!(end.distance(cur) < E::Vector::BYTES);
                 let rest = (E::Vector::BYTES - end.distance(cur)) as u32;
                 let start = cur.sub(E::Vector::BYTES - end.distance(cur));
                 debug_assert_eq!(end.distance(start), E::Vector::BYTES);
                 let x = E::Vector::load_unaligned(start);
                 let mask = self.escapes.masking(x).movemask().shr(rest);
-                std::println!("mask: {:?}", mask);
+
                 self.write_mask(mask, cur, &mut written, writer)?;
             }
 
