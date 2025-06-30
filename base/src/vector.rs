@@ -110,9 +110,27 @@ pub trait MoveMask: Copy + core::fmt::Debug {
 ///
 /// We call this "sensible" because this is what we get using native sse/avx
 /// movemask instructions. But neon has no such native equivalent.
-#[derive(Clone, Copy, Debug)]
+#[cfg(any(
+    target_arch = "x86_64",
+    all(target_arch = "wasm32", target_feature = "simd128")
+))]
+#[derive(Clone, Copy)]
 pub struct SensibleMoveMask(u32);
 
+#[cfg(any(
+    target_arch = "x86_64",
+    all(target_arch = "wasm32", target_feature = "simd128")
+))]
+impl core::fmt::Debug for SensibleMoveMask {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "{:b}", self.0)
+    }
+}
+
+#[cfg(any(
+    target_arch = "x86_64",
+    all(target_arch = "wasm32", target_feature = "simd128")
+))]
 impl SensibleMoveMask {
     /// Get the mask in a form suitable for computing offsets.
     ///
@@ -131,6 +149,10 @@ impl SensibleMoveMask {
     }
 }
 
+#[cfg(any(
+    target_arch = "x86_64",
+    all(target_arch = "wasm32", target_feature = "simd128")
+))]
 impl MoveMask for SensibleMoveMask {
     #[inline(always)]
     fn has_non_zero(self) -> bool {
@@ -392,7 +414,8 @@ mod aarch64neon {
         /// throughput, but the win doesn't appear huge.
         #[inline(always)]
         fn movemask_will_have_non_zero(self) -> bool {
-            let low = unsafe { vreinterpretq_u64_s8(vpmaxq_s8(self, self)) };
+            let self_ = unsafe { vreinterpretq_u8_s8(self) };
+            let low = unsafe { vreinterpretq_u64_u8(vpmaxq_u8(self_, self_)) };
             unsafe { vgetq_lane_u64(low, 0) != 0 }
         }
 
@@ -422,9 +445,13 @@ mod aarch64neon {
     /// unnecessary work.
     ///
     /// [1]: https://community.arm.com/arm-community-blogs/b/infrastructure-solutions-blog/posts/porting-x86-vector-bitmask-optimizations-to-arm-neon
-    #[derive(Clone, Copy, Debug)]
+    #[derive(Clone, Copy, PartialEq, Eq)]
     pub struct NeonMoveMask(u64);
-
+    impl core::fmt::Debug for NeonMoveMask {
+        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            write!(f, "{:b}", self.0)
+        }
+    }
     impl NeonMoveMask {
         /// Get the mask in a form suitable for computing offsets.
         ///
@@ -451,7 +478,7 @@ mod aarch64neon {
 
         #[inline(always)]
         fn shr(self, rhs: u32) -> Self {
-            NeonMoveMask(self.0.wrapping_shr(rhs))
+            NeonMoveMask(self.0.wrapping_shr(rhs << 2))
         }
 
         #[inline(always)]
