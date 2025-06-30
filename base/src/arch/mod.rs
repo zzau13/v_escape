@@ -35,6 +35,13 @@ macro_rules! escape_builder {
             $builder
         ));
 
+        $crate::struct_bytes!($crate::builder_bytes!(
+            escape_bytes,
+            $crate::arch::fallback::escape_fallback,
+            escape_fallback,
+            $builder
+        ));
+
         $crate::struct_display!(
             escape_fmt,
             escape_fmt_internal,
