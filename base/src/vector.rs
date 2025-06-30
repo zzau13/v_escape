@@ -92,7 +92,7 @@ pub trait MoveMask: Copy + core::fmt::Debug {
     /// Returns true if and only if this mask has a a non-zero bit anywhere.
     fn has_non_zero(self) -> bool;
 
-    /// Returns shifted the mask to the right by the specified number of bits.
+    /// Returns shifted the mask to the right by the specified number of positions.
     fn shr(self, rhs: u32) -> Self;
 
     /// Returns a mask that is equivalent to `self` but with the least
@@ -136,6 +136,13 @@ impl SensibleMoveMask {
     ///
     /// Basically, this normalizes to little endian. On big endian, this swaps
     /// the bytes.
+    // TODO: Endianness does NOT affect the result of bitwise operations
+    // (like <<, >>, &) or methods like `.trailing_zeros()` on the integer
+    // returned by a SIMD movemask. The bit order in the movemask result is
+    // defined by the SIMD instruction set (e.g., bit 0 corresponds to lane
+    // 0, bit 1 to lane 1, etc.), regardless of how bytes are stored in
+    // memory. So shifting the mask or counting trailing zeros is safe and
+    // portable.
     #[inline(always)]
     fn get_for_offset(self) -> u32 {
         #[cfg(target_endian = "big")]
@@ -176,6 +183,8 @@ impl MoveMask for SensibleMoveMask {
     }
 
     fn shr(self, rhs: u32) -> Self {
+        // Endianness is not relevant here because the mask always uses
+        // first_offset to compute the offset.
         SensibleMoveMask(self.0.wrapping_shr(rhs))
     }
 }
@@ -445,18 +454,27 @@ mod aarch64neon {
     /// unnecessary work.
     ///
     /// [1]: https://community.arm.com/arm-community-blogs/b/infrastructure-solutions-blog/posts/porting-x86-vector-bitmask-optimizations-to-arm-neon
-    #[derive(Clone, Copy, PartialEq, Eq)]
+    #[derive(Clone, Copy)]
     pub struct NeonMoveMask(u64);
+
     impl core::fmt::Debug for NeonMoveMask {
         fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
             write!(f, "{:b}", self.0)
         }
     }
+
     impl NeonMoveMask {
         /// Get the mask in a form suitable for computing offsets.
         ///
         /// Basically, this normalizes to little endian. On big endian, this
         /// swaps the bytes.
+        // TODO: Endianness does NOT affect the result of bitwise operations
+        // (like <<, >>, &) or methods like `.trailing_zeros()` on the integer
+        // returned by a SIMD movemask. The bit order in the movemask result is
+        // defined by the SIMD instruction set (e.g., bit 0 corresponds to lane
+        // 0, bit 1 to lane 1, etc.), regardless of how bytes are stored in
+        // memory. So shifting the mask or counting trailing zeros is safe and
+        // portable.
         #[inline(always)]
         fn get_for_offset(self) -> u64 {
             #[cfg(target_endian = "big")]
@@ -478,6 +496,12 @@ mod aarch64neon {
 
         #[inline(always)]
         fn shr(self, rhs: u32) -> Self {
+            // Mask is 64 bits instead of 16 bits (for a 128 bit vector)
+            // so every position has 4 bits. We need to multiply the shift
+            // amount by 4 to shift the bits correctly.
+            // Endianness is not relevant here because the mask always uses
+            // first_offset to compute the offset and shift operations always
+            // respect the value.
             NeonMoveMask(self.0.wrapping_shr(rhs << 2))
         }
 

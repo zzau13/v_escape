@@ -104,8 +104,8 @@ jobs:
         run: ${{ env.CARGO }} build $TARGET --verbose
       - name: Build docs
         run: ${{ env.CARGO }} doc $TARGET --verbose
-      - name: Show byte order for debugging
-        run: ${{ env.CARGO }} test $TARGET --verbose -p v_escape-base --all-features byte_order -- --nocapture
+      - name: Show system info for debugging
+        run: ${{ env.CARGO }} test $TARGET --verbose -p v_escape-base --all-features sys_info -- --nocapture
       - name: Run tests
         run: ${{ env.CARGO }} test $TARGET --verbose --all-features
       - name: Run tests without any features enabled (core-only)
