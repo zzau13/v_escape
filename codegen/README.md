@@ -1,3 +1,5 @@
+# [![Documentation](https://docs.rs/v_escape-codegen/badge.svg)](https://docs.rs/v_escape-codegen/) [![Latest version](https://img.shields.io/crates/v/v_escape-codegen.svg)](https://crates.io/crates/v_escape-codegen)
+
 # v_escape-codegen
 
 A tool for generating escape functions.
@@ -43,3 +45,16 @@ Generate a new crate with `escape_fmt` and `escape_string` functions.
 - `string`: Enables the `escape_string` function.
 - `bytes`: Enables the `escape_bytes` function.
 - `std`: Enables the `std` library features.
+
+## Documentation
+
+- Minimum supported Rust version: 1.85.0 or later
+
+## License
+
+Licensed under either of
+
+- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+- MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+
+at your option.
