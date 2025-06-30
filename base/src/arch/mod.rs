@@ -4,7 +4,7 @@
 pub mod x86_64;
 
 /// A module for aarch64 escape functions
-#[cfg(all(target_arch = "aarch64", not(target_os = "macos")))]
+#[cfg(target_arch = "aarch64")]
 #[macro_use]
 pub mod aarch64;
 
@@ -22,7 +22,7 @@ pub mod fallback;
 /// - `$builder`: The type [`crate::EscapesBuilder`] of the builder
 #[cfg(not(any(
     target_arch = "x86_64",
-    all(target_arch = "aarch64", not(target_os = "macos")),
+    target_arch = "aarch64",
     all(target_arch = "wasm32", target_feature = "simd128")
 )))]
 #[macro_export]
