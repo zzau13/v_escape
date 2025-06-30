@@ -67,7 +67,7 @@ jobs:
           fallback: "## Changes in ${{ steps.extract.outputs.version }}\n\nSee [CHANGELOG.md](CHANGELOG.md) for detailed changes."
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.extract.outputs.tag }}
           name: "Release ${{ steps.extract.outputs.package }} ${{ steps.extract.outputs.version }}"
