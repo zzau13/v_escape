@@ -107,9 +107,9 @@ jobs:
       - name: Show byte order for debugging
         run: ${{ env.CARGO }} test --verbose $TARGET -p v_escape-base --all-features byte_order -- --nocapture
       - name: Run tests
-        run: ${{ env.CARGO }} test --verbose --all-features
+        run: ${{ env.CARGO }} test --verbose $TARGET --all-features
       - name: Run tests without any features enabled (core-only)
-        run: ${{ env.CARGO }} test --verbose --no-default-features --features fmt,string,bytes
+        run: ${{ env.CARGO }} test --verbose $TARGET --no-default-features --features fmt,string,bytes
 
   # Setup and run tests on the wasm32-wasip2 target via wasmtime
   wasm:
