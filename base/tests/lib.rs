@@ -593,9 +593,9 @@ mod no_false_positive {
     fn test_escapes_at_end() {
         let test_cases = vec![
             ("a", "foo"),
-            ("by", "bfoo"),
-            ("cby", "cbfoo"),
-            ("dcby", "dcbfoo"),
+            ("sa", "sfoo"),
+            ("cba", "cbfoo"),
+            ("dcba", "dcbfoo"),
         ];
 
         for (input, expected) in test_cases {
@@ -612,9 +612,9 @@ mod no_false_positive {
     fn test_escapes_at_end_bytes() {
         let test_cases = vec![
             ("a", "foo"),
-            ("by", "bfoo"),
-            ("cby", "cbfoo"),
-            ("dcby", "dcbfoo"),
+            ("sa", "sfoo"),
+            ("cba", "cbfoo"),
+            ("dcba", "dcbfoo"),
         ];
 
         for (input, expected) in test_cases {
@@ -664,10 +664,10 @@ mod no_false_positive {
     #[test]
     fn test_escapes_in_middle() {
         let test_cases = vec![
-            ("by", "bfoo"),
-            ("cby", "cbfoo"),
-            ("dcby", "dcbfoo"),
-            ("edcby", "edcbfoo"),
+            ("sa", "sfoo"),
+            ("cba", "cbfoo"),
+            ("dcba", "dcbfoo"),
+            ("edcba", "edcbfoo"),
         ];
 
         for (input, expected) in test_cases {
@@ -683,10 +683,10 @@ mod no_false_positive {
     #[test]
     fn test_escapes_in_middle_bytes() {
         let test_cases = vec![
-            ("by", "bfoo"),
-            ("cby", "cbfoo"),
-            ("dcby", "dcbfoo"),
-            ("edcby", "edcbfoo"),
+            ("sa", "sfoo"),
+            ("cba", "cbfoo"),
+            ("dcba", "dcbfoo"),
+            ("edcba", "edcbfoo"),
         ];
 
         for (input, expected) in test_cases {
