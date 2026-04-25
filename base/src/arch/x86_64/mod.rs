@@ -21,6 +21,15 @@ macro_rules! ifun {
         $buffer:ty
         $(,$retty:ty)?
     ) => {
+        /// Escape `haystack` into `buffer`, dispatching to the best SIMD backend
+        /// available on the current CPU.
+        ///
+        /// The first call performs a one-time CPU-feature check (AVX2, SSE2 or a
+        /// scalar fallback) and caches the chosen implementation in an atomic
+        /// pointer; subsequent calls jump directly to the selected backend.
+        ///
+        /// See the crate-level documentation for the table of characters that
+        /// get rewritten and their replacements.
         pub fn $name(haystack: &str, buffer: &mut $buffer) $(-> $retty)? {
             use core::sync::atomic::{AtomicPtr, Ordering};
 

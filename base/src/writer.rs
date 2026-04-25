@@ -98,6 +98,17 @@ macro_rules! builder_fmt {
 #[cfg(feature = "fmt")]
 macro_rules! struct_display {
     ($name:ident, $internal:ident, $body:expr, $builder:ty) => {
+        /// Returns a value implementing [`core::fmt::Display`] that escapes
+        /// `haystack` lazily into the formatter it is rendered to.
+        ///
+        /// The returned value borrows from `haystack` and only performs work when
+        /// it is actually formatted (e.g. via `format!`, `println!`, or
+        /// `core::fmt::Write`). At runtime the best available SIMD backend is
+        /// selected once per call site; on platforms without SIMD support a
+        /// scalar fallback is used.
+        ///
+        /// See the crate-level documentation for the table of characters that
+        /// get rewritten and their replacements.
         pub fn $name<'a>(haystack: &'a str) -> impl core::fmt::Display + 'a {
             struct __SDisplay<'a>(&'a str);
 
@@ -132,6 +143,14 @@ macro_rules! struct_display {
 #[cfg(feature = "string")]
 macro_rules! builder_string {
     ($name:ident, $fn:path, $fn_name:ident, $builder:ty) => {
+        /// Escapes `haystack` and appends the result to `buffer`.
+        ///
+        /// Bytes that are not part of the escape table defined for this crate
+        /// are forwarded verbatim. The function never clears `buffer`; callers
+        /// that want a fresh result should pass an empty `String`.
+        ///
+        /// See the crate-level documentation for the table of characters that
+        /// get rewritten and their replacements.
         pub fn $name(haystack: &str, buffer: &mut String) {
             use $fn;
             let writer = |s: &str| {
@@ -171,6 +190,15 @@ macro_rules! struct_string {
 #[cfg(feature = "bytes")]
 macro_rules! builder_bytes {
     ($name:ident, $fn:path, $fn_name:ident, $builder:ty) => {
+        /// Escapes `haystack` and appends the resulting UTF-8 bytes to `buffer`.
+        ///
+        /// `haystack` is required to be a valid `&str` so the escaped output is
+        /// itself guaranteed to be valid UTF-8. The function never clears
+        /// `buffer`; callers that want a fresh result should pass an empty
+        /// `Vec`.
+        ///
+        /// See the crate-level documentation for the table of characters that
+        /// get rewritten and their replacements.
         pub fn $name(haystack: &str, buffer: &mut Vec<u8>) {
             use $fn;
             let writer = |s: &str| {

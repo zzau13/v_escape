@@ -8,7 +8,7 @@
 //! for efficient string escaping operations.
 
 use generator::{Generator, parse_template};
-use proc_macro2::{Span, TokenStream};
+use proc_macro2::TokenStream;
 
 mod generator;
 mod pairs;
@@ -29,8 +29,9 @@ mod switch;
 ///
 /// Returns a tuple containing:
 /// * The generated code as a `TokenStream`
-/// * A tuple of `(escapes, escaped)` where `escapes` is a string of characters to escape
-///   and `escaped` is the concatenated escape sequences
+/// * A `Vec<(u8, String)>` of `(char_byte, replacement)` pairs, sorted by `char_byte`
+///   ascending. Callers can derive convenience strings (such as the concatenation of
+///   all source bytes or replacements) from this list as needed.
 ///
 /// # Errors
 ///
@@ -39,15 +40,11 @@ mod switch;
 pub fn generate(
     tokens: TokenStream,
     crate_name: &str,
-) -> syn::Result<(TokenStream, (String, String))> {
+) -> syn::Result<(TokenStream, Vec<(u8, String)>)> {
     let pairs = parse_template(tokens)?;
     let generator = Generator::new(&pairs, crate_name);
     let generated = generator.build();
-    let (escapes, escaped): (Vec<u8>, Vec<String>) =
-        pairs.into_iter().map(|p| (p.ch, p.quote)).unzip();
-    let escapes = String::from_utf8(escapes)
-        .map_err(|e| syn::Error::new(Span::call_site(), e.to_string()))?;
-    let escaped = escaped.join("");
+    let mappings: Vec<(u8, String)> = pairs.into_iter().map(|p| (p.ch, p.quote)).collect();
 
-    Ok((generated, (escapes, escaped)))
+    Ok((generated, mappings))
 }
