@@ -45,7 +45,7 @@ Example usage:
       '\\'' -> \"&#x27;\"
   );
   EOF
-  v_escape-codegen -i .",
+  v_escape_codegen -i .",
     after_help = "For more information, see: https://github.com/zzau13/v_escape"
 )]
 struct Args {

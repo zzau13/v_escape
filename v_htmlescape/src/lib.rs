@@ -40,33 +40,24 @@
 //! `simd128` on wasm32) and falls back to a scalar loop otherwise.
 //!
 static V_ESCAPE_CHARS: [u8; 256] = [
-    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
-    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
-    0u8, 6u8, 6u8, 6u8, 1u8, 2u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 3u8, 6u8, 6u8, 6u8,
-    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 4u8, 6u8, 5u8, 6u8, 6u8, 6u8, 6u8, 6u8,
-    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
-    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
-    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
-    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
-    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
-    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
-    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
-    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
-    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
-    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
-    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
-    6u8,
+    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
+    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 0u8, 6u8, 6u8, 6u8,
+    1u8, 2u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 3u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
+    6u8, 6u8, 6u8, 4u8, 6u8, 5u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
+    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
+    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
+    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
+    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
+    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
+    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
+    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
+    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
+    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
+    6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8, 6u8,
 ];
-static V_ESCAPE_QUOTES: [&str; 6usize] = [
-    "&quot;",
-    "&amp;",
-    "&#x27;",
-    "&#x2f;",
-    "&lt;",
-    "&gt;",
-];
+static V_ESCAPE_QUOTES: [&str; 6usize] = ["&quot;", "&amp;", "&#x27;", "&#x2f;", "&lt;", "&gt;"];
 const V_ESCAPE_LEN: usize = 6usize;
-use v_escape_base::{escape_builder, Escapes, EscapesBuilder, Vector};
+use v_escape_base::{Escapes, EscapesBuilder, Vector, escape_builder};
 #[derive(Debug, Clone, Copy)]
 struct Escape<V: Vector> {
     translation_a: V,

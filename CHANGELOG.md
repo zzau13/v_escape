@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [_escape_codegen-v0.2.1] - 2026-04-25
+
+### Fixed
+
+- The `--help` example printed by the `v_escape_codegen` binary referenced
+  the non-existent command `v_escape-codegen`. The binary is named
+  `v_escape_codegen` (matching the crates.io identifier), so the previous
+  hint produced `command not found` when copy-pasted. Same fix applied to
+  `scripts/generate.sh`.
+
+### Changed
+
+- Regenerated `v_htmlescape`, `v_jsonescape` and `v_latexescape`
+  `lib.rs`/`tests/lib.rs` after `cargo fmt`, so their layout matches what
+  `scripts/generate.sh` produces in CI. No behavior change in those
+  crates; their published versions are unchanged.
+
 ## [_escape_codegen-v0.2.0] - 2026-04-25
 
 This release ships the new mapping-aware `generate` API in lockstep across
