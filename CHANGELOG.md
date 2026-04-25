@@ -2,31 +2,121 @@
 
 All notable changes to this project will be documented in this file.
 
-## [unreleased] - 2026-04-25
+## [_htmlescape-v0.16.0] - 2026-04-25
+
+This entry covers the coordinated release that ships the rewritten
+`v_escape` workspace. The same set of commits is delivered by every
+new tag pushed in this batch:
+
+| Crate                  | New version | Previous published |
+| ---------------------- | ----------- | ------------------ |
+| `v_escape-base`        | 0.1.0       | (initial release)  |
+| `v_escape-codegen-base`| 0.1.0       | (initial release)  |
+| `v_escape-proc-macro`  | 0.1.0       | (initial release)  |
+| `v_escape-codegen`     | 0.1.9       | 0.1.8              |
+| `v_escape`             | 0.19.0      | 0.18.0             |
+| `v_htmlescape`         | 0.16.0      | 0.15.8             |
+| `v_jsonescape`         | 0.8.0       | 0.7.8              |
+| `v_latexescape`        | 0.15.0      | 0.14.8             |
 
 ### Security
 
 - Fix soundness bug reported in [#166](https://github.com/zzau13/v_escape/issues/166):
-  the legacy `v_htmlescape::scalar::_escape(&[u8], _)` (and the
-  matching `v_jsonescape` / `v_latexescape` entry points) used to be safe
-  functions that called `core::str::from_utf8_unchecked` on caller-provided
-  bytes, producing UB when given invalid UTF-8. The crate has been rewritten
-  so that the public escape API only accepts `&str` and `from_utf8_unchecked`
-  is now confined to a single internal `unsafe fn` in `v_escape-base` whose
-  callers always start from a `&str` and only split on ASCII boundaries. The
-  previous published versions (`v_htmlescape <= 0.15.8`, `v_jsonescape <= 0.7.8`,
-  `v_latexescape <= 0.14.8`) are affected and will be yanked from crates.io.
+  the previously published `v_htmlescape <= 0.15.8`, `v_jsonescape <= 0.7.8`
+  and `v_latexescape <= 0.14.8` exposed `scalar::_escape(&[u8], _)` (and the
+  matching SIMD entry points) as *safe* functions that called
+  `core::str::from_utf8_unchecked` on caller-provided bytes, producing UB
+  whenever the input was not valid UTF-8. The crate has been rewritten so
+  the public escape API only accepts `&str`; `from_utf8_unchecked` is now
+  confined to a single internal `unsafe fn write_slice` in `v_escape-base`
+  whose callers always start from a `&str` and only split on ASCII
+  boundaries. The affected published versions will be yanked from
+  crates.io.
 
-### Released
+### Bug Fixes
 
-- `v_escape-base` 0.1.0 (initial release)
-- `v_escape-codegen-base` 0.1.0 (initial release)
-- `v_escape-proc-macro` 0.1.0 (initial release)
-- `v_escape-codegen` 0.1.9
-- `v_escape` 0.19.0 (rewritten API, see migration notes in README)
-- `v_htmlescape` 0.16.0 (rewritten API, soundness fix)
-- `v_jsonescape` 0.8.0 (rewritten API, soundness fix)
-- `v_latexescape` 0.15.0 (rewritten API, soundness fix)
+- Update rust crate criterion to 0.4
+- Update rust crate proc-macro2 to ^1.0.44
+- Update rust crate proc-macro2 to ^1.0.46
+- Update rust crate bytes to 1.3.0
+- Update rust crate proc-macro2 to ^1.0.47
+- Update rust crate proc-macro2 to ^1.0.49
+- Fix minor issues
+- Update rust crate toml to v0.8.14
+- Update rust crate proc-macro2 to v1.0.85
+- Update rust crate prettyplease to v0.2.20
+- Update rust crate syn to v2.0.66
+- Update rust crate clap to v4.5.7
+- Update rust crate serde to v1.0.203
+- Update rust crate criterion to 0.5
+- Update rust crate syn to v2.0.72
+- Update rust crate toml to v0.8.15
+- Update rust crate clap to v4.5.16
+- Update rust crate criterion to 0.6 ([#151](https://github.com/zzau13/v_escape/issues/151))
+- Minor issues
+- Minor issues
+- Minor issues
+- Use fallback for macos
+- Miss bytes test in generated
+- Update ci
+- NeonMoveMask shr
+- Minor issues
+- Remove debug
+- Miss fallback escape_bytes
+- Documentation
+- Update readmes
+- Versions to published in crates.io
+- Clippy issues
+- Clippy
+- Update rust crate toml to v1 ([#165](https://github.com/zzau13/v_escape/issues/165))
+- Update rust crate bytes to v1.11.1 [security] ([#163](https://github.com/zzau13/v_escape/issues/163))
+- Update rust crate criterion to 0.8 ([#157](https://github.com/zzau13/v_escape/issues/157))
+
+### Features
+
+- Add proc-macro and document
+- Add escape_bytes function
+- Add structure for auto release on tag
+
+### Miscellaneous Tasks
+
+- Update clap at 4.0
+- Update msrv
+- Improve generate script
+- Update lock
+- Update linux.yml
+- Update checks.yml
+- Update linux.yml
+- Update actions/cache action to v4
+- Update actions/checkout action to v4
+- Update README.md
+- Add byte order debug
+- Reduce test for miri
+- Remove uneeded script
+- Test cases
+- Migrate config .github/renovate.json ([#155](https://github.com/zzau13/v_escape/issues/155))
+- Create FUNDING.yml
+- Update softprops/action-gh-release action to v2 ([#154](https://github.com/zzau13/v_escape/issues/154))
+- Update crate-ci/typos action to v1.36.0 ([#158](https://github.com/zzau13/v_escape/issues/158))
+- Update actions/checkout action to v5 ([#159](https://github.com/zzau13/v_escape/issues/159))
+- Update softprops/action-gh-release action to v3 ([#168](https://github.com/zzau13/v_escape/issues/168))
+- Revert "chore(deps): update softprops/action-gh-release action to v3 ([#168](https://github.com/zzau13/v_escape/issues/168))"
+
+This reverts commit e321ca96e48b2b01784a911964291f138cd568cc.
+- Reapply "chore(deps): update softprops/action-gh-release action to v3 ([#168](https://github.com/zzau13/v_escape/issues/168))"
+
+This reverts commit 24348f30e0bb029f045b6930b347c68c42b1a048.
+- Revert "fix: clippy issues"
+
+This reverts commit 0d6f0f8f8e7b200e0768dfd1617a4c6c6bfce505.
+- Update rust crate libfuzzer-sys to v0.4.12 ([#156](https://github.com/zzau13/v_escape/issues/156))
+- Update crate-ci/typos action to v1.45.1 ([#160](https://github.com/zzau13/v_escape/issues/160))
+- Update actions/checkout action to v6 ([#162](https://github.com/zzau13/v_escape/issues/162))
+- Bump versions for soundness fix ([#166](https://github.com/zzau13/v_escape/issues/166))
+
+### Refactor
+
+- Add neon and wasm support ([#152](https://github.com/zzau13/v_escape/issues/152))
 
 ## [_escape_codegen-v0.1.8] - 2022-08-05
 
@@ -135,38 +225,24 @@ Signed-off-by: dependabot[bot] <support@github.com>
 ### Miscellaneous Tasks
 
 - (cargo-release) version 0.1.2
-
 - (cargo-release) version 0.15.2
-
 - (cargo-release) version 0.7.2
-
 - (cargo-release) version 0.14.2
-
 
 ## [_escape_codegen-v0.1.1] - 2022-07-27
 
 ### Bug Fixes
 
 - Fix travis
-
 - Fix doc
-
 - Fix cargo.toml readme
-
 - Fix ignore doc test
-
 - Fix syn arguments types
-
 - Fix doc test
-
 - Fix cfg_if and document
-
 - Fix syntax error at benches
-
 - Fix bad function rocket sizing at benches
-
 - Fix indentation at doc
-
 - Minor issues
 - Update readme
 - MSRV 1.57.0
@@ -178,445 +254,227 @@ Signed-off-by: dependabot[bot] <support@github.com>
 
 - Document build.rs
 
-
 ### Miscellaneous Tasks
 
 - Initial release
-
 - Add coverage
-
 - Update cargo badges
-
 - Optimize cargo.toml
-
 - Bump version to 0.1.1
-
 - Expose escape function and new_escape macro
-
 - Bump version to 0.1.2
-
 - Add inline simd functions
-
 - Add size method
-
 - Add sizing bench
-
 - Update benches
-
 - Optimize avx functions
-
 - Update bench results
-
 - Decouple main loop avx
-
 - Add more tiny cases at benches
-
 - Decouple main loop sse
-
 - Remove criterion of dev-dependencies; fix travis cmd
-
 - Add fmt check
-
 - Use 2018 edition idioms
-
 - Bump version to 0.3.0
-
 - Remove unnecessary extern crate
-
 - Move borrow to arguments in resolve_true
-
 - Add doc for loops::avx
-
 - Add doc for loops::sse
-
 - Add doc for new_escape macros
-
 - Add From<&str>
-
 - Update READMEs
-
 - Clean generated code
-
 - Add coverage to calculate_ranges and fix issues
-
 - Update doc
-
 - Move imports to last macro
-
 - Add empty coverage
-
 - Add assert for min quote len at sized
-
 - Prettify cases at calculate_ranges
-
 - Clean and prettify
-
 - Add character syntax
-
 - Update test and doc
-
 - Documented main macros
-
 - Add support for character in hexadecimal, octal and numbers ascii
-
 - Bump version v_escape_derive to 0.2.0
-
 - Bump version to 0.3.1
-
 - Decouple benches
-
 - Add benches comparative with rocket
-
 - Update travis conf
-
 - Add benches comparative size rocket and askama_escape
-
 - Update travis conf with multiples stages
-
 - Reduce number of benches cases
-
 - Reduce number of bench cases
-
 - Add featured benches
-
 - Add support to remove close delimiter
-
 - Improve try_into_i8 and errors at parser
-
 - Prettify generator
-
 - Improve error management at parser
-
 - Modified documentation lib.rs
-
 - Modified documentation macros.rs
-
 - Modified panic! messages at parser.rs
-
 - Fix fmt
-
 - Modified main macros and minor docs
-
 - Documentation details avx
-
 - Documentation avx minor changes
-
 - Documentation sse.rs
-
 - Add documentation and prettify
-
 - Update readme
-
 - Improve with quote!
-
 - Add one len cases at benches
-
 - Clean generator with write_macro_tt method
-
 - Hidden doc at private macros
-
 - Reorder macros
-
 - Update v_escape test
-
 - Update README
-
 - Bump version to 0.3.2
-
 - Fix avoid double test
-
-- Add activate mode selection to sse
-
+- Add actvate mode selection to sse
 - Add loop m256_64
-
 - Fix nom macro choice
-
 - Add v_latexescape
-
 - Fix doc and cargo tags
-
 - Update appveyor.yml
-
 - Update travis.yml
-
 - Decouple sized behaviour
-
 - Decouple sized behavior in v_latexescape
-
 - Fix escape body exact
-
 - Fix Latex to LateX
-
 - Fix repository at v_latexescape Cargo.toml
-
 - Update benches
-
 - Add escape function
-
 - Add v_shellescape scalar
-
 - Update README's
-
 - Fix documentation issues
-
 - Bump v_escape to 0.4.0
-
 - Update internal dependencies
-
 - Update comparative benches
-
 - Improve performance at shell windows escape
-
 - Add expose fallback
-
 - Add support at README
-
 - Fix segfault at short slice
-
 - Add support for windows
-
 - Update documentation
-
 - Fix README
-
 - Update licenses
-
 - Bump versions
-
 - Fix Cargo workspace
-
 - Add some checks in parser
-
 - Fix parser and documentation
-
 - Add build stage at CI
-
 - Bump minor version v_escape and v_escape_derive
-
 - Decouple ranges implementations
-
 - Update ranges documentation
-
 - Prettify documentation
-
 - Improve generator
-
 - Fix move avx imports
-
 - Fix fmt
-
 - Fix fmt
-
 - Add benches at more case
-
 - Add switch in ranges avx main loop
-
 - Add coverage
-
 - Add benches v_escape sub-attributes
-
 - Revert exacts algorithms
-
 - Update dependencies
-
 - Fix name of range DI method! in sse2
-
 - Fix rename macros and documentation
-
 - Disable avx functionality in libraries
-
 - Bump version of v_htmlescape and v_latexescape
-
 - Bump version to 0.6
-
 - Decouple fallback! at ranges
-
 - Update rename and documentation at loop_ranges!
-
 - Update travis
-
 - Update README add downloads badge
-
 - Add rust version check
-
 - Bump version to 0.4.2
-
 - Fix bench order
-
 - Fix miss if mask
-
 - Add exact algorithm at ranges
-
 - Improve one replace case
-
 - Update travis conf
-
 - Bump version to 0.7.1
-
 - Remove travis in favor of gitlab ci
-
 - Migrate to gitlab
-
 - Fix badges
-
 - Bump version v_escape_derive
-
 - Remove appveyor badges
-
 - Add TryInto at parser conditions
-
 - Improve parse errors management
-
 - Prettify and reduce
-
 - Update README
-
 - Fix miss argument on panic!
-
 - Add license to sub-crates
-
 - Add coverage for issue #2
-
 - Remove build.rs and fix minor issues
-
 - Bump version to 0.7.3
-
 - Remove version_check dependency
-
 - Fix repository in Cargo.toml
-
 - Bump versions
-
 - Bump version syn, quote and proc-macro2 to 1.0
-
 - Bump version v_escape_derive to 0.5.6
-
 - Typos
 - Update CI
-
 - Add escape char and remove v_shellescape
-
 - Move to is_ascii
-
 - Bump mayor versions
-
 - Fix bump versions
-
 - Add write on pointer implementation
-
 - Remove unnecessary `as_mut`
-
 - Add coverage for extreme cases
-
 - Fuxk travis, add github CI
-
 - Document and remove more as_mut
-
 - Fix benchmarks
-
 - Fix max bound and add more coverage
-
 - Bump mayor versions
-
 - Improve performance v_escape with copy_from_slice
-
 - Bump v_escape version to 0.9.1
-
 - Write with memcopy
-
 - Bump version to 0.9.2
-
 - Remove sse4.2 functions
-
 - Add Disclaimer
-
 - Fix read out bounds
-
 - Bump minor versions
-
 - Simplify offsets pointer
-
 - Reduce number of html escape characters
-
 - Bump version v_htmlescape
-
 - Bump version v_escape
-
 - Revert less html escape characters
-
 - Move to maybe uninit union
-
 - Bump mayor versions
-
 - Fix cargo
-
 - Add b_escape
-
 - Bump major versions
-
 - Fix bad get pointer in b_escape_char
-
 - Bump minor version
-
 - Add v_jsonescape
-
 - Improve get mut ptr
-
 - Bump v_escape version 0.11.2
-
 - Fix bytes char
-
 - Bump v_escape version
-
 - Remove `BytesMut` in favor of `buf-min::Buffer` trait
-
 - Update CI
-
 - Fix use is_x86_feature_detected out x86 arch
-
 - Remove unused attributes
-
 - Use ptr impl for scalar
-
 - Fix scalar::b_escape and add coverage
-
 - Fix fmt
-
 - Remove unnecessary bytes.len()
-
 - Avoid double table check bounds at read
-
 - Bump v_escape version to 0.12.1
-
 - Prettify new_escape! arguments parser
-
 - Update builder modules
-
 - Update README.md
 - Bump minor versions
-
 - Fix crate path outside proc_macro
-
 - Rename `new_escape` to `new`
-
 - Update benches
-
 - Bump versions
-
 - Simplify repeated code
-
 - Clean code and documentation
-
 - Prettify codegen parse arguments
-
 - Remove extern crate statements
-
 - Update std module paths
-
 - Remove import std::fmt
-
 - Bump minor versions
-
 - Update cfg-if requirement from 0.1 to 1.0
 
 Updates the requirements on [cfg-if](https://github.com/alexcrichton/cfg-if) to permit the latest version.
@@ -626,13 +484,9 @@ Updates the requirements on [cfg-if](https://github.com/alexcrichton/cfg-if) to 
 Signed-off-by: dependabot-preview[bot] <support@dependabot.com>
 - Ban reddit
 - Bump versions
-
 - Add fuzzy coverage in v_latexescape
-
 - Add fuzzy coverage for v_jsonescape and v_htmlescape
-
 - Update Readme
-
 - Update bytes requirement from 0.5 to 0.6
 
 Updates the requirements on [bytes](https://github.com/tokio-rs/bytes) to permit the latest version.
@@ -642,57 +496,33 @@ Updates the requirements on [bytes](https://github.com/tokio-rs/bytes) to permit
 
 Signed-off-by: dependabot-preview[bot] <support@dependabot.com>
 - Bump version to 0.13.3
-
 - Bump version to 0.14.0
-
 - Bump major versions
-
 - Update bench
-
 - Fix min version v_escape_derive ~0.8.4
-
 - Bump v_escape version to 0.14.1
-
 - Update `buf-min` dependency
-
 - Bump mayor versions
-
 - Fix v_escape dependency version
-
 - Update buf-min and bump major versions
-
 - Upgrade to GitHub-native Dependabot
 - Update buf-min version
-
 - Decouple bytes crate
-
 - Update CI
-
 - Bump versions
-
 - Remove nom in favor of syn
-
 - Add doctest on README and fix issues
-
 - Remove travis badge and fix minor version issues
-
 - Bump versions
-
 - Update benches
-
 - Remove unnecessary dependencies
-
 - Remove travis badges
-
 - Update rust edition 2021
-
 - Update README.md
 - Update README.md
 - Update README.md
 - Partial show of boring
-
 - Update generator test
-
 - Add sse loop
 - Add write with fmt on ranges
 - Write utils and fix minor issues
@@ -708,21 +538,13 @@ Signed-off-by: dependabot-preview[bot] <support@dependabot.com>
 ### Refactor
 
 - Refactor add any character support
-
 - Refactor codegen pairs ranges generator
-
 - Refactor partial macros
-
 - Refactor partial generator tables and macros
-
 - Refactor partial add avx range
-
 - Refactor partial prettify generator test
-
 - Refactor partial add range write_mask
-
 - Refactor partial masking avx
-
 - Refactor partial prettify
 
 
