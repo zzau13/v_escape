@@ -299,7 +299,7 @@ Signed-off-by: dependabot[bot] <support@github.com>
 
 - Fix avoid double test
 
-- Add actvate mode selection to sse
+- Add activate mode selection to sse
 
 - Add loop m256_64
 
