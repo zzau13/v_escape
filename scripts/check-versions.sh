@@ -106,13 +106,13 @@ main() {
     # List of packages to check.
     #
     # Names must match the `name` field in each crate's Cargo.toml so
-    # `cargo metadata` returns the local version. `v_escape_codegen` (with
-    # underscore) keeps the historical crates.io identifier; every other crate
-    # uses the dashed convention.
+    # `cargo metadata` returns the local version. crates.io normalizes
+    # hyphens and underscores when matching, but the manifest name is
+    # what `cargo metadata` reports.
     local packages=(
         "v_escape-base"
         "v_escape-codegen-base"
-        "v_escape_codegen"
+        "v_escape-codegen"
         "v_escape-proc-macro"
         "v_escape"
         "v_htmlescape"

@@ -1,6 +1,6 @@
 [package]
 name = "v_escape-codegen-base"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "Code generation primitives shared by v_escape codegen and proc-macro crates."

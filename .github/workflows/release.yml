@@ -70,8 +70,8 @@ jobs:
         run: |
           # Extract package name and version from tag.
           # Examples:
-          #   v_htmlescape-v0.16.0    -> v_htmlescape, 0.16.0
-          #   v_escape_codegen-v0.1.9 -> v_escape_codegen, 0.1.9
+          #   v_htmlescape-v0.16.0   -> v_htmlescape, 0.16.0
+          #   v_escape-codegen-v0.2.0 -> v_escape-codegen, 0.2.0
           TAG_NAME="${{ steps.ref.outputs.tag }}"
           PACKAGE_NAME=$(echo "$TAG_NAME" | sed 's/-v[0-9].*$//')
           VERSION=$(echo "$TAG_NAME" | sed 's/.*-v//')

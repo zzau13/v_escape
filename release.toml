@@ -2,10 +2,9 @@
 # https://github.com/crate-ci/cargo-release
 # Supports workspaces using cargo's native flags, like --workspace or --package
 #
-# Note on package names: `{{package}}` resolves to the manifest `name` field,
-# so the codegen crate is referenced as `v_escape_codegen` (underscore — the
-# original crates.io identifier). Every other crate uses the dashed convention
-# (`v_escape-base`, `v_escape-codegen-base`, `v_escape-proc-macro`, etc).
+# Note on package names: `{{package}}` resolves to the manifest `name` field.
+# All workspace crates use the dashed convention (`v_escape-base`,
+# `v_escape-codegen-base`, `v_escape-codegen`, `v_escape-proc-macro`, etc).
 #
 # When releasing several crates at once, drive cargo-release one package at a
 # time (see `scripts/release.sh`). Pushing more than 3 tags in a single
@@ -22,7 +21,7 @@ push = true
 tag = true
 
 # Tag name format - using the manifest package name plus the version
-# (e.g. `v_htmlescape-v0.16.0`, `v_escape_codegen-v0.1.9`).
+# (e.g. `v_htmlescape-v0.16.0`, `v_escape-codegen-v0.2.0`).
 tag-name = "{{package}}-v{{version}}"
 
 # Tag message
