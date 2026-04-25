@@ -2,6 +2,13 @@
 name = "v_escape-base"
 version = "0.1.0"
 edition = "2024"
+authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
+description = "Base runtime for v_escape: SIMD-accelerated string escaping primitives."
+documentation = "https://docs.rs/v_escape-base"
+keywords = ["escape", "simd", "html", "json", "latex"]
+license = "MIT/Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/zzau13/v_escape"
 
 
 [features]

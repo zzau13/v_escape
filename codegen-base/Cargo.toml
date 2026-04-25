@@ -2,6 +2,13 @@
 name = "v_escape-codegen-base"
 version = "0.1.0"
 edition = "2024"
+authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
+description = "Code generation primitives shared by v_escape codegen and proc-macro crates."
+documentation = "https://docs.rs/v_escape-codegen-base"
+keywords = ["escape", "codegen", "simd"]
+license = "MIT/Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/zzau13/v_escape"
 
 [dependencies]
 proc-macro2 = { workspace = true }

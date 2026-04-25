@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [unreleased] - 2026-04-25
+
+### Security
+
+- Fix soundness bug reported in [#166](https://github.com/zzau13/v_escape/issues/166):
+  the legacy `v_htmlescape::scalar::_escape(&[u8], _)` (and the
+  matching `v_jsonescape` / `v_latexescape` entry points) used to be safe
+  functions that called `core::str::from_utf8_unchecked` on caller-provided
+  bytes, producing UB when given invalid UTF-8. The crate has been rewritten
+  so that the public escape API only accepts `&str` and `from_utf8_unchecked`
+  is now confined to a single internal `unsafe fn` in `v_escape-base` whose
+  callers always start from a `&str` and only split on ASCII boundaries. The
+  previous published versions (`v_htmlescape <= 0.15.8`, `v_jsonescape <= 0.7.8`,
+  `v_latexescape <= 0.14.8`) are affected and will be yanked from crates.io.
+
+### Released
+
+- `v_escape-base` 0.1.0 (initial release)
+- `v_escape-codegen-base` 0.1.0 (initial release)
+- `v_escape-proc-macro` 0.1.0 (initial release)
+- `v_escape-codegen` 0.1.9
+- `v_escape` 0.19.0 (rewritten API, see migration notes in README)
+- `v_htmlescape` 0.16.0 (rewritten API, soundness fix)
+- `v_jsonescape` 0.8.0 (rewritten API, soundness fix)
+- `v_latexescape` 0.15.0 (rewritten API, soundness fix)
+
 ## [_escape_codegen-v0.1.8] - 2022-08-05
 
 ### Bug Fixes

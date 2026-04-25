@@ -13,9 +13,9 @@ resolver = "2"
 
 
 [workspace.dependencies]
-v_escape-base = { path = "./base" }
-v_escape-codegen-base = { path = "./codegen-base" }
-v_escape-proc-macro = { path = "./proc-macro" }
+v_escape-base = { path = "./base", version = "0.1.0" }
+v_escape-codegen-base = { path = "./codegen-base", version = "0.1.0" }
+v_escape-proc-macro = { path = "./proc-macro", version = "0.1.0" }
 syn = "2"
 quote = "1"
 proc-macro2 = "^1.0.81"

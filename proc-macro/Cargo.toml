@@ -2,6 +2,13 @@
 name = "v_escape-proc-macro"
 version = "0.1.0"
 edition = "2024"
+authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
+description = "Procedural macro entry point for the v_escape SIMD escaping toolkit."
+documentation = "https://docs.rs/v_escape-proc-macro"
+keywords = ["escape", "simd", "proc-macro"]
+license = "MIT/Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/zzau13/v_escape"
 
 [lib]
 proc-macro = true
