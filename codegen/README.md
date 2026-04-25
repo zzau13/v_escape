@@ -1,13 +1,13 @@
-# [![Documentation](https://docs.rs/v_escape-codegen/badge.svg)](https://docs.rs/v_escape-codegen/) [![Latest version](https://img.shields.io/crates/v/v_escape-codegen.svg)](https://crates.io/crates/v_escape-codegen)
+# [![Documentation](https://docs.rs/v_escape_codegen/badge.svg)](https://docs.rs/v_escape_codegen/) [![Latest version](https://img.shields.io/crates/v/v_escape_codegen.svg)](https://crates.io/crates/v_escape_codegen)
 
-# v_escape-codegen
+# v_escape_codegen
 
 A tool for generating escape functions.
 
 ## Installation
 
 ```bash
-cargo install v_escape-codegen
+cargo install v_escape_codegen
 ```
 
 ## Usage
@@ -31,7 +31,7 @@ new!(
 EOF
 
 # Generate the code from the template
-v_escape-codegen -i .
+v_escape_codegen -i .
 ```
 
 ## Generated crate

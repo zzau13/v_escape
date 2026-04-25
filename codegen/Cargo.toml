@@ -1,11 +1,11 @@
 [package]
-name = "v_escape-codegen"
+name = "v_escape_codegen"
 version = "0.2.0"
 authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "Code generator package for v_escape"
 edition = "2024"
 license = "MIT/Apache-2.0"
-readme = "../README.md"
+readme = "README.md"
 repository = "https://github.com/zzau13/v_escape"
 workspace = ".."
 

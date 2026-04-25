@@ -106,13 +106,15 @@ main() {
     # List of packages to check.
     #
     # Names must match the `name` field in each crate's Cargo.toml so
-    # `cargo metadata` returns the local version. crates.io normalizes
-    # hyphens and underscores when matching, but the manifest name is
-    # what `cargo metadata` reports.
+    # `cargo metadata` returns the local version. `v_escape_codegen` (with
+    # underscore) keeps the historical crates.io identifier; every other crate
+    # uses the dashed convention. We tried renaming to `v_escape-codegen` in
+    # 0.2.0 but crates.io rejected the upload with "crate was previously
+    # named `v_escape_codegen`", so the underscore form is locked forever.
     local packages=(
         "v_escape-base"
         "v_escape-codegen-base"
-        "v_escape-codegen"
+        "v_escape_codegen"
         "v_escape-proc-macro"
         "v_escape"
         "v_htmlescape"

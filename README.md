@@ -1,6 +1,6 @@
-# [![Documentation](https://docs.rs/v_escape-codegen/badge.svg)](https://docs.rs/v_escape-codegen/) [![Latest version](https://img.shields.io/crates/v/v_escape-codegen.svg)](https://crates.io/crates/v_escape-codegen)
+# [![Documentation](https://docs.rs/v_escape_codegen/badge.svg)](https://docs.rs/v_escape_codegen/) [![Latest version](https://img.shields.io/crates/v/v_escape_codegen.svg)](https://crates.io/crates/v_escape_codegen)
 
-# v_escape-codegen
+# v_escape_codegen
 
 The simd optimized escape code
 
