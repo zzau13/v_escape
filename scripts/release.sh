@@ -60,7 +60,7 @@ check_dependencies() {
 # Validate package name - using actual workspace package names
 validate_package() {
     local package=$1
-    local valid_packages=("v_escape-base" "v_escape-codegen-base" "v_escape-codegen" "v_escape-proc-macro" "v_escape" "v_htmlescape" "v_jsonescape" "v_latexescape")
+    local valid_packages=("v_escape-base" "v_escape-codegen-base" "v_escape_codegen" "v_escape-proc-macro" "v_escape" "v_htmlescape" "v_jsonescape" "v_latexescape")
     
     for valid_pkg in "${valid_packages[@]}"; do
         if [[ "$package" == "$valid_pkg" ]]; then
@@ -158,7 +158,7 @@ usage() {
 Usage: $0 <package> <version-type> [--dry-run]
 
 Arguments:
-  package       Package to release (v_escape-base, v_escape-codegen-base, v_escape-codegen, v_escape-proc-macro, v_escape, v_htmlescape, v_jsonescape, v_latexescape)
+  package       Package to release (v_escape-base, v_escape-codegen-base, v_escape_codegen, v_escape-proc-macro, v_escape, v_htmlescape, v_jsonescape, v_latexescape)
   version-type  Version bump type (patch, minor, major)
   --dry-run     Run in dry-run mode (default: false)
 

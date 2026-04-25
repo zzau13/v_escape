@@ -1,9 +1,27 @@
 name: Release
 
+# Triggers
+# --------
+# - `push` on tags matching `<package>-v<version>` is the primary path; the
+#   workflow extracts the package and version from the ref and publishes that
+#   single crate.
+# - `workflow_dispatch` is the manual escape hatch: GitHub silently drops push
+#   events for tags beyond the 3rd in a single `git push`, so a coordinated
+#   release that creates 4+ tags at once will not fire this workflow for the
+#   later tags. In that case, run the workflow by hand from the Actions tab
+#   and pass the tag (e.g. `v_htmlescape-v0.16.0`) as input. The script
+#   `scripts/release.sh` should be invoked once per crate to avoid the limit
+#   in the first place.
 on:
   push:
     tags:
       - "*-v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to release (e.g. v_htmlescape-v0.16.0)"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -12,15 +30,25 @@ permissions:
 env:
   CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
 
-# TODO: Fix all of this
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: Resolve tag ref
+        id: ref
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            TAG_NAME="${{ inputs.tag }}"
+          else
+            TAG_NAME="${{ github.ref_name }}"
+          fi
+          echo "tag=$TAG_NAME" >> "$GITHUB_OUTPUT"
+
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          ref: ${{ steps.ref.outputs.tag }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install Rust
@@ -40,8 +68,11 @@ jobs:
       - name: Extract package name and version from tag
         id: extract
         run: |
-          # Extract package name and version from tag (e.g., v_htmlescape-v0.15.9 -> v_htmlescape, 0.15.9)
-          TAG_NAME="${{ github.ref_name }}"
+          # Extract package name and version from tag.
+          # Examples:
+          #   v_htmlescape-v0.16.0    -> v_htmlescape, 0.16.0
+          #   v_escape_codegen-v0.1.9 -> v_escape_codegen, 0.1.9
+          TAG_NAME="${{ steps.ref.outputs.tag }}"
           PACKAGE_NAME=$(echo "$TAG_NAME" | sed 's/-v[0-9].*$//')
           VERSION=$(echo "$TAG_NAME" | sed 's/.*-v//')
 

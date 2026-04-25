@@ -13,7 +13,7 @@ new tag pushed in this batch:
 | `v_escape-base`        | 0.1.0       | (initial release)  |
 | `v_escape-codegen-base`| 0.1.0       | (initial release)  |
 | `v_escape-proc-macro`  | 0.1.0       | (initial release)  |
-| `v_escape-codegen`     | 0.1.9       | 0.1.8              |
+| `v_escape_codegen`     | 0.1.9       | 0.1.8              |
 | `v_escape`             | 0.19.0      | 0.18.0             |
 | `v_htmlescape`         | 0.16.0      | 0.15.8             |
 | `v_jsonescape`         | 0.8.0       | 0.7.8              |

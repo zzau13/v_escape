@@ -1,6 +1,16 @@
 # Configuration for cargo-release
 # https://github.com/crate-ci/cargo-release
 # Supports workspaces using cargo's native flags, like --workspace or --package
+#
+# Note on package names: `{{package}}` resolves to the manifest `name` field,
+# so the codegen crate is referenced as `v_escape_codegen` (underscore — the
+# original crates.io identifier). Every other crate uses the dashed convention
+# (`v_escape-base`, `v_escape-codegen-base`, `v_escape-proc-macro`, etc).
+#
+# When releasing several crates at once, drive cargo-release one package at a
+# time (see `scripts/release.sh`). Pushing more than 3 tags in a single
+# `git push` causes GitHub to silently drop the additional `push` events, so
+# the `Release` workflow only fires for the first 3 tags.
 
 # Allowed branches for releases
 allow-branch = ["main", "master"]
@@ -11,7 +21,8 @@ push = true
 # Tag the release
 tag = true
 
-# Tag name format - usando package name con version (formato: package-vX.Y.Z)
+# Tag name format - using the manifest package name plus the version
+# (e.g. `v_htmlescape-v0.16.0`, `v_escape_codegen-v0.1.9`).
 tag-name = "{{package}}-v{{version}}"
 
 # Tag message
@@ -20,7 +31,7 @@ tag-message = "Release {{package}} {{version}}"
 # Pre-release commit message
 pre-release-commit-message = "chore: prepare for {{package}} {{version}}"
 
-# Pre-release hook para generar changelog
+# Pre-release hook to generate the changelog for the new tag
 pre-release-hook = [
     "git-cliff",
     "--tag",

@@ -103,11 +103,16 @@ main() {
     # Check dependencies
     check_dependencies
     
-    # List of packages to check
+    # List of packages to check.
+    #
+    # Names must match the `name` field in each crate's Cargo.toml so
+    # `cargo metadata` returns the local version. `v_escape_codegen` (with
+    # underscore) keeps the historical crates.io identifier; every other crate
+    # uses the dashed convention.
     local packages=(
         "v_escape-base"
         "v_escape-codegen-base"
-        "v_escape-codegen"
+        "v_escape_codegen"
         "v_escape-proc-macro"
         "v_escape"
         "v_htmlescape"
