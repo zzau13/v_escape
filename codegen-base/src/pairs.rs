@@ -35,7 +35,7 @@ impl<'a> From<Pairs<'a>> for Switch {
                 d.push((i, diff));
             }
         }
-        d.sort_unstable_by_key(|(k, _)| *k);
+        d.sort_unstable_by(|a, b| b.1.cmp(&a.1));
 
         match d.len() {
             0 => Ar {
