@@ -1,5 +1,5 @@
 [package]
-name = "v_escape-codegen"
+name = "v_escape_codegen"
 version = "0.1.9"
 authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "Code generator package for v_escape"
