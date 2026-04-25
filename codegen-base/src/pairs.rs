@@ -1,4 +1,4 @@
-use std::ops::Index;
+use std::{cmp::Reverse, ops::Index};
 
 use crate::switch::Switch;
 
@@ -35,7 +35,7 @@ impl<'a> From<Pairs<'a>> for Switch {
                 d.push((i, diff));
             }
         }
-        d.sort_unstable_by(|a, b| b.1.cmp(&a.1));
+        d.sort_unstable_by_key(|a| Reverse(a.1));
 
         match d.len() {
             0 => Ar {
