@@ -110,21 +110,23 @@ where
                     let or2 = eqc.or(eqd);
                     let or3 = or1.or(or2);
                     if or3.movemask_will_have_non_zero() {
-                        // TODO: store vector when mask is non-zero
-                        self.write_mask(eqa.movemask(), cur, &mut written, writer)?;
+                        self.write_mask(a, eqa.movemask(), cur, &mut written, writer)?;
                         self.write_mask(
+                            b,
                             eqb.movemask(),
                             cur.add(E::Vector::BYTES),
                             &mut written,
                             writer,
                         )?;
                         self.write_mask(
+                            c,
                             eqc.movemask(),
                             cur.add(E::Vector::BYTES * 2),
                             &mut written,
                             writer,
                         )?;
                         self.write_mask(
+                            d,
                             eqd.movemask(),
                             cur.add(E::Vector::BYTES * 3),
                             &mut written,
@@ -151,20 +153,21 @@ where
                 let v = E::Vector::load_aligned(cur);
                 let mask = self.escapes.masking(v).movemask();
 
-                self.write_mask(mask, cur, &mut written, writer)?;
+                self.write_mask(v, mask, cur, &mut written, writer)?;
                 cur = cur.add(E::Vector::BYTES);
             }
 
             // Handle any remaining bytes that are less than a full vector's worth.
             if cur < end {
                 debug_assert!(end.distance(cur) < E::Vector::BYTES);
-                let rest = (E::Vector::BYTES - end.distance(cur)) as u32;
-                let start = cur.sub(E::Vector::BYTES - end.distance(cur));
+                let remaining = end.distance(cur);
+                let rest = (E::Vector::BYTES - remaining) as u32;
+                let start = cur.sub(E::Vector::BYTES - remaining);
                 debug_assert_eq!(end.distance(start), E::Vector::BYTES);
                 let x = E::Vector::load_unaligned(start);
                 let mask = self.escapes.masking(x).movemask().shr(rest);
 
-                self.write_mask(mask, cur, &mut written, writer)?;
+                self.write_mask_unaligned(mask, cur, remaining, &mut written, writer)?;
             }
 
             if written < end {
@@ -213,45 +216,6 @@ where
         }
     }
 
-    /// A helper function to write the escape mask, handling both aligned and unaligned data.
-    ///
-    /// # Parameters
-    /// - `mask`: The mask indicating which bytes need to be escaped.
-    /// - `cur`: The current pointer in the data.
-    /// - `limit`: The limit up to which the mask should be processed.
-    /// - `written`: A mutable reference to the pointer indicating the last written position.
-    /// - `writer`: The function to write the escaped output.
-    ///
-    /// # Returns
-    /// A `Result` indicating the success or failure of the write operation.
-    ///
-    /// # Safety
-    /// This function is unsafe because it operates on raw pointers and assumes
-    /// that the memory is valid.
-    #[inline(always)]
-    unsafe fn write_mask_helper<const FMT: bool, W: Writer<FMT>>(
-        &mut self,
-        mut mask: <<E as Escapes>::Vector as Vector>::Mask,
-        cur: *const u8,
-        limit: usize,
-        written: &mut *const u8,
-        writer: &mut W,
-    ) -> Result<W::Error> {
-        unsafe {
-            if mask.has_non_zero() {
-                let mut offset = mask.first_offset();
-                while offset < limit {
-                    mask = Self::write_step(mask, cur, offset, written, writer)?;
-                    if !mask.has_non_zero() {
-                        break;
-                    }
-                    offset = mask.first_offset();
-                }
-            }
-            Ok(())
-        }
-    }
-
     /// Writes the escape mask for unaligned data.
     ///
     /// # Parameters
@@ -270,13 +234,25 @@ where
     #[inline(always)]
     unsafe fn write_mask_unaligned<const FMT: bool, W: Writer<FMT>>(
         &mut self,
-        mask: <<E as Escapes>::Vector as Vector>::Mask,
+        mut mask: <<E as Escapes>::Vector as Vector>::Mask,
         cur: *const u8,
         align: usize,
         written: &mut *const u8,
         writer: &mut W,
     ) -> Result<W::Error> {
-        unsafe { self.write_mask_helper(mask, cur, align, written, writer) }
+        unsafe {
+            if mask.has_non_zero() {
+                let mut offset = mask.first_offset();
+                while offset < align {
+                    mask = Self::write_step(mask, cur, offset, written, writer)?;
+                    if !mask.has_non_zero() {
+                        break;
+                    }
+                    offset = mask.first_offset();
+                }
+            }
+            Ok(())
+        }
     }
 
     /// Writes the escape mask for aligned data.
@@ -296,11 +272,33 @@ where
     #[inline(always)]
     unsafe fn write_mask<const FMT: bool, W: Writer<FMT>>(
         &mut self,
-        mask: <<E as Escapes>::Vector as Vector>::Mask,
+        vector: <E as Escapes>::Vector,
+        mut mask: <<E as Escapes>::Vector as Vector>::Mask,
         cur: *const u8,
         written: &mut *const u8,
         writer: &mut W,
     ) -> Result<W::Error> {
-        unsafe { self.write_mask_helper(mask, cur, usize::MAX, written, writer) }
+        unsafe {
+            if mask.has_non_zero() {
+                let mut offset = mask.first_offset();
+                loop {
+                    mask = Self::write_step(mask, cur, offset, written, writer)?;
+                    if !mask.has_non_zero() {
+                        break;
+                    }
+                    offset = mask.first_offset();
+                }
+            } else {
+                if !FMT {
+                    if *written < cur {
+                        write_slice(*written, cur, writer)?;
+                        *written = cur
+                    }
+                    writer.write_vector(vector);
+                    *written = cur.add(E::Vector::BYTES);
+                }
+            }
+            Ok(())
+        }
     }
 }
