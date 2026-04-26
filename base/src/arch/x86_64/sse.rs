@@ -1,6 +1,10 @@
 use core::arch::x86_64::__m128i;
 
-use crate::{Escapes, EscapesBuilder, Vector, generic::Generic, writer::Writer};
+use crate::{
+    Escapes, EscapesBuilder, Vector,
+    generic::Generic,
+    writer::{Result, Writer},
+};
 
 /// Returns true if SSE2 is available in the current environment.
 pub fn is_available() -> bool {
@@ -25,7 +29,10 @@ type SseVector = __m128i;
 /// # Returns
 /// A result indicating success or failure of the escape operation.
 #[inline(always)]
-pub fn escape<E: EscapesBuilder, R>(haystack: &str, writer: impl Writer<R>) -> Result<(), R> {
+pub fn escape<E: EscapesBuilder, const FMT: bool, W: Writer<FMT>>(
+    haystack: &str,
+    writer: W,
+) -> Result<W::Error> {
     let len = haystack.len();
     if len < SseVector::BYTES {
         return <E::Escapes<()> as Escapes>::byte_byte_escape(haystack, writer);

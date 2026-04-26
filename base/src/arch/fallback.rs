@@ -1,4 +1,7 @@
-use crate::{Escapes, EscapesBuilder, writer::Writer};
+use crate::{
+    Escapes, EscapesBuilder,
+    writer::{Result, Writer},
+};
 
 /// A function that performs escape operations using fallback implementation.
 ///
@@ -9,10 +12,10 @@ use crate::{Escapes, EscapesBuilder, writer::Writer};
 /// # Returns
 /// A result indicating success or failure of the escape operation.
 #[inline(always)]
-pub fn escape_fallback<E: EscapesBuilder, R>(
+pub fn escape_fallback<E: EscapesBuilder, const FMT: bool, W: Writer<FMT>>(
     haystack: &str,
-    writer: impl Writer<R>,
-) -> Result<(), R> {
+    writer: W,
+) -> Result<W::Error> {
     // TODO: implement "1.21 Scanning for zero bytes" from Matters Computational by J. Arndt
     // https://www.researchgate.net/publication/267072412_Matters_Computational_Ideas_Algorithms_Source_Code
     // Is not possible with range of bytes, not exist operations for this or are very expensive

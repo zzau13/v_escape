@@ -1,6 +1,10 @@
 use core::arch::x86_64::{__m128i, __m256i};
 
-use crate::{Escapes, EscapesBuilder, Vector, generic::Generic, writer::Writer};
+use crate::{
+    Escapes, EscapesBuilder, Vector,
+    generic::Generic,
+    writer::{Result, Writer},
+};
 
 // Adapted from https://github.com/BurntSushi/memchr/blob/master/src/arch/x86_64/avx2/memchr.rs
 /// Returns true if AVX2 is available in the current environment.
@@ -41,11 +45,14 @@ type SseVector = __m128i;
 /// # Returns
 /// A result indicating success or failure of the escape operation.
 #[inline(always)]
-pub fn escape<E: EscapesBuilder, R>(haystack: &str, mut writer: impl Writer<R>) -> Result<(), R> {
+pub fn escape<E: EscapesBuilder, const FMT: bool, W: Writer<FMT>>(
+    haystack: &str,
+    writer: W,
+) -> Result<W::Error> {
     let len = haystack.len();
     if len < AvxVector::BYTES {
         if len < SseVector::BYTES {
-            return <E::Escapes<()> as Escapes>::byte_byte_escape(haystack, &mut writer);
+            return <E::Escapes<()> as Escapes>::byte_byte_escape(haystack, writer);
         }
         return Generic::new(E::new::<SseVector>()).escape(haystack, writer);
     }

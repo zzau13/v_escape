@@ -2,7 +2,7 @@ use core::{fmt, str};
 
 use crate::{
     Vector,
-    writer::{Writer, write, write_slice},
+    writer::{Result, Writer, write, write_slice},
 };
 
 /// A builder trait for creating instances of types that implement the `Escapes` trait.
@@ -73,7 +73,10 @@ pub trait Escapes: Copy + fmt::Debug {
     /// # Returns
     /// A `Result` indicating the success or failure of the escape operation.
     #[inline(always)]
-    fn byte_byte_escape<R>(haystack: &str, mut writer: impl Writer<R>) -> Result<(), R> {
+    fn byte_byte_escape<const FMT: bool, W: Writer<FMT>>(
+        haystack: &str,
+        mut writer: W,
+    ) -> Result<W::Error> {
         let len = haystack.len();
         let start = haystack.as_ptr();
         unsafe { Self::byte_byte_escape_raw(start, start.add(len), &mut writer) }
@@ -93,11 +96,11 @@ pub trait Escapes: Copy + fmt::Debug {
     /// This function is unsafe because it operates on raw pointers and assumes
     /// that the memory between `haystack` and `end` is valid and properly aligned.
     #[inline(always)]
-    unsafe fn byte_byte_escape_raw<R>(
+    unsafe fn byte_byte_escape_raw<const FMT: bool, W: Writer<FMT>>(
         start: *const u8,
         end: *const u8,
-        writer: &mut impl Writer<R>,
-    ) -> Result<(), R> {
+        writer: &mut W,
+    ) -> Result<W::Error> {
         unsafe {
             let mut written = start;
             let mut cur = start;

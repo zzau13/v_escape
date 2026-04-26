@@ -1,5 +1,5 @@
 #![cfg(all(feature = "string", feature = "fmt", feature = "bytes"))]
-use v_escape_base::{Escapes, EscapesBuilder, Vector, escape_builder};
+use v_escape_base::{Escapes, EscapesBuilder, Vector, escape_builder, writer::WriterVec};
 
 mod no_false_positive {
     use super::*;
@@ -268,11 +268,7 @@ mod no_false_positive {
     #[test]
     fn test_byte_byte_escape() {
         let mut buffer = String::new();
-        let writer = |s: &str| {
-            buffer.push_str(s);
-            Ok::<(), ()>(())
-        };
-
+        let writer = WriterVec::new(unsafe { buffer.as_mut_vec() });
         let result = Equal::<()>::byte_byte_escape("a", writer);
         assert!(result.is_ok());
         assert_eq!(buffer, "foo");

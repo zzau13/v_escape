@@ -1,12 +1,8 @@
-use core::{slice, str};
-
+use crate::Vector;
 use crate::ext::Pointer;
+use core::{fmt, result::Result as BResult, slice, str};
+use derive_new::new;
 
-/// A trait for writing strings, defined as a function that takes a string slice
-/// and returns a `Result`.
-///
-/// # Type Parameters
-/// - `R`: The result type for the writer function.
 // TODO: Maybe Writer<T: Add<Output = T>, R> = FnMut(&str) -> Result<T, R>
 // struct Foo;
 // impl core::ops::Add for Foo {
@@ -23,9 +19,88 @@ use crate::ext::Pointer;
 //     }
 // }
 // And implement for &mut dyn core::fmt::Write and &mut dyn core::io::Write
-pub trait Writer<R>: FnMut(&str) -> Result<(), R> {}
 
-impl<R, T: FnMut(&str) -> Result<(), R>> Writer<R> for T {}
+/// A trait for writing strings, defined as a function that takes a string slice
+/// and returns a `Result`.
+///
+/// # Type Parameters
+/// - `R`: The result type for the writer function.
+///
+pub(crate) type Result<Err> = BResult<(), Err>;
+
+/// Sink abstraction that escape routines append output to.
+///
+/// The `FMT` const generic distinguishes byte-oriented writers (`FMT = false`),
+/// which support fast SIMD vector stores via [`Writer::write_vector`], from
+/// formatter-backed writers (`FMT = true`), which only forward string slices to
+/// an underlying [`core::fmt::Write`] and therefore cannot accept raw vector
+/// stores.
+///
+/// Inspired by https://github.com/cloudwego/sonic-rs
+pub trait Writer<const FMT: bool> {
+    /// Error type returned by [`Writer::write_str`].
+    type Error;
+
+    /// Appends a SIMD `vector`'s worth of bytes to the writer.
+    ///
+    /// Only meaningful for byte-oriented writers (`FMT = false`); formatter
+    /// writers must never have this method called on them.
+    fn write_vector<V: Vector>(&mut self, vector: V);
+
+    /// Appends the contents of `src` to the writer.
+    fn write_str(&mut self, src: &str) -> Result<Self::Error>;
+}
+
+/// [`Writer`] implementation that appends bytes to a borrowed [`alloc::vec::Vec`].
+#[cfg(feature = "alloc")]
+#[repr(transparent)]
+#[derive(new)]
+pub struct WriterVec<'a> {
+    inner: &'a mut alloc::vec::Vec<u8>,
+}
+
+#[cfg(feature = "alloc")]
+impl Writer<false> for WriterVec<'_> {
+    type Error = ();
+
+    #[inline(always)]
+    fn write_vector<V: Vector>(&mut self, vector: V) {
+        unsafe {
+            self.inner.reserve(V::BYTES);
+            vector.store(self.inner.as_mut_ptr().add(self.inner.len()));
+            self.inner.set_len(self.inner.len() + V::BYTES);
+        }
+    }
+
+    #[inline(always)]
+    fn write_str(&mut self, src: &str) -> Result<Self::Error> {
+        self.inner.extend_from_slice(src.as_bytes());
+        Ok(())
+    }
+}
+
+/// [`Writer`] implementation that forwards bytes to a [`core::fmt::Formatter`].
+#[cfg(feature = "fmt")]
+#[repr(transparent)]
+#[derive(new)]
+pub struct WriterFMT<'a, 'b> {
+    inner: &'a mut core::fmt::Formatter<'b>,
+}
+
+#[cfg(feature = "fmt")]
+impl Writer<true> for WriterFMT<'_, '_> {
+    type Error = fmt::Error;
+
+    #[inline(always)]
+    fn write_vector<V: Vector>(&mut self, _: V) {
+        unreachable!()
+    }
+
+    #[inline(always)]
+    fn write_str(&mut self, src: &str) -> Result<Self::Error> {
+        self.inner.write_str(src)
+    }
+}
 
 /// Writes a string slice using the writer function.
 ///
@@ -36,8 +111,11 @@ impl<R, T: FnMut(&str) -> Result<(), R>> Writer<R> for T {}
 /// # Returns
 /// A `Result` indicating the success or failure of the write operation.
 #[inline(always)]
-pub(crate) fn write<R>(src: &str, writer: &mut impl Writer<R>) -> Result<(), R> {
-    (writer)(src)
+pub(crate) fn write<const FMT: bool, W: Writer<FMT>>(
+    src: &str,
+    writer: &mut W,
+) -> Result<W::Error> {
+    writer.write_str(src)
 }
 
 /// Writes a slice of bytes as a string using the writer function.
@@ -53,11 +131,11 @@ pub(crate) fn write<R>(src: &str, writer: &mut impl Writer<R>) -> Result<(), R> 
 /// # Safety
 /// This function is unsafe because it assumes that the byte slice is valid UTF-8.
 #[inline(always)]
-pub(crate) unsafe fn write_slice<R>(
+pub(crate) unsafe fn write_slice<const FMT: bool, W: Writer<FMT>>(
     start: *const u8,
     end: *const u8,
-    writer: &mut impl Writer<R>,
-) -> Result<(), R> {
+    writer: &mut W,
+) -> Result<W::Error> {
     unsafe {
         write(
             str::from_utf8_unchecked(slice::from_raw_parts(start, end.distance(start))),
@@ -78,10 +156,10 @@ pub(crate) unsafe fn write_slice<R>(
 #[cfg(feature = "fmt")]
 macro_rules! builder_fmt {
     ($name:ident, $fn:path, $fn_name:ident, $builder:ty) => {
-        fn $name(haystack: &str, buffer: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        fn $name<'a>(haystack: &str, buffer: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
             use $fn;
-            let writer = |s: &str| buffer.write_str(s);
-            $fn_name::<$builder, _>(haystack, writer)
+            let writer = $crate::writer::WriterFMT::new(buffer);
+            $fn_name::<$builder, _, _>(haystack, writer)
         }
     };
 }
@@ -153,11 +231,14 @@ macro_rules! builder_string {
         /// get rewritten and their replacements.
         pub fn $name(haystack: &str, buffer: &mut String) {
             use $fn;
-            let writer = |s: &str| {
-                buffer.push_str(s);
-                Ok::<(), ()>(())
-            };
-            let _ = $fn_name::<$builder, _>(haystack, writer);
+            // SAFETY: The escape routine only writes valid UTF-8: the input
+            // `haystack` is forwarded verbatim and every replacement emitted
+            // through the escape table is itself valid UTF-8. Therefore the
+            // `String` invariant is upheld after the writer is dropped.
+            let vec = unsafe { buffer.as_mut_vec() };
+            let writer = $crate::writer::WriterVec::new(vec);
+
+            let _ = $fn_name::<$builder, _, _>(haystack, writer);
         }
     };
 }
@@ -201,11 +282,8 @@ macro_rules! builder_bytes {
         /// get rewritten and their replacements.
         pub fn $name(haystack: &str, buffer: &mut Vec<u8>) {
             use $fn;
-            let writer = |s: &str| {
-                buffer.extend_from_slice(s.as_bytes());
-                Ok::<(), ()>(())
-            };
-            let _ = $fn_name::<$builder, _>(haystack, writer);
+            let writer = $crate::writer::WriterVec::new(buffer);
+            let _ = $fn_name::<$builder, _, _>(haystack, writer);
         }
     };
 }

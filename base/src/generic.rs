@@ -5,7 +5,7 @@ use crate::{
     Escapes, Vector,
     ext::Pointer,
     vector::MoveMask,
-    writer::{Writer, write, write_slice},
+    writer::{Result, Writer, write, write_slice},
 };
 
 /// A generic structure for handling escape sequences in a vectorized manner.
@@ -42,11 +42,11 @@ where
     /// # Returns
     /// A `Result` indicating the success or failure of the escape operation.
     #[inline(always)]
-    pub(crate) fn escape<R>(
+    pub(crate) fn escape<const FMT: bool, W: Writer<FMT>>(
         &mut self,
         haystack: &str,
-        mut writer: impl Writer<R>,
-    ) -> Result<(), R> {
+        mut writer: W,
+    ) -> Result<W::Error> {
         let len = haystack.len();
         let cur = haystack.as_ptr();
         unsafe { self.escape_raw(cur, cur.add(len), &mut writer) }
@@ -66,12 +66,12 @@ where
     /// This function is unsafe because it operates on raw pointers and assumes
     /// that the memory between `start` and `end` is valid and properly aligned.
     #[inline(always)]
-    pub(crate) unsafe fn escape_raw<R>(
+    pub(crate) unsafe fn escape_raw<const FMT: bool, W: Writer<FMT>>(
         &mut self,
         start: *const u8,
         end: *const u8,
-        writer: &mut impl Writer<R>,
-    ) -> Result<(), R> {
+        writer: &mut W,
+    ) -> Result<W::Error> {
         unsafe {
             let len = end.distance(start);
             let mut written = start;
@@ -110,6 +110,7 @@ where
                     let or2 = eqc.or(eqd);
                     let or3 = or1.or(or2);
                     if or3.movemask_will_have_non_zero() {
+                        // TODO: store vector when mask is non-zero
                         self.write_mask(eqa.movemask(), cur, &mut written, writer)?;
                         self.write_mask(
                             eqb.movemask(),
@@ -129,6 +130,17 @@ where
                             &mut written,
                             writer,
                         )?;
+                    } else {
+                        if !FMT {
+                            if written < cur {
+                                write_slice(written, cur, writer)?;
+                            }
+                            writer.write_vector(a);
+                            writer.write_vector(b);
+                            writer.write_vector(c);
+                            writer.write_vector(d);
+                            written = cur.add(Self::LOOP_SIZE);
+                        }
                     }
                     cur = cur.add(Self::LOOP_SIZE);
                 }
@@ -179,13 +191,13 @@ where
     /// This function is unsafe because it operates on raw pointers and assumes
     /// that the memory is valid.
     #[inline(always)]
-    unsafe fn write_step<R>(
+    unsafe fn write_step<const FMT: bool, W: Writer<FMT>>(
         mask: <<E as Escapes>::Vector as Vector>::Mask,
         cur: *const u8,
         offset: usize,
         written: &mut *const u8,
-        writer: &mut impl Writer<R>,
-    ) -> Result<<<E as Escapes>::Vector as Vector>::Mask, R> {
+        writer: &mut W,
+    ) -> core::result::Result<<<E as Escapes>::Vector as Vector>::Mask, W::Error> {
         unsafe {
             let c = E::position(*cur.add(offset));
             if !E::FALSE_POSITIVE || c < E::ESCAPE_LEN {
@@ -217,14 +229,14 @@ where
     /// This function is unsafe because it operates on raw pointers and assumes
     /// that the memory is valid.
     #[inline(always)]
-    unsafe fn write_mask_helper<R>(
+    unsafe fn write_mask_helper<const FMT: bool, W: Writer<FMT>>(
         &mut self,
         mut mask: <<E as Escapes>::Vector as Vector>::Mask,
         cur: *const u8,
         limit: usize,
         written: &mut *const u8,
-        writer: &mut impl Writer<R>,
-    ) -> Result<(), R> {
+        writer: &mut W,
+    ) -> Result<W::Error> {
         unsafe {
             if mask.has_non_zero() {
                 let mut offset = mask.first_offset();
@@ -256,14 +268,14 @@ where
     /// This function is unsafe because it operates on raw pointers and assumes
     /// that the memory is valid.
     #[inline(always)]
-    unsafe fn write_mask_unaligned<R>(
+    unsafe fn write_mask_unaligned<const FMT: bool, W: Writer<FMT>>(
         &mut self,
         mask: <<E as Escapes>::Vector as Vector>::Mask,
         cur: *const u8,
         align: usize,
         written: &mut *const u8,
-        writer: &mut impl Writer<R>,
-    ) -> Result<(), R> {
+        writer: &mut W,
+    ) -> Result<W::Error> {
         unsafe { self.write_mask_helper(mask, cur, align, written, writer) }
     }
 
@@ -282,13 +294,13 @@ where
     /// This function is unsafe because it operates on raw pointers and assumes
     /// that the memory is valid.
     #[inline(always)]
-    unsafe fn write_mask<R>(
+    unsafe fn write_mask<const FMT: bool, W: Writer<FMT>>(
         &mut self,
         mask: <<E as Escapes>::Vector as Vector>::Mask,
         cur: *const u8,
         written: &mut *const u8,
-        writer: &mut impl Writer<R>,
-    ) -> Result<(), R> {
+        writer: &mut W,
+    ) -> Result<W::Error> {
         unsafe { self.write_mask_helper(mask, cur, usize::MAX, written, writer) }
     }
 }
