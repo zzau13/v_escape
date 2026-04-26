@@ -159,7 +159,7 @@ macro_rules! builder_fmt {
         fn $name<'a>(haystack: &str, buffer: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
             use $fn;
             let writer = $crate::writer::WriterFMT::new(buffer);
-            $fn_name::<$builder, _, _>(haystack, writer)
+            $fn_name::<$builder, true, _>(haystack, writer)
         }
     };
 }
@@ -238,7 +238,7 @@ macro_rules! builder_string {
             let vec = unsafe { buffer.as_mut_vec() };
             let writer = $crate::writer::WriterVec::new(vec);
 
-            let _ = $fn_name::<$builder, _, _>(haystack, writer);
+            let _ = $fn_name::<$builder, false, _>(haystack, writer);
         }
     };
 }
@@ -283,7 +283,7 @@ macro_rules! builder_bytes {
         pub fn $name(haystack: &str, buffer: &mut Vec<u8>) {
             use $fn;
             let writer = $crate::writer::WriterVec::new(buffer);
-            let _ = $fn_name::<$builder, _, _>(haystack, writer);
+            let _ = $fn_name::<$builder, false, _>(haystack, writer);
         }
     };
 }

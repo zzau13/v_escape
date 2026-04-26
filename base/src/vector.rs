@@ -414,7 +414,7 @@ mod aarch64neon {
         }
 
         #[inline(always)]
-        fn store(self, data: *mut u8) {
+        unsafe fn store(self, data: *mut u8) {
             unsafe { vst1q_s8(data as *mut i8, self) }
         }
 
@@ -589,7 +589,7 @@ mod wasm_simd128 {
         }
 
         #[inline(always)]
-        fn store(self, data: *mut u8) {
+        unsafe fn store(self, data: *mut u8) {
             unsafe { v128_store(data.cast(), self) }
         }
 
