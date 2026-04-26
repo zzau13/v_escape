@@ -299,6 +299,7 @@ mod x86sse2 {
             unsafe { _mm_loadu_si128(data as *const __m128i) }
         }
 
+        #[inline(always)]
         unsafe fn store(self, dst: *mut u8) {
             unsafe { _mm_storeu_si128(dst as *mut __m128i, self) }
         }
