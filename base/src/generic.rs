@@ -292,7 +292,6 @@ where
                 if !FMT {
                     if *written < cur {
                         write_slice(*written, cur, writer)?;
-                        *written = cur
                     }
                     writer.write_vector(vector);
                     *written = cur.add(E::Vector::BYTES);
