@@ -1,9 +1,4 @@
-#[macro_use]
-extern crate criterion;
 use criterion::{Bencher, Criterion, Throughput};
-
-#[path = "v_jsonescape.rs"]
-mod v_json;
 
 static HUGE: &str = include_str!("../data/sherlock-holmes-huge.txt");
 // escapable characters replaced by 'a'
@@ -32,7 +27,23 @@ static ONE_ED: &str = "1";
 
 static EMPTY: &str = "";
 
-fn define(
+pub(crate) const CASES: [(&str, &str); 13] = [
+    ("huge", HUGE),
+    ("huge escaped", HUGE_ED),
+    ("small", SMALL),
+    ("small escaped", SMALL_ED),
+    ("tiny", TINY),
+    ("tiny escaped", TINY_ED),
+    ("very tiny", VERY_TINY),
+    ("very tiny escaped", VERY_TINY_ED),
+    ("ultra tiny", ULTRA_TINY),
+    ("ultra tiny escaped", ULTRA_TINY_ED),
+    ("one", ONE),
+    ("one escaped", ONE_ED),
+    ("empty", EMPTY),
+];
+
+pub(crate) fn define(
     c: &mut Criterion,
     group_name: &str,
     bench_name: &str,
@@ -45,42 +56,12 @@ fn define(
     benchmark.bench_function(bench_name, bench);
 }
 
-#[rustfmt::skip]
-macro_rules! groups {
-    ($c:ident, $group:ident, $fun:ident) => {{
-        define($c, $group, "huge", HUGE, $fun(HUGE));
-        define($c, $group, "huge escaped", HUGE_ED, $fun(HUGE_ED));
-
-        define($c, $group, "small", SMALL, $fun(SMALL));
-        define($c, $group, "small escaped", SMALL_ED, $fun(SMALL_ED));
-
-        define($c, $group, "tiny", TINY, $fun(TINY));
-        define($c, $group, "tiny escaped", TINY_ED, $fun(TINY_ED));
-
-        define($c, $group, "very tiny", VERY_TINY, $fun(VERY_TINY));
-        define($c, $group, "very tiny escaped", VERY_TINY_ED, $fun(VERY_TINY_ED));
-
-        define($c, $group, "ultra tiny", ULTRA_TINY, $fun(ULTRA_TINY));
-        define($c, $group, "ultra tiny escaped", ULTRA_TINY_ED, $fun(ULTRA_TINY_ED));
-
-        define($c, $group, "one", ONE, $fun(ONE));
-        define($c, $group, "one escaped", ONE_ED, $fun(ONE_ED));
-
-        define($c, $group, "empty", EMPTY, $fun(EMPTY));
+macro_rules! register_cases {
+    ($c:ident, $group:expr, $bench_factory:path) => {{
+        for (name, corpus) in $crate::common::CASES {
+            $crate::common::define($c, $group, name, corpus, $bench_factory(corpus));
+        }
     }};
 }
 
-macro_rules! v_escape {
-    ($c:ident) => {
-        use crate::v_json::escaping as v_j;
-        let group = "v_jsonescape/Escaping";
-        groups!($c, group, v_j);
-    };
-}
-
-fn functions(c: &mut Criterion) {
-    v_escape!(c);
-}
-
-criterion_main!(benches);
-criterion_group!(benches, functions);
+pub(crate) use register_cases;
