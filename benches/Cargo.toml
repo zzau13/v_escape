@@ -3,13 +3,12 @@ publish = false
 name = "v_htmlescape-bench"
 version = "0.0.1"
 authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
-description = "Criterion benchmark suite for v_htmlescape."
+description = "Criterion benchmark suite for v_escape."
 edition = "2024"
 license = "MIT/Apache-2.0"
 repository = "https://github.com/zzau13/v_escape"
 
-[workspace]
-members = ["."]
+workspace = ".."
 
 [lib]
 bench = false

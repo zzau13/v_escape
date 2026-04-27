@@ -8,6 +8,7 @@ members = [
     "v_htmlescape",
     "v_jsonescape",
     "v_latexescape",
+    "benches"
 ]
 resolver = "2"
 

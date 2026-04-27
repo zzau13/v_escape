@@ -210,7 +210,7 @@ jobs:
           components: clippy
       - name: Check clippy
         run: |
-          cargo clippy --all --all-features -- -D warnings
+          cargo clippy --workspace --all-features -- -D warnings
 
   # Tests that everything is formatted correctly.
   rustfmt:

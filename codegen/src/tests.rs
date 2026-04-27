@@ -6,7 +6,6 @@ pub fn all_utf8_less() -> TokenStream {
         #![allow(unused)]
         fn all_utf8_less(less: &str) -> String {
             use std::char::from_u32;
-            assert_eq!(less.len(), less.as_bytes().len());
 
             let less = less.as_bytes();
             let mut buf = String::with_capacity(204_672 - less.len());
@@ -81,8 +80,8 @@ fn tests(escapes: &str, escaped: &str) -> TokenStream {
             assert_eq!(result(escapes), escaped);
             assert_eq!(result(&empty_heap), empty);
             assert_eq!(result(&cow), escaped);
-            assert_eq!(result(&string), escaped);
-            assert_eq!(result(&utf8), utf8);
+            assert_eq!(result(string), escaped);
+            assert_eq!(result(utf8), utf8);
             assert_eq!(result(string_long), string_long);
             assert_eq!(
                 result(escapes.repeat(1024).as_ref()),
