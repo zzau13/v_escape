@@ -5,7 +5,7 @@ use crate::{
     Escapes, Vector,
     ext::Pointer,
     vector::MoveMask,
-    writer::{Writer, write, write_slice},
+    writer::{Result, Writer, write, write_slice},
 };
 
 /// A generic structure for handling escape sequences in a vectorized manner.
@@ -42,11 +42,11 @@ where
     /// # Returns
     /// A `Result` indicating the success or failure of the escape operation.
     #[inline(always)]
-    pub(crate) fn escape<R>(
+    pub(crate) fn escape<const FMT: bool, W: Writer<FMT>>(
         &mut self,
         haystack: &str,
-        mut writer: impl Writer<R>,
-    ) -> Result<(), R> {
+        mut writer: W,
+    ) -> Result<W::Error> {
         let len = haystack.len();
         let cur = haystack.as_ptr();
         unsafe { self.escape_raw(cur, cur.add(len), &mut writer) }
@@ -66,12 +66,12 @@ where
     /// This function is unsafe because it operates on raw pointers and assumes
     /// that the memory between `start` and `end` is valid and properly aligned.
     #[inline(always)]
-    pub(crate) unsafe fn escape_raw<R>(
+    pub(crate) unsafe fn escape_raw<const FMT: bool, W: Writer<FMT>>(
         &mut self,
         start: *const u8,
         end: *const u8,
-        writer: &mut impl Writer<R>,
-    ) -> Result<(), R> {
+        writer: &mut W,
+    ) -> Result<W::Error> {
         unsafe {
             let len = end.distance(start);
             let mut written = start;
@@ -110,25 +110,39 @@ where
                     let or2 = eqc.or(eqd);
                     let or3 = or1.or(or2);
                     if or3.movemask_will_have_non_zero() {
-                        self.write_mask(eqa.movemask(), cur, &mut written, writer)?;
+                        self.write_mask(a, eqa.movemask(), cur, &mut written, writer)?;
                         self.write_mask(
+                            b,
                             eqb.movemask(),
                             cur.add(E::Vector::BYTES),
                             &mut written,
                             writer,
                         )?;
                         self.write_mask(
+                            c,
                             eqc.movemask(),
                             cur.add(E::Vector::BYTES * 2),
                             &mut written,
                             writer,
                         )?;
                         self.write_mask(
+                            d,
                             eqd.movemask(),
                             cur.add(E::Vector::BYTES * 3),
                             &mut written,
                             writer,
                         )?;
+                    } else {
+                        if !FMT {
+                            if written < cur {
+                                write_slice(written, cur, writer)?;
+                            }
+                            writer.write_vector(a);
+                            writer.write_vector(b);
+                            writer.write_vector(c);
+                            writer.write_vector(d);
+                            written = cur.add(Self::LOOP_SIZE);
+                        }
                     }
                     cur = cur.add(Self::LOOP_SIZE);
                 }
@@ -139,20 +153,21 @@ where
                 let v = E::Vector::load_aligned(cur);
                 let mask = self.escapes.masking(v).movemask();
 
-                self.write_mask(mask, cur, &mut written, writer)?;
+                self.write_mask(v, mask, cur, &mut written, writer)?;
                 cur = cur.add(E::Vector::BYTES);
             }
 
             // Handle any remaining bytes that are less than a full vector's worth.
             if cur < end {
                 debug_assert!(end.distance(cur) < E::Vector::BYTES);
-                let rest = (E::Vector::BYTES - end.distance(cur)) as u32;
-                let start = cur.sub(E::Vector::BYTES - end.distance(cur));
+                let remaining = end.distance(cur);
+                let rest = (E::Vector::BYTES - remaining) as u32;
+                let start = cur.sub(E::Vector::BYTES - remaining);
                 debug_assert_eq!(end.distance(start), E::Vector::BYTES);
                 let x = E::Vector::load_unaligned(start);
                 let mask = self.escapes.masking(x).movemask().shr(rest);
 
-                self.write_mask(mask, cur, &mut written, writer)?;
+                self.write_mask_unaligned(mask, cur, remaining, &mut written, writer)?;
             }
 
             if written < end {
@@ -179,13 +194,13 @@ where
     /// This function is unsafe because it operates on raw pointers and assumes
     /// that the memory is valid.
     #[inline(always)]
-    unsafe fn write_step<R>(
+    unsafe fn write_step<const FMT: bool, W: Writer<FMT>>(
         mask: <<E as Escapes>::Vector as Vector>::Mask,
         cur: *const u8,
         offset: usize,
         written: &mut *const u8,
-        writer: &mut impl Writer<R>,
-    ) -> Result<<<E as Escapes>::Vector as Vector>::Mask, R> {
+        writer: &mut W,
+    ) -> core::result::Result<<<E as Escapes>::Vector as Vector>::Mask, W::Error> {
         unsafe {
             let c = E::position(*cur.add(offset));
             if !E::FALSE_POSITIVE || c < E::ESCAPE_LEN {
@@ -198,45 +213,6 @@ where
             }
 
             Ok(mask.clear_least_significant_bit())
-        }
-    }
-
-    /// A helper function to write the escape mask, handling both aligned and unaligned data.
-    ///
-    /// # Parameters
-    /// - `mask`: The mask indicating which bytes need to be escaped.
-    /// - `cur`: The current pointer in the data.
-    /// - `limit`: The limit up to which the mask should be processed.
-    /// - `written`: A mutable reference to the pointer indicating the last written position.
-    /// - `writer`: The function to write the escaped output.
-    ///
-    /// # Returns
-    /// A `Result` indicating the success or failure of the write operation.
-    ///
-    /// # Safety
-    /// This function is unsafe because it operates on raw pointers and assumes
-    /// that the memory is valid.
-    #[inline(always)]
-    unsafe fn write_mask_helper<R>(
-        &mut self,
-        mut mask: <<E as Escapes>::Vector as Vector>::Mask,
-        cur: *const u8,
-        limit: usize,
-        written: &mut *const u8,
-        writer: &mut impl Writer<R>,
-    ) -> Result<(), R> {
-        unsafe {
-            if mask.has_non_zero() {
-                let mut offset = mask.first_offset();
-                while offset < limit {
-                    mask = Self::write_step(mask, cur, offset, written, writer)?;
-                    if !mask.has_non_zero() {
-                        break;
-                    }
-                    offset = mask.first_offset();
-                }
-            }
-            Ok(())
         }
     }
 
@@ -256,15 +232,27 @@ where
     /// This function is unsafe because it operates on raw pointers and assumes
     /// that the memory is valid.
     #[inline(always)]
-    unsafe fn write_mask_unaligned<R>(
+    unsafe fn write_mask_unaligned<const FMT: bool, W: Writer<FMT>>(
         &mut self,
-        mask: <<E as Escapes>::Vector as Vector>::Mask,
+        mut mask: <<E as Escapes>::Vector as Vector>::Mask,
         cur: *const u8,
         align: usize,
         written: &mut *const u8,
-        writer: &mut impl Writer<R>,
-    ) -> Result<(), R> {
-        unsafe { self.write_mask_helper(mask, cur, align, written, writer) }
+        writer: &mut W,
+    ) -> Result<W::Error> {
+        unsafe {
+            if mask.has_non_zero() {
+                let mut offset = mask.first_offset();
+                while offset < align {
+                    mask = Self::write_step(mask, cur, offset, written, writer)?;
+                    if !mask.has_non_zero() {
+                        break;
+                    }
+                    offset = mask.first_offset();
+                }
+            }
+            Ok(())
+        }
     }
 
     /// Writes the escape mask for aligned data.
@@ -282,13 +270,34 @@ where
     /// This function is unsafe because it operates on raw pointers and assumes
     /// that the memory is valid.
     #[inline(always)]
-    unsafe fn write_mask<R>(
+    unsafe fn write_mask<const FMT: bool, W: Writer<FMT>>(
         &mut self,
-        mask: <<E as Escapes>::Vector as Vector>::Mask,
+        vector: <E as Escapes>::Vector,
+        mut mask: <<E as Escapes>::Vector as Vector>::Mask,
         cur: *const u8,
         written: &mut *const u8,
-        writer: &mut impl Writer<R>,
-    ) -> Result<(), R> {
-        unsafe { self.write_mask_helper(mask, cur, usize::MAX, written, writer) }
+        writer: &mut W,
+    ) -> Result<W::Error> {
+        unsafe {
+            if mask.has_non_zero() {
+                let mut offset = mask.first_offset();
+                loop {
+                    mask = Self::write_step(mask, cur, offset, written, writer)?;
+                    if !mask.has_non_zero() {
+                        break;
+                    }
+                    offset = mask.first_offset();
+                }
+            } else {
+                if !FMT {
+                    if *written < cur {
+                        write_slice(*written, cur, writer)?;
+                    }
+                    writer.write_vector(vector);
+                    *written = cur.add(E::Vector::BYTES);
+                }
+            }
+            Ok(())
+        }
     }
 }

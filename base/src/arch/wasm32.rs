@@ -1,6 +1,10 @@
 use core::arch::wasm32::v128;
 
-use crate::{Escapes, EscapesBuilder, Vector, generic::Generic, writer::Writer};
+use crate::{
+    Escapes, EscapesBuilder, Vector,
+    generic::Generic,
+    writer::{Result, Writer},
+};
 
 type WasmVector = v128;
 /// A function that performs escape operations using Wasm SIMD vectorization.
@@ -12,7 +16,10 @@ type WasmVector = v128;
 /// # Returns
 /// A result indicating success or failure of the escape operation.
 #[inline(always)]
-pub fn escape<E: EscapesBuilder, R>(haystack: &str, writer: impl Writer<R>) -> Result<(), R> {
+pub fn escape<E: EscapesBuilder, const FMT: bool, W: Writer<FMT>>(
+    haystack: &str,
+    writer: W,
+) -> Result<W::Error> {
     let len = haystack.len();
     if len < WasmVector::BYTES {
         return <E::Escapes<()> as Escapes>::byte_byte_escape(haystack, writer);

@@ -1,16 +1,16 @@
 // Adapted from https://github.com/BurntSushi/memchr/blob/master/src/vector.rs
 /// A trait for describing vector operations used by vectorized searchers.
 ///
-/// The trait is highly constrained to low level vector operations needed.
+/// The trait is highly constrained to low-level vector operations needed.
 /// In general, it was invented mostly to be generic over x86's __m128i and
-/// __m256i types. At time of writing, it also supports wasm and aarch64
+/// __m256i types. At the time of writing, it supports wasm and aarch64
 /// 128-bit vector types as well.
 ///
 /// # Safety
 ///
 /// All methods are not safe since they are intended to be implemented using
 /// vendor intrinsics, which are also not safe. Callers must ensure that the
-/// appropriate target features are enabled in the calling function, and that
+/// appropriate target features are enabled in the calling function and that
 /// the current CPU supports them. All implementations should avoid marking the
 /// routines with #\[target_feature\] and instead mark them as #[\inline(always)\]
 /// to ensure they get appropriately inlined. (inline(always) cannot be used
@@ -50,6 +50,13 @@ pub trait Vector: Copy + core::fmt::Debug {
     /// Callers must guarantee that at least `BYTES` bytes are readable from
     /// `data`.
     unsafe fn load_unaligned(data: *const u8) -> Self;
+
+    /// Store the vector to the given pointer. The pointer does not need to be aligned.
+    ///
+    /// # Safety
+    ///
+    /// Callers must guarantee that at least `BYTES` bytes are writable to `data`.
+    unsafe fn store(self, data: *mut u8);
 
     /// Convert the vector to a mask.
     fn movemask(self) -> Self::Mask;
@@ -166,6 +173,12 @@ impl MoveMask for SensibleMoveMask {
         self.0 != 0
     }
 
+    fn shr(self, rhs: u32) -> Self {
+        // Endianness is not relevant here because the mask always uses
+        // first_offset to compute the offset.
+        SensibleMoveMask(self.0.wrapping_shr(rhs))
+    }
+
     #[inline(always)]
     fn clear_least_significant_bit(self) -> SensibleMoveMask {
         SensibleMoveMask(self.0 & (self.0 - 1))
@@ -180,12 +193,6 @@ impl MoveMask for SensibleMoveMask {
         // That position corresponds to the number of zeros after the least
         // significant bit.
         self.get_for_offset().trailing_zeros() as usize
-    }
-
-    fn shr(self, rhs: u32) -> Self {
-        // Endianness is not relevant here because the mask always uses
-        // first_offset to compute the offset.
-        SensibleMoveMask(self.0.wrapping_shr(rhs))
     }
 }
 
@@ -209,6 +216,10 @@ impl Vector for () {
 
     #[inline(always)]
     unsafe fn load_unaligned(_data: *const u8) -> Self {
+        unreachable!()
+    }
+
+    unsafe fn store(self, _data: *mut u8) {
         unreachable!()
     }
 
@@ -289,6 +300,11 @@ mod x86sse2 {
         }
 
         #[inline(always)]
+        unsafe fn store(self, dst: *mut u8) {
+            unsafe { _mm_storeu_si128(dst as *mut __m128i, self) }
+        }
+
+        #[inline(always)]
         fn movemask(self) -> Self::Mask {
             SensibleMoveMask(unsafe { _mm_movemask_epi8(self) } as u32)
         }
@@ -307,7 +323,6 @@ mod x86sse2 {
         fn add(self, vector2: Self) -> Self {
             unsafe { _mm_add_epi8(self, vector2) }
         }
-
         #[inline(always)]
         fn gt(self, vector2: Self) -> Self {
             unsafe { _mm_cmpgt_epi8(self, vector2) }
@@ -341,7 +356,10 @@ mod x86avx2 {
         unsafe fn load_unaligned(data: *const u8) -> Self {
             unsafe { _mm256_loadu_si256(data as *const __m256i) }
         }
-
+        #[inline(always)]
+        unsafe fn store(self, data: *mut u8) {
+            unsafe { _mm256_storeu_si256(data as *mut __m256i, self) }
+        }
         #[inline(always)]
         fn movemask(self) -> Self::Mask {
             SensibleMoveMask(unsafe { _mm256_movemask_epi8(self) } as u32)
@@ -394,6 +412,11 @@ mod aarch64neon {
         #[inline(always)]
         unsafe fn load_unaligned(data: *const u8) -> Self {
             unsafe { vld1q_s8(data as *const i8) }
+        }
+
+        #[inline(always)]
+        unsafe fn store(self, data: *mut u8) {
+            unsafe { vst1q_s8(data as *mut i8, self) }
         }
 
         #[inline(always)]
@@ -564,6 +587,11 @@ mod wasm_simd128 {
         #[inline(always)]
         unsafe fn load_unaligned(data: *const u8) -> Self {
             unsafe { v128_load(data.cast()) }
+        }
+
+        #[inline(always)]
+        unsafe fn store(self, data: *mut u8) {
+            unsafe { v128_store(data.cast(), self) }
         }
 
         #[inline(always)]

@@ -1,6 +1,10 @@
 use core::arch::aarch64::int8x16_t;
 
-use crate::{Escapes, EscapesBuilder, Vector, generic::Generic, writer::Writer};
+use crate::{
+    Escapes, EscapesBuilder, Vector,
+    generic::Generic,
+    writer::{Result, Writer},
+};
 
 type NeonVector = int8x16_t;
 
@@ -13,7 +17,10 @@ type NeonVector = int8x16_t;
 /// # Returns
 /// A result indicating success or failure of the escape operation.
 #[inline(always)]
-pub fn escape<E: EscapesBuilder, R>(haystack: &str, writer: impl Writer<R>) -> Result<(), R> {
+pub fn escape<E: EscapesBuilder, const FMT: bool, W: Writer<FMT>>(
+    haystack: &str,
+    writer: W,
+) -> Result<W::Error> {
     let len = haystack.len();
     if len < NeonVector::BYTES {
         return <E::Escapes<()> as Escapes>::byte_byte_escape(haystack, writer);

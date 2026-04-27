@@ -92,7 +92,8 @@ mod ext;
 mod generic;
 mod vector;
 #[macro_use]
-mod writer;
+/// A module for writer functions
+pub mod writer;
 
 pub use escapes::{Escapes, EscapesBuilder};
 pub use vector::Vector;

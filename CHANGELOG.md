@@ -161,7 +161,7 @@ new tag pushed in this batch:
 - Update README.md
 - Add byte order debug
 - Reduce test for miri
-- Remove uneeded script
+- Remove unneeded script
 - Test cases
 - Migrate config .github/renovate.json ([#155](https://github.com/zzau13/v_escape/issues/155))
 - Create FUNDING.yml
@@ -397,7 +397,7 @@ Signed-off-by: dependabot[bot] <support@github.com>
 - Update README
 - Bump version to 0.3.2
 - Fix avoid double test
-- Add actvate mode selection to sse
+- Add activate mode selection to sse
 - Add loop m256_64
 - Fix nom macro choice
 - Add v_latexescape
