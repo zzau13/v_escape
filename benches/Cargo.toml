@@ -1,6 +1,6 @@
 [package]
 publish = false
-name = "v_htmlescape-bench"
+name = "benches"
 version = "0.0.1"
 authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "Criterion benchmark suite for v_escape."

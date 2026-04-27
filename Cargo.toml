@@ -10,6 +10,16 @@ members = [
     "v_latexescape",
     "benches"
 ]
+default-members = [
+    "base",
+    "codegen",
+    "codegen-base",
+    "v_escape",
+    "proc-macro",
+    "v_htmlescape",
+    "v_jsonescape",
+    "v_latexescape"
+]
 resolver = "2"
 
 
