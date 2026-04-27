@@ -41,7 +41,7 @@ jobs:
         uses: benchmark-action/github-action-benchmark@v1
         with:
           tool: cargo
-          output-file-path: benches/output.txt
+          output-file-path: output.txt
           github-token: ${{ secrets.GITHUB_TOKEN }}
           summary-always: true
           comment-on-alert: true
