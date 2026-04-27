@@ -1,0 +1,62 @@
+name: Benchmarks
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  criterion:
+    name: Criterion Benchmarks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+
+      - name: Run benchmarks
+        working-directory: benches
+        env:
+          RUSTFLAGS: -C target-cpu=native
+        run: |
+          cargo bench --bench v_jsonescape -- --output-format bencher | tee output.txt
+
+      - name: Compare benchmark results and comment
+        # Fork PRs have a read-only token, so skip alert/comment publishing there.
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == false
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: cargo
+          output-file-path: benches/output.txt
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          summary-always: true
+          comment-on-alert: true
+          alert-threshold: "110%"
+          comment-always: true
+          fail-on-alert: false
+          auto-push: true
+
+      - name: Upload Criterion reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: criterion-report
+          path: |
+            benches/target/criterion
+            benches/output.txt
+          if-no-files-found: warn

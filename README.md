@@ -1,4 +1,4 @@
-# [![Documentation](https://docs.rs/v_escape_codegen/badge.svg)](https://docs.rs/v_escape_codegen/) [![Latest version](https://img.shields.io/crates/v/v_escape_codegen.svg)](https://crates.io/crates/v_escape_codegen)
+# [![Documentation](https://docs.rs/v_escape_codegen/badge.svg)](https://docs.rs/v_escape_codegen/) [![Latest version](https://img.shields.io/crates/v/v_escape_codegen.svg)](https://crates.io/crates/v_escape_codegen) [![codecov](https://codecov.io/github/zzau13/v_escape/graph/badge.svg?token=AFus7ytGT9)](https://codecov.io/github/zzau13/v_escape)
 
 # v_escape_codegen
 

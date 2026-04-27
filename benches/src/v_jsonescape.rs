@@ -5,6 +5,9 @@ pub fn escaping(corpus: &str) -> impl FnMut(&mut Bencher) {
     move |b: &mut Bencher| {
         let mut buf = String::with_capacity(corpus.len());
 
-        b.iter(|| escape_string(corpus, &mut buf));
+        b.iter(|| {
+            buf.clear();
+            escape_string(corpus, &mut buf);
+        });
     }
 }

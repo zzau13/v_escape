@@ -17,7 +17,17 @@ bench = false
 [[bench]]
 name = "v_htmlescape"
 harness = false
-path = "src/all.rs"
+path = "src/bench_v_htmlescape.rs"
+
+[[bench]]
+name = "v_jsonescape"
+harness = false
+path = "src/bench_v_jsonescape.rs"
+
+[[bench]]
+name = "v_latexescape"
+harness = false
+path = "src/bench_v_latexescape.rs"
 
 [dependencies]
 cfg-if = "1.0"
