@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1780463768532,
+  "lastUpdate": 1780540740059,
   "repoUrl": "https://github.com/zzau13/v_escape",
   "entries": {
     "Benchmark": [
@@ -1586,6 +1586,104 @@ window.BENCHMARK_DATA = {
           {
             "name": "v_jsonescape/Escaping/empty",
             "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "zzau13",
+            "username": "zzau13"
+          },
+          "committer": {
+            "name": "zzau13",
+            "username": "zzau13"
+          },
+          "id": "4c598d26dba20df3f35066a3d92e6f0482676912",
+          "message": "chore(deps): update crate-ci/typos action to v1.47.2",
+          "timestamp": "2026-04-28T16:54:48Z",
+          "url": "https://github.com/zzau13/v_escape/pull/176/commits/4c598d26dba20df3f35066a3d92e6f0482676912"
+        },
+        "date": 1780540739740,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "v_jsonescape/Escaping/huge",
+            "value": 270143,
+            "range": "± 1508",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/huge escaped",
+            "value": 242947,
+            "range": "± 1558",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/small",
+            "value": 307,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/small escaped",
+            "value": 244,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/tiny",
+            "value": 69,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/tiny escaped",
+            "value": 30,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/very tiny",
+            "value": 7,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/very tiny escaped",
+            "value": 13,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/ultra tiny",
+            "value": 10,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/ultra tiny escaped",
+            "value": 10,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/one",
+            "value": 7,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/one escaped",
+            "value": 7,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/empty",
+            "value": 3,
             "range": "± 0",
             "unit": "ns/iter"
           }
