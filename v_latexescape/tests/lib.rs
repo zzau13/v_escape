@@ -30,14 +30,14 @@ mod string {
     fn tests() {
         use std::borrow::Cow;
         let empty = "";
-        let escapes = "#$%&\\^_{}~";
-        let escaped = "\\#\\$\\%\\&\\textbackslash{}\\textasciicircum{}\\_\\{\\}\\textasciitilde{}";
-        let utf8: &str = &all_utf8_less("#$%&\\^_{}~");
+        let escapes = "#$%&<>\\^_{}~";
+        let escaped = "\\#\\$\\%\\&\\textless{}\\textgreater{}\\textbackslash{}\\textasciicircum{}\\_\\{\\}\\textasciitilde{}";
+        let utf8: &str = &all_utf8_less("#$%&<>\\^_{}~");
         let empty_heap = String::new();
         let short = "foobar";
         let string_long: &str = &short.repeat(1024);
-        let string = "#$%&\\^_{}~";
-        let cow = Cow::Owned("#$%&\\^_{}~".to_string());
+        let string = "#$%&<>\\^_{}~";
+        let cow = Cow::Owned("#$%&<>\\^_{}~".to_string());
         assert_eq!(
             result(&[short, escapes, short].join("")),
             [short, escaped, short].join("")
@@ -154,14 +154,14 @@ mod fmt {
     fn tests() {
         use std::borrow::Cow;
         let empty = "";
-        let escapes = "#$%&\\^_{}~";
-        let escaped = "\\#\\$\\%\\&\\textbackslash{}\\textasciicircum{}\\_\\{\\}\\textasciitilde{}";
-        let utf8: &str = &all_utf8_less("#$%&\\^_{}~");
+        let escapes = "#$%&<>\\^_{}~";
+        let escaped = "\\#\\$\\%\\&\\textless{}\\textgreater{}\\textbackslash{}\\textasciicircum{}\\_\\{\\}\\textasciitilde{}";
+        let utf8: &str = &all_utf8_less("#$%&<>\\^_{}~");
         let empty_heap = String::new();
         let short = "foobar";
         let string_long: &str = &short.repeat(1024);
-        let string = "#$%&\\^_{}~";
-        let cow = Cow::Owned("#$%&\\^_{}~".to_string());
+        let string = "#$%&<>\\^_{}~";
+        let cow = Cow::Owned("#$%&<>\\^_{}~".to_string());
         assert_eq!(
             result(&[short, escapes, short].join("")),
             [short, escaped, short].join("")
@@ -280,14 +280,14 @@ mod bytes {
     fn tests() {
         use std::borrow::Cow;
         let empty = "";
-        let escapes = "#$%&\\^_{}~";
-        let escaped = "\\#\\$\\%\\&\\textbackslash{}\\textasciicircum{}\\_\\{\\}\\textasciitilde{}";
-        let utf8: &str = &all_utf8_less("#$%&\\^_{}~");
+        let escapes = "#$%&<>\\^_{}~";
+        let escaped = "\\#\\$\\%\\&\\textless{}\\textgreater{}\\textbackslash{}\\textasciicircum{}\\_\\{\\}\\textasciitilde{}";
+        let utf8: &str = &all_utf8_less("#$%&<>\\^_{}~");
         let empty_heap = String::new();
         let short = "foobar";
         let string_long: &str = &short.repeat(1024);
-        let string = "#$%&\\^_{}~";
-        let cow = Cow::Owned("#$%&\\^_{}~".to_string());
+        let string = "#$%&<>\\^_{}~";
+        let cow = Cow::Owned("#$%&<>\\^_{}~".to_string());
         assert_eq!(
             result(&[short, escapes, short].join("")),
             [short, escaped, short].join("")
