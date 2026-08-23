@@ -13,10 +13,10 @@ workspace = ".."
 proc-macro2 = { workspace = true }
 quote = { workspace = true }
 syn = { workspace = true }
+prettyplease = { workspace = true }
 clap = { version = "4", default-features = false, features = ["derive", "std"] }
 toml = "1"
 serde = { version = "1", features = ["derive"] }
-prettyplease = "0.3"
 heck = "0"
 anyhow = "1"
 
