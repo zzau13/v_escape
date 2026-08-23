@@ -29,10 +29,7 @@ type SseVector = __m128i;
 /// # Returns
 /// A result indicating success or failure of the escape operation.
 #[inline(always)]
-pub fn escape<E: EscapesBuilder, const FMT: bool, W: Writer<FMT>>(
-    haystack: &str,
-    writer: W,
-) -> Result<W::Error> {
+pub fn escape<E: EscapesBuilder, W: Writer>(haystack: &str, writer: W) -> Result<W::Error> {
     let len = haystack.len();
     if len < SseVector::BYTES {
         return <E::Escapes<()> as Escapes>::byte_byte_escape(haystack, writer);

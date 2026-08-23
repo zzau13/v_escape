@@ -18,7 +18,7 @@ This will run benchmarks for:
 
 ## Documentation
 
-- Minimum supported Rust version: 1.85.0 or later
+- Minimum supported Rust version: 1.93.1 or later
 
 ## License
 
