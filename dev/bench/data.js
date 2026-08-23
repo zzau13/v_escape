@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787487646554,
+  "lastUpdate": 1787488055491,
   "repoUrl": "https://github.com/zzau13/v_escape",
   "entries": {
     "Benchmark": [
@@ -5187,6 +5187,108 @@ window.BENCHMARK_DATA = {
             "name": "v_jsonescape/Escaping/tiny escaped",
             "value": 31,
             "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/very tiny",
+            "value": 9,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/very tiny escaped",
+            "value": 10,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/ultra tiny",
+            "value": 13,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/ultra tiny escaped",
+            "value": 13,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/one",
+            "value": 10,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/one escaped",
+            "value": 10,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/empty",
+            "value": 3,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "62119053+Neptunium931@users.noreply.github.com",
+            "name": "Neptunium93",
+            "username": "Neptunium931"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "4226245d637836c6d39f2dcf1a7787aee94da01e",
+          "message": "Latex: escape angle brackets (#184)\n\n* fix: bump syn version for fix build\n\nrust version:\n```sh\n$ cargo -V\ncargo 1.93.0 (083ac5135 2025-12-15)\n```\n\nerror:\n```sh\ncargo build\nerror[E0277]: the trait bound `syn::file::File: Parse` is not satisfied\n   --> codegen/src/main.rs:164:10\n    |\n164 |         &syn::parse2(code)\n    |          ^^^^^^^^^^^^^^^^^ the trait `Parse` is not implemented for `syn::file::File`\n    |\n    = help: the following other types implement trait `Parse`:\n              Abstract\n              AndAnd\n              AndEq\n              AngleBracketedGenericArguments\n              As\n              At\n              BareFnArg\n              Become\n            and 167 others\nerror[E0277]: the trait bound `syn::file::File: Parse` is not satisfied\n   --> codegen/src/main.rs:183:10\n    |\n183 |         &syn::parse2(code_test)\n    |          ^^^^^^^^^^^^^^^^^^^^^^ the trait `Parse` is not implemented for `syn::file::File`\n    |\n    = help: the following other types implement trait `Parse`:\n              Abstract\n              AndAnd\n              AndEq\n              AngleBracketedGenericArguments\n              As\n              At\n              BareFnArg\n              Become\n            and 167 others\nFor more information about this error, try `rustc --explain E0277`.\nerror: could not compile `v_escape_codegen` (bin \"v_escape_codegen\") due to 2 previous errors\n```\n\n* feat: add AngleBrackets\n\n---------\n\nCo-authored-by: Juan Aguilar Santillana <mhpoin@gmail.com>",
+          "timestamp": "2026-08-23T14:24:16+02:00",
+          "tree_id": "7cf7e986850c3bcc121ca60a4d8baa73c7628232",
+          "url": "https://github.com/zzau13/v_escape/commit/4226245d637836c6d39f2dcf1a7787aee94da01e"
+        },
+        "date": 1787488054982,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "v_jsonescape/Escaping/huge",
+            "value": 333026,
+            "range": "± 7699",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/huge escaped",
+            "value": 290078,
+            "range": "± 18235",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/small",
+            "value": 335,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/small escaped",
+            "value": 295,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/tiny",
+            "value": 68,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/tiny escaped",
+            "value": 31,
+            "range": "± 0",
             "unit": "ns/iter"
           },
           {
