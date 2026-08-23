@@ -73,7 +73,7 @@ pub trait Escapes: Copy + fmt::Debug {
     /// # Returns
     /// A `Result` indicating the success or failure of the escape operation.
     #[inline(always)]
-    fn byte_byte_escape<const FMT: bool, W: Writer<FMT>>(
+    fn byte_byte_escape<W: Writer>(
         haystack: &str,
         mut writer: W,
     ) -> Result<W::Error> {
@@ -96,7 +96,7 @@ pub trait Escapes: Copy + fmt::Debug {
     /// This function is unsafe because it operates on raw pointers and assumes
     /// that the memory between `haystack` and `end` is valid and properly aligned.
     #[inline(always)]
-    unsafe fn byte_byte_escape_raw<const FMT: bool, W: Writer<FMT>>(
+    unsafe fn byte_byte_escape_raw<W: Writer>(
         start: *const u8,
         end: *const u8,
         writer: &mut W,

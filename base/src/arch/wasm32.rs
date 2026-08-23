@@ -16,7 +16,7 @@ type WasmVector = v128;
 /// # Returns
 /// A result indicating success or failure of the escape operation.
 #[inline(always)]
-pub fn escape<E: EscapesBuilder, const FMT: bool, W: Writer<FMT>>(
+pub fn escape<E: EscapesBuilder, W: Writer>(
     haystack: &str,
     writer: W,
 ) -> Result<W::Error> {

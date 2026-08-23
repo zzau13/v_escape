@@ -8,7 +8,8 @@ pub mod sse;
 ///
 /// # Parameters
 /// - `$name`: The name of the function.
-/// - `$writer_builder`: The function to use for the builder.
+/// - `$writer_builder`: The macro to use for the builder. Signature:
+/// `writer_builder!(Function Name, Function Path, Function External Name, Builder Struct Type, ...Atributes)`.
 /// - `$builder`: The type of the builder.
 /// - `$buffer`: The type of the buffer.
 #[doc(hidden)]
@@ -37,15 +38,32 @@ macro_rules! ifun {
             type RealFn = fn(haystack: &str, buffer: &mut $buffer) $(-> $retty)?;
             static FN: AtomicPtr<()> = AtomicPtr::new(detect as Fn);
 
-            #[cfg(target_feature = "sse2")]
-            #[target_feature(enable = "sse2", enable = "avx2")]
-            $writer_builder!(escape_avx2, $crate::arch::x86_64::avx::escape, escape, $builder);
+            $writer_builder!(
+                escape_avx2,
+                $crate::arch::x86_64::avx::escape,
+                escape,
+                $builder,
+                #[cfg(target_feature = "sse2")]
+                #[target_feature(enable = "sse2", enable = "avx2")]
+            );
 
             #[cfg(target_feature = "sse2")]
             #[target_feature(enable = "sse2")]
-            $writer_builder!(escape_sse2, $crate::arch::x86_64::sse::escape, escape, $builder);
+            $writer_builder!(
+                escape_sse2,
+                $crate::arch::x86_64::sse::escape,
+                escape,
+                $builder,
+                #[cfg(target_feature = "sse2")]
+                #[target_feature(enable = "sse2")]
+            );
 
-            $writer_builder!(escape_fallback, $crate::arch::fallback::escape_fallback, escape_fallback, $builder);
+            $writer_builder!(
+                escape_fallback,
+                $crate::arch::fallback::escape_fallback,
+                escape_fallback,
+                $builder
+            );
 
             unsafe fn detect(haystack: &str, buffer: &mut $buffer) $(-> $retty)? {
                 let fun = {
