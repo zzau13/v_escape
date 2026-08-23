@@ -21,6 +21,8 @@
 //! | `0x24` | `$` | `\$` |
 //! | `0x25` | `%` | `\%` |
 //! | `0x26` | `&` | `\&` |
+//! | `0x3C` | `<` | `\textless{}` |
+//! | `0x3E` | `>` | `\textgreater{}` |
 //! | `0x5C` | `\` | `\textbackslash{}` |
 //! | `0x5E` | `^` | `\textasciicircum{}` |
 //! | `0x5F` | `_` | `\_` |
@@ -44,28 +46,30 @@
 //! `simd128` on wasm32) and falls back to a scalar loop otherwise.
 //!
 static V_ESCAPE_CHARS: [u8; 256] = [
-    10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8,
-    10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8,
-    10u8, 10u8, 10u8, 0u8, 1u8, 2u8, 3u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8,
-    10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8,
-    10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8,
-    10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 4u8, 10u8, 5u8, 6u8,
-    10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8,
-    10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 7u8, 10u8, 8u8, 9u8, 10u8,
-    10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8,
-    10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8,
-    10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8,
-    10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8,
-    10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8,
-    10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8,
-    10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8,
-    10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8, 10u8,
+    12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8,
+    12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8,
+    12u8, 12u8, 12u8, 0u8, 1u8, 2u8, 3u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8,
+    12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 4u8, 12u8, 5u8, 12u8,
+    12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8,
+    12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 6u8, 12u8, 7u8, 8u8,
+    12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8,
+    12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 9u8, 12u8, 10u8, 11u8, 12u8,
+    12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8,
+    12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8,
+    12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8,
+    12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8,
+    12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8,
+    12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8,
+    12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8,
+    12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8, 12u8,
 ];
-static V_ESCAPE_QUOTES: [&str; 10usize] = [
+static V_ESCAPE_QUOTES: [&str; 12usize] = [
     "\\#",
     "\\$",
     "\\%",
     "\\&",
+    "\\textless{}",
+    "\\textgreater{}",
     "\\textbackslash{}",
     "\\textasciicircum{}",
     "\\_",
@@ -73,7 +77,7 @@ static V_ESCAPE_QUOTES: [&str; 10usize] = [
     "\\}",
     "\\textasciitilde{}",
 ];
-const V_ESCAPE_LEN: usize = 10usize;
+const V_ESCAPE_LEN: usize = 12usize;
 use v_escape_base::{Escapes, EscapesBuilder, Vector, escape_builder};
 #[derive(Debug, Clone, Copy)]
 struct Escape<V: Vector> {
@@ -90,8 +94,8 @@ impl EscapesBuilder for Builder {
     type Escapes<V: Vector> = Escape<V>;
     fn new<V: Vector>() -> Self::Escapes<V> {
         Self::Escapes {
-            translation_a: V::splat(89i8 as u8),
-            below_a: V::splat(123i8 as u8),
+            translation_a: V::splat(65i8 as u8),
+            below_a: V::splat(99i8 as u8),
             translation_b: V::splat(32i8 as u8),
             below_b: V::splat(123i8 as u8),
             translation_c: V::splat(1i8 as u8),
@@ -100,7 +104,7 @@ impl EscapesBuilder for Builder {
     }
 }
 impl<V: Vector> Escapes for Escape<V> {
-    const ESCAPE_LEN: usize = 10usize;
+    const ESCAPE_LEN: usize = 12usize;
     const FALSE_POSITIVE: bool = true;
     type Vector = V;
     #[inline(always)]
