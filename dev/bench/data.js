@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787487612653,
+  "lastUpdate": 1787487646554,
   "repoUrl": "https://github.com/zzau13/v_escape",
   "entries": {
     "Benchmark": [
@@ -5089,6 +5089,104 @@ window.BENCHMARK_DATA = {
             "name": "v_jsonescape/Escaping/tiny escaped",
             "value": 31,
             "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/very tiny",
+            "value": 9,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/very tiny escaped",
+            "value": 10,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/ultra tiny",
+            "value": 13,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/ultra tiny escaped",
+            "value": 13,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/one",
+            "value": 10,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/one escaped",
+            "value": 10,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/empty",
+            "value": 3,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "zzau13",
+            "username": "zzau13"
+          },
+          "committer": {
+            "name": "zzau13",
+            "username": "zzau13"
+          },
+          "id": "a3655fe2b23c7564b9bb50a848dcb51c8fc01d77",
+          "message": "chore(deps): update rust crate bytes to v1.12.1",
+          "timestamp": "2026-08-23T12:15:21Z",
+          "url": "https://github.com/zzau13/v_escape/pull/179/commits/a3655fe2b23c7564b9bb50a848dcb51c8fc01d77"
+        },
+        "date": 1787487645802,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "v_jsonescape/Escaping/huge",
+            "value": 328045,
+            "range": "± 7305",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/huge escaped",
+            "value": 290103,
+            "range": "± 5980",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/small",
+            "value": 350,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/small escaped",
+            "value": 295,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/tiny",
+            "value": 83,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/tiny escaped",
+            "value": 31,
+            "range": "± 1",
             "unit": "ns/iter"
           },
           {
