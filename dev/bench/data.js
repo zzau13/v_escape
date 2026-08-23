@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787253094077,
+  "lastUpdate": 1787479739546,
   "repoUrl": "https://github.com/zzau13/v_escape",
   "entries": {
     "Benchmark": [
@@ -3154,6 +3154,108 @@ window.BENCHMARK_DATA = {
           {
             "name": "v_jsonescape/Escaping/empty",
             "value": 3,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "29139614+renovate[bot]@users.noreply.github.com",
+            "name": "renovate[bot]",
+            "username": "renovate[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "658509cfc305a86a56ac0e0e3c4e49376c72c6b9",
+          "message": "chore(deps): update rust crate syn to v3 (#183)\n\nCo-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>",
+          "timestamp": "2026-08-23T12:05:53+02:00",
+          "tree_id": "b02b2e2b6f9ad5f1548b427ce3aceb63e4973051",
+          "url": "https://github.com/zzau13/v_escape/commit/658509cfc305a86a56ac0e0e3c4e49376c72c6b9"
+        },
+        "date": 1787479738549,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "v_jsonescape/Escaping/huge",
+            "value": 276465,
+            "range": "± 6946",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/huge escaped",
+            "value": 219709,
+            "range": "± 5947",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/small",
+            "value": 191,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/small escaped",
+            "value": 173,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/tiny",
+            "value": 38,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/tiny escaped",
+            "value": 24,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/very tiny",
+            "value": 11,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/very tiny escaped",
+            "value": 14,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/ultra tiny",
+            "value": 11,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/ultra tiny escaped",
+            "value": 11,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/one",
+            "value": 6,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/one escaped",
+            "value": 6,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/empty",
+            "value": 2,
             "range": "± 0",
             "unit": "ns/iter"
           }
