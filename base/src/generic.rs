@@ -42,11 +42,7 @@ where
     /// # Returns
     /// A `Result` indicating the success or failure of the escape operation.
     #[inline(always)]
-    pub(crate) fn escape<W: Writer>(
-        &mut self,
-        haystack: &str,
-        mut writer: W,
-    ) -> Result<W::Error> {
+    pub(crate) fn escape<W: Writer>(&mut self, haystack: &str, mut writer: W) -> Result<W::Error> {
         let len = haystack.len();
         let cur = haystack.as_ptr();
         unsafe { self.escape_raw(cur, cur.add(len), &mut writer) }
@@ -110,23 +106,20 @@ where
                     let or2 = eqc.or(eqd);
                     let or3 = or1.or(or2);
                     if or3.movemask_will_have_non_zero() {
-                        self.write_mask(a, eqa.movemask(), cur, &mut written, writer)?;
+                        self.write_mask(eqa.movemask(), cur, &mut written, writer)?;
                         self.write_mask(
-                            b,
                             eqb.movemask(),
                             cur.add(E::Vector::BYTES),
                             &mut written,
                             writer,
                         )?;
                         self.write_mask(
-                            c,
                             eqc.movemask(),
                             cur.add(E::Vector::BYTES * 2),
                             &mut written,
                             writer,
                         )?;
                         self.write_mask(
-                            d,
                             eqd.movemask(),
                             cur.add(E::Vector::BYTES * 3),
                             &mut written,
@@ -142,7 +135,7 @@ where
                 let v = E::Vector::load_aligned(cur);
                 let mask = self.escapes.masking(v).movemask();
 
-                self.write_mask(v, mask, cur, &mut written, writer)?;
+                self.write_mask(mask, cur, &mut written, writer)?;
                 cur = cur.add(E::Vector::BYTES);
             }
 
@@ -261,7 +254,6 @@ where
     #[inline(always)]
     unsafe fn write_mask<W: Writer>(
         &mut self,
-        _vector: <E as Escapes>::Vector,
         mut mask: <<E as Escapes>::Vector as Vector>::Mask,
         cur: *const u8,
         written: &mut *const u8,

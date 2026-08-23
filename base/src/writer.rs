@@ -36,9 +36,12 @@ pub trait Writer {
     fn write_slice(&mut self, src: &[u8]) -> Result<Self::Error>;
 
     /// Appends the UTF-8 bytes between `start` and `end` to the writer.
-    fn write_ptr(&mut self, start: *const u8, end: *const u8) -> Result<Self::Error> {
+    /// # SAFETY
+    /// This function is only used internally
+    /// Not use this trait
+    unsafe fn write_ptr(&mut self, start: *const u8, end: *const u8) -> Result<Self::Error> {
         debug_assert!(start < end);
-        // SAFETY:
+        // # SAFETY
         // Internal trait: Intensive testing and debug check for correctness
         let src = unsafe {
             std::slice::from_raw_parts(start, (end as usize).wrapping_sub(start as usize))
@@ -102,10 +105,7 @@ impl Writer for WriterFMT<'_, '_> {
 /// # Returns
 /// A `Result` indicating the success or failure of the write operation.
 #[inline(always)]
-pub(crate) fn write<W: Writer>(
-    src: &str,
-    writer: &mut W,
-) -> Result<W::Error> {
+pub(crate) fn write<W: Writer>(src: &str, writer: &mut W) -> Result<W::Error> {
     writer.write_str(src)
 }
 
