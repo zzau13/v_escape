@@ -9,7 +9,7 @@ pub mod sse;
 /// # Parameters
 /// - `$name`: The name of the function.
 /// - `$writer_builder`: The macro to use for the builder. Signature:
-/// `writer_builder!(Function Name, Function Path, Function External Name, Builder Struct Type, ...Atributes)`.
+/// `writer_builder!(Function Name, Function Path, Function External Name, Builder Struct Type, ...Attributes)`.
 /// - `$builder`: The type of the builder.
 /// - `$buffer`: The type of the buffer.
 #[doc(hidden)]

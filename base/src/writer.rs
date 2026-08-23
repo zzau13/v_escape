@@ -136,7 +136,7 @@ pub(crate) unsafe fn write_slice<W: Writer>(
 }
 
 /// A macro for creating a builder function that appends a string to a `String`.
-/// implement: `writer_builder!(Function Name, Function Path, Function External Name, Builder Struct Type, ...Atributes)`.
+/// implement: `writer_builder!(Function Name, Function Path, Function External Name, Builder Struct Type, ...Attributes)`.
 ///
 /// # Parameters
 /// - `$name`: The name of the builder function.
@@ -208,7 +208,7 @@ macro_rules! struct_display {
 }
 
 /// A macro for creating a builder function that appends a string to a `String`.
-/// implement: `writer_builder!(Function Name, Function Path, Function External Name, Builder Struct Type, ...Atributes)`.
+/// implement: `writer_builder!(Function Name, Function Path, Function External Name, Builder Struct Type, ...Attributes)`.
 ///
 /// # Parameters
 /// - `$name`: The name of the builder function.
@@ -264,7 +264,7 @@ macro_rules! struct_string {
 }
 
 /// A macro for creating a builder function that appends a Vector to a `Vector`.
-/// implement: `writer_builder!(Function Name, Function Path, Function External Name, Builder Struct Type, ...Atributes)`.
+/// implement: `writer_builder!(Function Name, Function Path, Function External Name, Builder Struct Type, ...Attributes)`.
 ///
 /// # Parameters
 /// - `$name`: The name of the builder function.
