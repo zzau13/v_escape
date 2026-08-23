@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1787488055491,
+  "lastUpdate": 1787488089237,
   "repoUrl": "https://github.com/zzau13/v_escape",
   "entries": {
     "Benchmark": [
@@ -5324,6 +5324,108 @@ window.BENCHMARK_DATA = {
           {
             "name": "v_jsonescape/Escaping/one escaped",
             "value": 10,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/empty",
+            "value": 3,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "29139614+renovate[bot]@users.noreply.github.com",
+            "name": "renovate[bot]",
+            "username": "renovate[bot]"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "efbca2a417f4945b65d85eaad27f9428d4d8247e",
+          "message": "chore(deps): update crate-ci/typos action to v1.49.0 (#176)\n\nCo-authored-by: renovate[bot] <29139614+renovate[bot]@users.noreply.github.com>",
+          "timestamp": "2026-08-23T14:24:40+02:00",
+          "tree_id": "faee96046848f9e41978e607c81a53bbf0ed8e47",
+          "url": "https://github.com/zzau13/v_escape/commit/efbca2a417f4945b65d85eaad27f9428d4d8247e"
+        },
+        "date": 1787488088578,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "v_jsonescape/Escaping/huge",
+            "value": 335843,
+            "range": "± 4460",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/huge escaped",
+            "value": 272743,
+            "range": "± 2865",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/small",
+            "value": 283,
+            "range": "± 9",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/small escaped",
+            "value": 237,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/tiny",
+            "value": 61,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/tiny escaped",
+            "value": 31,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/very tiny",
+            "value": 9,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/very tiny escaped",
+            "value": 10,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/ultra tiny",
+            "value": 13,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/ultra tiny escaped",
+            "value": 13,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/one",
+            "value": 9,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/one escaped",
+            "value": 9,
             "range": "± 0",
             "unit": "ns/iter"
           },
