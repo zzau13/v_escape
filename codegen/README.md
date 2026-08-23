@@ -48,7 +48,7 @@ Generate a new crate with `escape_fmt` and `escape_string` functions.
 
 ## Documentation
 
-- Minimum supported Rust version: 1.85.0 or later
+- Minimum supported Rust version: 1.93.1 or later
 
 ## License
 

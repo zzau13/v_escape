@@ -6,7 +6,7 @@ Procedural macro crate for v_escape. This crate provides the internal procedural
 
 ## Documentation
 
-- Minimum supported Rust version: 1.85.0 or later
+- Minimum supported Rust version: 1.93.1 or later
 
 ## License
 

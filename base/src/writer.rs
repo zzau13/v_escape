@@ -44,7 +44,7 @@ pub trait Writer {
         // # SAFETY
         // Internal trait: Intensive testing and debug check for correctness
         let src = unsafe {
-            std::slice::from_raw_parts(start, (end as usize).wrapping_sub(start as usize))
+            alloc::slice::from_raw_parts(start, (end as usize).wrapping_sub(start as usize))
         };
         self.write_slice(src)
     }
