@@ -4,6 +4,8 @@
 
 set -euo pipefail
 
+# Dirname
+dirname=$(cd "$(dirname "$0")" && pwd)
 # Colors for output
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
@@ -111,17 +113,8 @@ main() {
     # uses the dashed convention. We tried renaming to `v_escape-codegen` in
     # 0.2.0 but crates.io rejected the upload with "crate was previously
     # named `v_escape_codegen`", so the underscore form is locked forever.
-    local packages=(
-        "v_escape-base"
-        "v_escape-codegen-base"
-        "v_escape_codegen"
-        "v_escape-proc-macro"
-        "v_escape"
-        "v_htmlescape"
-        "v_jsonescape"
-        "v_latexescape"
-    )
-    
+    local packages=$(sh $dirname/get-packages.sh)   
+
     echo
     echo "Package Version Comparison (local vs crates.io):"
     echo "================================================"
