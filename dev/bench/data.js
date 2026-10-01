@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790371890401,
+  "lastUpdate": 1790880308429,
   "repoUrl": "https://github.com/zzau13/v_escape",
   "entries": {
     "Benchmark": [
@@ -6188,6 +6188,104 @@ window.BENCHMARK_DATA = {
           {
             "name": "v_jsonescape/Escaping/very tiny",
             "value": 9,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/very tiny escaped",
+            "value": 8,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/ultra tiny",
+            "value": 10,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/ultra tiny escaped",
+            "value": 10,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/one",
+            "value": 9,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/one escaped",
+            "value": 9,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/empty",
+            "value": 3,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "zzau13",
+            "username": "zzau13"
+          },
+          "committer": {
+            "name": "zzau13",
+            "username": "zzau13"
+          },
+          "id": "49d3688d89158a423c77157c29ec4cb098cec6ac",
+          "message": "chore(deps): update dependency rust to v1.99.0",
+          "timestamp": "2026-08-23T12:25:44Z",
+          "url": "https://github.com/zzau13/v_escape/pull/187/commits/49d3688d89158a423c77157c29ec4cb098cec6ac"
+        },
+        "date": 1790880307748,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "v_jsonescape/Escaping/huge",
+            "value": 326342,
+            "range": "± 3054",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/huge escaped",
+            "value": 287942,
+            "range": "± 1522",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/small",
+            "value": 412,
+            "range": "± 18",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/small escaped",
+            "value": 283,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/tiny",
+            "value": 66,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/tiny escaped",
+            "value": 31,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/very tiny",
+            "value": 8,
             "range": "± 0",
             "unit": "ns/iter"
           },
