@@ -8,6 +8,7 @@ use crate::{
 
 // Adapted from https://github.com/BurntSushi/memchr/blob/master/src/arch/x86_64/avx2/memchr.rs
 /// Returns true if AVX2 is available in the current environment.
+#[inline(always)]
 pub fn is_available() -> bool {
     #[cfg(not(target_feature = "sse2"))]
     {

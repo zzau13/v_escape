@@ -23,7 +23,6 @@ name = "v_jsonescape"
 readme = "README.md"
 repository = "https://github.com/zzau13/v_escape"
 version = "0.9.0"
-workspace = ".."
 
 [package.metadata.docs.rs]
 all-features = true

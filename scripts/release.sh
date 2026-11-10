@@ -5,6 +5,8 @@
 
 set -euo pipefail
 
+# Dirname
+dirname=$(cd "$(dirname "$0")" && pwd)
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -60,7 +62,7 @@ check_dependencies() {
 # Validate package name - using actual workspace package names
 validate_package() {
     local package=$1
-    local valid_packages=("v_escape-base" "v_escape-codegen-base" "v_escape_codegen" "v_escape-proc-macro" "v_escape" "v_htmlescape" "v_jsonescape" "v_latexescape")
+    local valid_packages=$(sh $dirname/get-packages.sh)   
     
     for valid_pkg in "${valid_packages[@]}"; do
         if [[ "$package" == "$valid_pkg" ]]; then
