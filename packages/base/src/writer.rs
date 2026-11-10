@@ -58,6 +58,7 @@ pub trait Writer {
 /// [`Writer`] implementation that appends bytes to a borrowed [`alloc::vec::Vec`].
 #[cfg(feature = "alloc")]
 #[repr(transparent)]
+#[allow(clippy::redundant_field_names)]
 #[derive(new)]
 pub struct WriterVec<'a> {
     inner: &'a mut alloc::vec::Vec<u8>,
@@ -77,6 +78,7 @@ impl Writer for WriterVec<'_> {
 /// [`Writer`] implementation that forwards bytes to a [`core::fmt::Formatter`].
 #[cfg(feature = "fmt")]
 #[repr(transparent)]
+#[allow(clippy::redundant_field_names)]
 #[derive(new)]
 pub struct WriterFMT<'a, 'b> {
     inner: &'a mut core::fmt::Formatter<'b>,
