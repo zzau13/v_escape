@@ -375,10 +375,12 @@ mod x86avx2 {
             unsafe { _mm256_or_si256(self, vector2) }
         }
 
+        #[inline(always)]
         fn add(self, vector2: Self) -> Self {
             unsafe { _mm256_add_epi8(self, vector2) }
         }
 
+        #[inline(always)]
         fn gt(self, vector2: Self) -> Self {
             unsafe { _mm256_cmpgt_epi8(self, vector2) }
         }

@@ -67,6 +67,7 @@ pub struct WriterVec<'a> {
 impl Writer for WriterVec<'_> {
     type Error = ();
 
+    #[inline(always)]
     fn write_slice(&mut self, src: &[u8]) -> Result<Self::Error> {
         self.inner.extend_from_slice(src);
         Ok(())

@@ -63,8 +63,9 @@ get_crates_version() {
     
     # Try to get version from crates.io API
     local response
-    response=$(curl -s "https://crates.io/api/v1/crates/$package" 2>/dev/null || echo "")
+    response=$(curl -H "User-Agent: check versions script (mhpoin@gmail.com)" -s "https://crates.io/api/v1/crates/$package" 2>/dev/null || echo "")
     
+    echo $response
     if [[ -n "$response" ]]; then
         local version
         version=$(echo "$response" | jq -r '.crate.max_version // "not_found"' 2>/dev/null)

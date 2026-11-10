@@ -7,6 +7,7 @@ use crate::{
 };
 
 /// Returns true if SSE2 is available in the current environment.
+#[inline(always)]
 pub fn is_available() -> bool {
     #[cfg(target_feature = "sse2")]
     {
