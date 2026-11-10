@@ -60,8 +60,11 @@
 //! | Function | Feature | Signature |
 //! | -------- | ------- | --------- |
 //! | `escape_string` | `string` | `fn(&str, &mut String)` |
-//! | `escape_bytes`  | `bytes`  | `fn(&str, &mut Vec<u8>)` |
+//! | `escape_bytes`  | `bytes`  | `fn(&[u8], &mut Vec<u8>)` |
 //! | `escape_fmt`    | `fmt`    | `fn(&str) -> impl Display + '_` |
+//!
+//! `escape_bytes` preserves bytes not present in the escape table, including
+//! bytes that are not valid UTF-8.
 //!
 //! At runtime the implementation dispatches to the best SIMD backend
 //! available on the current CPU (AVX2/SSE2 on x86_64, NEON on aarch64,

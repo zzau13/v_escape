@@ -250,8 +250,13 @@ fn render_module_doc(crate_name: &str, mappings: &[(u8, String)]) -> String {
         "//! | Function | Feature | Signature |\n\
          //! | -------- | ------- | --------- |\n\
          //! | `escape_string` | `string` | `fn(&str, &mut String)` |\n\
-         //! | `escape_bytes`  | `bytes`  | `fn(&str, &mut Vec<u8>)` |\n\
+         //! | `escape_bytes`  | `bytes`  | `fn(&[u8], &mut Vec<u8>)` |\n\
          //! | `escape_fmt`    | `fmt`    | `fn(&str) -> impl Display + '_` |\n",
+    );
+    out.push_str("//!\n");
+    out.push_str(
+        "//! `escape_bytes` preserves bytes not present in the escape table, including\n\
+         //! bytes that are not valid UTF-8.\n",
     );
     out.push_str("//!\n");
     out.push_str(

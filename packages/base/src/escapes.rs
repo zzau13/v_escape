@@ -64,7 +64,7 @@ pub trait Escapes: Copy + fmt::Debug {
     /// The position of the character.
     fn position(c: u8) -> usize;
 
-    /// Escapes a string by applying escape sequences and writing the result using a writer.
+    /// Escapes bytes by applying escape sequences and writing the result using a writer.
     ///
     /// # Parameters
     /// - `haystack`: The input string to be processed for escape sequences.
@@ -73,7 +73,7 @@ pub trait Escapes: Copy + fmt::Debug {
     /// # Returns
     /// A `Result` indicating the success or failure of the escape operation.
     #[inline(always)]
-    fn byte_byte_escape<W: Writer>(haystack: &str, mut writer: W) -> Result<W::Error> {
+    fn byte_byte_escape<W: Writer>(haystack: &[u8], mut writer: W) -> Result<W::Error> {
         let len = haystack.len();
         let start = haystack.as_ptr();
         unsafe { Self::byte_byte_escape_raw(start, start.add(len), &mut writer) }

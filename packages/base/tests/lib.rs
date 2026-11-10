@@ -60,8 +60,16 @@ mod no_false_positive {
     fn test_escape_bytes_vec() {
         let mut buffer = Vec::new();
         let haystack = "a".repeat(64);
-        escape_bytes(&haystack, &mut buffer);
+        escape_bytes(haystack.as_bytes(), &mut buffer);
         assert_eq!(buffer, "foo".repeat(64).as_bytes());
+    }
+
+    #[test]
+    fn test_escape_arbitrary_bytes() {
+        let mut buffer = Vec::new();
+        let haystack = [0xff, b'a', 0xed, 0xa0, 0x80];
+        escape_bytes(&haystack, &mut buffer);
+        assert_eq!(buffer, [0xff, b'f', b'o', b'o', 0xed, 0xa0, 0x80]);
     }
 
     #[test]
@@ -85,7 +93,7 @@ mod no_false_positive {
     #[test]
     fn test_empty_bytes() {
         let mut buffer = Vec::new();
-        escape_bytes("", &mut buffer);
+        escape_bytes(b"", &mut buffer);
         assert_eq!(buffer, b"");
     }
 
@@ -105,7 +113,7 @@ mod no_false_positive {
     fn test_no_escapes_bytes() {
         let mut buffer = Vec::new();
         let haystack = "hello world";
-        escape_bytes(haystack, &mut buffer);
+        escape_bytes(haystack.as_bytes(), &mut buffer);
         assert_eq!(buffer, haystack.as_bytes());
     }
 
@@ -123,7 +131,7 @@ mod no_false_positive {
     #[test]
     fn test_single_character_bytes() {
         let mut buffer = Vec::new();
-        escape_bytes("a", &mut buffer);
+        escape_bytes(b"a", &mut buffer);
         assert_eq!(buffer, b"foo");
     }
 
@@ -143,7 +151,7 @@ mod no_false_positive {
     fn test_mixed_content_bytes() {
         let mut buffer = Vec::new();
         let haystack = "hello a world a test";
-        escape_bytes(haystack, &mut buffer);
+        escape_bytes(haystack.as_bytes(), &mut buffer);
         assert_eq!(buffer, "hello foo world foo test".as_bytes());
     }
 
@@ -163,7 +171,7 @@ mod no_false_positive {
     fn test_consecutive_escapes_bytes() {
         let mut buffer = Vec::new();
         let haystack = "aaa";
-        escape_bytes(haystack, &mut buffer);
+        escape_bytes(haystack.as_bytes(), &mut buffer);
         assert_eq!(buffer, b"foofoofoo");
     }
 
@@ -183,7 +191,7 @@ mod no_false_positive {
     fn test_escape_at_beginning_bytes() {
         let mut buffer = Vec::new();
         let haystack = "ahello";
-        escape_bytes(haystack, &mut buffer);
+        escape_bytes(haystack.as_bytes(), &mut buffer);
         assert_eq!(buffer, b"foohello");
     }
 
@@ -203,7 +211,7 @@ mod no_false_positive {
     fn test_escape_at_end_bytes() {
         let mut buffer = Vec::new();
         let haystack = "helloa";
-        escape_bytes(haystack, &mut buffer);
+        escape_bytes(haystack.as_bytes(), &mut buffer);
         assert_eq!(buffer, b"hellofoo");
     }
 
@@ -223,7 +231,7 @@ mod no_false_positive {
     fn test_large_bytes() {
         let mut buffer = Vec::new();
         let haystack = "a".repeat(1000);
-        escape_bytes(&haystack, &mut buffer);
+        escape_bytes(haystack.as_bytes(), &mut buffer);
         assert_eq!(buffer, "foo".repeat(1000).as_bytes());
     }
 
@@ -233,14 +241,14 @@ mod no_false_positive {
         use std::borrow::Cow;
 
         let mut buffer = String::new();
-        let cow_owned = Cow::Owned("a".to_string());
+        let cow_owned: Cow<'_, str> = Cow::Owned("a".to_string());
         escape_string(&cow_owned, &mut buffer);
         assert_eq!(buffer, "foo");
 
         let result = escape_fmt(&cow_owned).to_string();
         assert_eq!(result, "foo");
 
-        let cow_borrowed = Cow::Borrowed("a");
+        let cow_borrowed: Cow<'_, str> = Cow::Borrowed("a");
         let mut buffer2 = String::new();
         escape_string(&cow_borrowed, &mut buffer2);
         assert_eq!(buffer2, "foo");
@@ -254,13 +262,13 @@ mod no_false_positive {
         use std::borrow::Cow;
 
         let mut buffer = Vec::new();
-        let cow_owned = Cow::Owned("a".to_string());
-        escape_bytes(&cow_owned, &mut buffer);
+        let cow_owned: Cow<'_, str> = Cow::Owned("a".to_string());
+        escape_bytes(cow_owned.as_bytes(), &mut buffer);
         assert_eq!(buffer, b"foo");
 
-        let cow_borrowed = Cow::Borrowed("a");
+        let cow_borrowed: Cow<'_, str> = Cow::Borrowed("a");
         let mut buffer2 = Vec::new();
-        escape_bytes(&cow_borrowed, &mut buffer2);
+        escape_bytes(cow_borrowed.as_bytes(), &mut buffer2);
         assert_eq!(buffer2, b"foo");
     }
 
@@ -269,7 +277,7 @@ mod no_false_positive {
     fn test_byte_byte_escape() {
         let mut buffer = String::new();
         let writer = WriterVec::new(unsafe { buffer.as_mut_vec() });
-        let result = Equal::<()>::byte_byte_escape("a", writer);
+        let result = Equal::<()>::byte_byte_escape(b"a", writer);
         assert!(result.is_ok());
         assert_eq!(buffer, "foo");
     }
@@ -317,19 +325,19 @@ mod no_false_positive {
         // String
         let mut buffer = Vec::new();
         let string = String::from("a");
-        escape_bytes(&string, &mut buffer);
+        escape_bytes(string.as_bytes(), &mut buffer);
         assert_eq!(buffer, b"foo");
 
         // &str
         let mut buffer2 = Vec::new();
         let str_ref = "a";
-        escape_bytes(str_ref, &mut buffer2);
+        escape_bytes(str_ref.as_bytes(), &mut buffer2);
         assert_eq!(buffer2, b"foo");
 
         // Box<str>
         let mut buffer3 = Vec::new();
         let boxed_str = "a".to_string().into_boxed_str();
-        escape_bytes(&boxed_str, &mut buffer3);
+        escape_bytes(boxed_str.as_bytes(), &mut buffer3);
         assert_eq!(buffer3, b"foo");
     }
 
@@ -362,7 +370,7 @@ mod no_false_positive {
     fn test_unicode_characters_bytes() {
         let mut buffer = Vec::new();
         let haystack = "a🚀a";
-        escape_bytes(haystack, &mut buffer);
+        escape_bytes(haystack.as_bytes(), &mut buffer);
         assert_eq!(buffer, "foo🚀foo".as_bytes());
     }
 
@@ -382,7 +390,7 @@ mod no_false_positive {
     fn test_emoji_and_special_chars_bytes() {
         let mut buffer = Vec::new();
         let haystack = "a🎉🌟a";
-        escape_bytes(haystack, &mut buffer);
+        escape_bytes(haystack.as_bytes(), &mut buffer);
         assert_eq!(buffer, "foo🎉🌟foo".as_bytes());
     }
 
@@ -402,7 +410,7 @@ mod no_false_positive {
     fn test_very_long_bytes() {
         let mut buffer = Vec::new();
         let haystack = "a".repeat(10000);
-        escape_bytes(&haystack, &mut buffer);
+        escape_bytes(haystack.as_bytes(), &mut buffer);
         assert_eq!(buffer, "foo".repeat(10000).as_bytes());
     }
 
@@ -427,7 +435,7 @@ mod no_false_positive {
         for size in [16, 32, 64, 128] {
             let mut buffer = Vec::new();
             let haystack = "a".repeat(size);
-            escape_bytes(&haystack, &mut buffer);
+            escape_bytes(haystack.as_bytes(), &mut buffer);
             assert_eq!(buffer, "foo".repeat(size).as_bytes());
         }
     }
@@ -451,7 +459,7 @@ mod no_false_positive {
         for size in 1..16 {
             let mut buffer = Vec::new();
             let haystack = "a".repeat(size);
-            escape_bytes(&haystack, &mut buffer);
+            escape_bytes(haystack.as_bytes(), &mut buffer);
             assert_eq!(buffer, "foo".repeat(size).as_bytes());
         }
     }
@@ -493,7 +501,7 @@ mod no_false_positive {
 
         for (input, expected) in test_cases {
             let mut buffer = Vec::new();
-            escape_bytes(input, &mut buffer);
+            escape_bytes(input.as_bytes(), &mut buffer);
             assert_eq!(buffer, expected.as_bytes(), "Failed for input: {:?}", input);
         }
     }
@@ -519,7 +527,7 @@ mod no_false_positive {
 
         for test_str in test_strings {
             let mut buffer = Vec::new();
-            escape_bytes(test_str, &mut buffer);
+            escape_bytes(test_str.as_bytes(), &mut buffer);
             assert_eq!(
                 buffer,
                 test_str.as_bytes(),
@@ -545,7 +553,7 @@ mod no_false_positive {
     fn test_only_escape_chars_bytes() {
         let mut buffer = Vec::new();
         let haystack = "a".repeat(10);
-        escape_bytes(&haystack, &mut buffer);
+        escape_bytes(haystack.as_bytes(), &mut buffer);
         assert_eq!(buffer, "foo".repeat(10).as_bytes());
     }
 
@@ -574,7 +582,7 @@ mod no_false_positive {
         for size in sizes {
             let mut buffer = Vec::new();
             let haystack = "a".repeat(size);
-            escape_bytes(&haystack, &mut buffer);
+            escape_bytes(haystack.as_bytes(), &mut buffer);
             assert_eq!(
                 buffer,
                 "foo".repeat(size).as_bytes(),
@@ -615,7 +623,7 @@ mod no_false_positive {
 
         for (input, expected) in test_cases {
             let mut buffer = Vec::new();
-            escape_bytes(input, &mut buffer);
+            escape_bytes(input.as_bytes(), &mut buffer);
             assert_eq!(buffer, expected.as_bytes(), "Failed for input: {:?}", input);
         }
     }
@@ -651,7 +659,7 @@ mod no_false_positive {
 
         for (input, expected) in test_cases {
             let mut buffer = Vec::new();
-            escape_bytes(input, &mut buffer);
+            escape_bytes(input.as_bytes(), &mut buffer);
             assert_eq!(buffer, expected.as_bytes(), "Failed for input: {:?}", input);
         }
     }
@@ -687,7 +695,7 @@ mod no_false_positive {
 
         for (input, expected) in test_cases {
             let mut buffer = Vec::new();
-            escape_bytes(input, &mut buffer);
+            escape_bytes(input.as_bytes(), &mut buffer);
             assert_eq!(buffer, expected.as_bytes(), "Failed for input: {:?}", input);
         }
     }
@@ -727,7 +735,7 @@ mod no_false_positive {
 
         for (input, expected) in test_cases {
             let mut buffer = Vec::new();
-            escape_bytes(input, &mut buffer);
+            escape_bytes(input.as_bytes(), &mut buffer);
             assert_eq!(buffer, expected.as_bytes(), "Failed for input: {:?}", input);
         }
     }
@@ -806,7 +814,7 @@ mod false_positive {
     fn test_false_positive_bytes() {
         let mut buffer = Vec::new();
         let haystack = ">".to_string() + &"foobar".repeat(100) + "<";
-        escape_bytes(&haystack, &mut buffer);
+        escape_bytes(haystack.as_bytes(), &mut buffer);
         assert_eq!(
             buffer,
             ("&gt;".to_string() + &"foobar".repeat(100) + "&lt;").as_bytes()
@@ -836,7 +844,7 @@ mod false_positive {
             );
 
             let mut buffer_bytes = Vec::new();
-            escape_bytes(&input, &mut buffer_bytes);
+            escape_bytes(input.as_bytes(), &mut buffer_bytes);
             assert_eq!(
                 buffer_bytes,
                 expected_escape.as_bytes(),
@@ -877,7 +885,7 @@ mod false_positive {
         assert_eq!(buffer, expected);
 
         let mut buffer_bytes = Vec::new();
-        escape_bytes(input, &mut buffer_bytes);
+        escape_bytes(input.as_bytes(), &mut buffer_bytes);
         assert_eq!(buffer_bytes, expected.as_bytes());
     }
 }

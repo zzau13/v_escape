@@ -19,6 +19,7 @@ macro_rules! ifun {
         $name:ident,
         $writer_builder:path,
         $builder:ty,
+        $input:ty,
         $buffer:ty
         $(,$retty:ty)?
     ) => {
@@ -31,11 +32,11 @@ macro_rules! ifun {
         ///
         /// See the crate-level documentation for the table of characters that
         /// get rewritten and their replacements.
-        pub fn $name(haystack: &str, buffer: &mut $buffer) $(-> $retty)? {
+        pub fn $name(haystack: $input, buffer: &mut $buffer) $(-> $retty)? {
             use core::sync::atomic::{AtomicPtr, Ordering};
 
             type Fn = *mut ();
-            type RealFn = fn(haystack: &str, buffer: &mut $buffer) $(-> $retty)?;
+            type RealFn = fn(haystack: $input, buffer: &mut $buffer) $(-> $retty)?;
             static FN: AtomicPtr<()> = AtomicPtr::new(detect as Fn);
 
             $writer_builder!(
@@ -65,7 +66,7 @@ macro_rules! ifun {
                 $builder
             );
 
-            unsafe fn detect(haystack: &str, buffer: &mut $buffer) $(-> $retty)? {
+            unsafe fn detect(haystack: $input, buffer: &mut $buffer) $(-> $retty)? {
                 let fun = {
                     #[cfg(not(target_feature = "sse2"))]
                     {
@@ -120,6 +121,7 @@ macro_rules! escape_builder {
                 escape_fmt_internal,
                 $crate::builder_fmt,
                 $builder,
+                &str,
                 core::fmt::Formatter<'_>,
                 core::fmt::Result
             ),
@@ -130,6 +132,7 @@ macro_rules! escape_builder {
             escape_string,
             $crate::builder_string,
             $builder,
+            &str,
             String
         ));
 
@@ -137,6 +140,7 @@ macro_rules! escape_builder {
             escape_bytes,
             $crate::builder_bytes,
             $builder,
+            &[u8],
             Vec<u8>
         ));
     };

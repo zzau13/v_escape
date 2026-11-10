@@ -273,8 +273,15 @@ mod bytes {
     use v_latexescape::escape_bytes;
     fn result(haystack: &str) -> String {
         let mut buf = Vec::new();
-        escape_bytes(haystack, &mut buf);
+        escape_bytes(haystack.as_bytes(), &mut buf);
         String::from_utf8(buf).unwrap()
+    }
+    #[test]
+    fn preserves_non_utf8_bytes() {
+        let input = [0xff, 0xed, 0xa0, 0x80];
+        let mut output = Vec::new();
+        escape_bytes(&input, &mut output);
+        assert_eq!(output, input);
     }
     #[test]
     fn tests() {
