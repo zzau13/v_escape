@@ -173,6 +173,7 @@ impl MoveMask for SensibleMoveMask {
         self.0 != 0
     }
 
+    #[inline(always)]
     fn shr(self, rhs: u32) -> Self {
         // Endianness is not relevant here because the mask always uses
         // first_offset to compute the offset.
@@ -219,6 +220,7 @@ impl Vector for () {
         unreachable!()
     }
 
+    #[inline(always)]
     unsafe fn store(self, _data: *mut u8) {
         unreachable!()
     }
@@ -611,10 +613,12 @@ mod wasm_simd128 {
             v128_or(self, vector2)
         }
 
+        #[inline(always)]
         fn add(self, vector2: Self) -> Self {
             i8x16_add(self, vector2)
         }
 
+        #[inline(always)]
         fn gt(self, vector2: Self) -> Self {
             i8x16_gt(self, vector2)
         }

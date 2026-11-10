@@ -21,6 +21,7 @@ pub(crate) trait Pointer {
 }
 
 impl<T> Pointer for *const T {
+    #[inline(always)]
     unsafe fn distance(self, origin: *const T) -> usize {
         unsafe {
             // TODO: Replace with `ptr::sub_ptr` once stabilized.
@@ -28,6 +29,7 @@ impl<T> Pointer for *const T {
         }
     }
 
+    #[inline(always)]
     fn to_usize(self) -> usize {
         self as usize
     }
