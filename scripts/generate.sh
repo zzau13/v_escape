@@ -2,10 +2,12 @@
 
 set -xe
 
-cargo install --path codegen
+repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+cd "$repo_root"
+
 for i in v_latexescape v_jsonescape v_htmlescape; do
-  ~/.cargo/bin/v_escape_codegen -i $i
+  cargo run --manifest-path packages/codegen/Cargo.toml -- -i "packages/$i"
 done
 
-cargo fmt
-cargo test --all-features
+cargo fmt --all
+cargo test --workspace --all-features

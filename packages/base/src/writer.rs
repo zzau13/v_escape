@@ -130,12 +130,8 @@ pub(crate) unsafe fn write_slice<W: Writer>(
     end: *const u8,
     writer: &mut W,
 ) -> Result<W::Error> {
-    unsafe {
-        write(
-            str::from_utf8_unchecked(slice::from_raw_parts(start, end.distance(start))),
-            writer,
-        )
-    }
+    let src = unsafe { slice::from_raw_parts(start, end.distance(start)) };
+    writer.write_slice(src)
 }
 
 /// A macro for creating a builder function that appends a string to a `String`.
@@ -159,7 +155,7 @@ macro_rules! builder_fmt {
         fn $name<'a>(haystack: &str, buffer: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
             use $fn;
             let writer = $crate::writer::WriterFMT::new(buffer);
-            $fn_name::<$builder, _>(haystack, writer)
+            $fn_name::<$builder, _>(haystack.as_bytes(), writer)
         }
     };
 }
@@ -245,7 +241,7 @@ macro_rules! builder_string {
             let vec = unsafe { buffer.as_mut_vec() };
             let writer = $crate::writer::WriterVec::new(vec);
 
-            let _ = $fn_name::<$builder, _>(haystack, writer);
+            let _ =             $fn_name::<$builder, _>(haystack.as_bytes(), writer);
         }
     };
 }
@@ -266,7 +262,7 @@ macro_rules! struct_string {
     ($($tt:tt)*) => {};
 }
 
-/// A macro for creating a builder function that appends a Vector to a `Vector`.
+/// A macro for creating a builder function that appends escaped bytes to a `Vec<u8>`.
 /// implement: `writer_builder!(Function Name, Function Path, Function External Name, Builder Struct Type, ...Attributes)`.
 ///
 /// # Parameters
@@ -283,17 +279,16 @@ macro_rules! builder_bytes {
         $crate::builder_bytes!($name, $fn, $fn_name, $builder,);
     };
     ($name:ident, $fn:path, $fn_name:ident, $builder:ty, $($attr:tt)*) => {
-        /// Escapes `haystack` and appends the resulting UTF-8 bytes to `buffer`.
+        /// Escapes `haystack` and appends the resulting bytes to `buffer`.
         ///
-        /// `haystack` is required to be a valid `&str` so the escaped output is
-        /// itself guaranteed to be valid UTF-8. The function never clears
-        /// `buffer`; callers that want a fresh result should pass an empty
-        /// `Vec`.
+        /// Bytes not present in the escape table are forwarded unchanged, even
+        /// when they are not valid UTF-8. The function never clears `buffer`;
+        /// callers that want a fresh result should pass an empty `Vec`.
         ///
         /// See the crate-level documentation for the table of characters that
         /// get rewritten and their replacements.
         $($attr)*
-        pub fn $name(haystack: &str, buffer: &mut Vec<u8>) {
+        pub fn $name(haystack: &[u8], buffer: &mut Vec<u8>) {
             use $fn;
             let writer = $crate::writer::WriterVec::new(buffer);
             let _ = $fn_name::<$builder, _>(haystack, writer);

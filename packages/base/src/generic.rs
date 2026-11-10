@@ -33,7 +33,7 @@ where
         Generic { escapes }
     }
 
-    /// Escapes the input string by applying the escape sequences defined in the `Escapes` trait.
+    /// Escapes the input bytes using the escape sequences defined in the `Escapes` trait.
     ///
     /// # Parameters
     /// - `haystack`: The input string to be processed for escape sequences.
@@ -42,7 +42,7 @@ where
     /// # Returns
     /// A `Result` indicating the success or failure of the escape operation.
     #[inline(always)]
-    pub(crate) fn escape<W: Writer>(&mut self, haystack: &str, mut writer: W) -> Result<W::Error> {
+    pub(crate) fn escape<W: Writer>(&mut self, haystack: &[u8], mut writer: W) -> Result<W::Error> {
         let len = haystack.len();
         let cur = haystack.as_ptr();
         unsafe { self.escape_raw(cur, cur.add(len), &mut writer) }

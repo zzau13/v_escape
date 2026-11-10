@@ -6,14 +6,14 @@ use crate::{
 /// A function that performs escape operations using fallback implementation.
 ///
 /// # Parameters
-/// - `haystack`: The input string to be escaped.
+/// - `haystack`: The input bytes to be escaped.
 /// - `writer`: The writer function.
 ///
 /// # Returns
 /// A result indicating success or failure of the escape operation.
 #[inline(always)]
 pub fn escape_fallback<E: EscapesBuilder, W: Writer>(
-    haystack: &str,
+    haystack: &[u8],
     writer: W,
 ) -> Result<W::Error> {
     // TODO: implement "1.21 Scanning for zero bytes" from Matters Computational by J. Arndt

@@ -46,6 +46,9 @@ Generate a new crate with `escape_fmt` and `escape_string` functions.
 - `bytes`: Enables the `escape_bytes` function.
 - `std`: Enables the `std` library features.
 
+The generated `escape_bytes` function accepts `&[u8]` and preserves bytes that
+are not present in the escape table, including non-UTF-8 bytes.
+
 ## Documentation
 
 - Minimum supported Rust version: 1.93.1 or later

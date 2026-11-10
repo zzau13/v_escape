@@ -12,6 +12,10 @@ Base crate for v_escape. This crate provides the core SIMD-optimized escape func
 - `fmt`: Enables the `escape_fmt` function
 - `bytes`: Enables the `escape_bytes` function
 
+`escape_bytes` accepts an arbitrary `&[u8]` and appends the escaped bytes to a
+`Vec<u8>`. Bytes not present in the escape table, including non-UTF-8 bytes, are
+preserved unchanged.
+
 ## Documentation
 
 - Minimum supported Rust version: 1.93.1 or later
