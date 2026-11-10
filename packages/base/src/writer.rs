@@ -28,6 +28,9 @@ use derive_new::new;
 pub(crate) type Result<Err> = BResult<(), Err>;
 
 /// Sink abstraction that escape routines append output to.
+/// # SAFETY
+/// This trait is only used internally
+/// Not use this trait
 pub trait Writer {
     /// Error type returned by [`Writer::write_str`].
     type Error;
@@ -39,6 +42,7 @@ pub trait Writer {
     /// # SAFETY
     /// This function is only used internally
     /// Not use this trait
+    #[inline(always)]
     unsafe fn write_ptr(&mut self, start: *const u8, end: *const u8) -> Result<Self::Error> {
         debug_assert!(start < end);
         // # SAFETY
@@ -50,6 +54,7 @@ pub trait Writer {
     }
 
     /// Appends the contents of `src` to the writer.
+    #[inline(always)]
     fn write_str(&mut self, src: &str) -> Result<Self::Error> {
         self.write_slice(src.as_bytes())
     }
@@ -88,6 +93,7 @@ pub struct WriterFMT<'a, 'b> {
 impl Writer for WriterFMT<'_, '_> {
     type Error = fmt::Error;
 
+    #[inline(always)]
     fn write_slice(&mut self, src: &[u8]) -> Result<Self::Error> {
         // SAFETY: Internal trait, only used for valid UTF-8 slices.
         unsafe { self.write_str(str::from_utf8_unchecked(src)) }
@@ -241,7 +247,7 @@ macro_rules! builder_string {
             let vec = unsafe { buffer.as_mut_vec() };
             let writer = $crate::writer::WriterVec::new(vec);
 
-            let _ =             $fn_name::<$builder, _>(haystack.as_bytes(), writer);
+            let _ = $fn_name::<$builder, _>(haystack.as_bytes(), writer);
         }
     };
 }
