@@ -121,7 +121,7 @@ jobs:
           - target-feature: +simd128
     env:
       # The version of wasmtime to download and install.
-      WASMTIME_VERSION: 30.0.2
+      WASMTIME_VERSION: 50.0.1
       CARGO_BUILD_TARGET: wasm32-wasip2
       RUSTFLAGS: -Ctarget-feature=${{ matrix.target-feature }}
       CARGO_TARGET_WASM32_WASIP2_RUNNER: wasmtime run --wasm simd --
