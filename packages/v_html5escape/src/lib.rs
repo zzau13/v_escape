@@ -80,6 +80,7 @@ impl<V: Vector> Escapes for Escape<V> {
     const FALSE_POSITIVE: bool = true;
     type Vector = V;
     // TODO: implement this feature in code generator
+    // Based in https://github.com/rust-sailfish/sailfish/blob/main/sailfish/src/runtime/escape/avx2.rs mask
     #[inline(always)]
     fn masking(&self, vector2: V) -> V {
         vector2
