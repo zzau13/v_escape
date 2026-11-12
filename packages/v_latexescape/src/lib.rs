@@ -95,6 +95,7 @@ struct Escape<V: Vector> {
 struct Builder;
 impl EscapesBuilder for Builder {
     type Escapes<V: Vector> = Escape<V>;
+    #[inline(always)]
     fn new<V: Vector>() -> Self::Escapes<V> {
         Self::Escapes {
             translation_a: V::splat(65i8 as u8),

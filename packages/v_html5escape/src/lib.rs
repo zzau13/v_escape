@@ -69,6 +69,7 @@ struct Escape<V: Vector> {
 struct Builder;
 impl EscapesBuilder for Builder {
     type Escapes<V: Vector> = Escape<V>;
+    #[inline(always)]
     fn new<V: Vector>() -> Self::Escapes<V> {
         Self::Escapes {
             independent_a: V::splat(5),

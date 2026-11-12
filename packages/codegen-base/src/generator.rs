@@ -208,6 +208,7 @@ impl Generator<'_> {
         impl EscapesBuilder for Builder {
             type Escapes<V: Vector> = Escape<V>;
 
+            #[inline(always)]
             fn new<V: Vector>() -> Self::Escapes<V> {
                 #build
             }
