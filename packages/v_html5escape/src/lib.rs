@@ -1,0 +1,104 @@
+//! # `v_html5escape`
+//!
+//! ## Behavior
+//!
+//! Each call rewrites the characters listed in the table below into their
+//! replacement string; every other byte of the input is forwarded verbatim.
+//! String and formatting entry points take a `&str`; `escape_bytes` accepts
+//! `&[u8]` and preserves non-escaped bytes, including invalid UTF-8.
+//!
+//! ## Escape table
+//!
+//! | Byte (hex) | Source | Replacement |
+//! | ---------- | ------ | ----------- |
+//! | `0x22` | `"` | `&quot;` |
+//! | `0x26` | `&` | `&amp;` |
+//! | `0x27` | `'` | `&#x27;` |
+//! | `0x3C` | `<` | `&lt;` |
+//! | `0x3E` | `>` | `&gt;` |
+//!
+//! ## Public API
+//!
+//! The following functions are emitted, gated by their respective Cargo
+//! features (all enabled by default):
+//!
+//! | Function | Feature | Signature |
+//! | -------- | ------- | --------- |
+//! | `escape_string` | `string` | `fn(&str, &mut String)` |
+//! | `escape_bytes`  | `bytes`  | `fn(&[u8], &mut Vec<u8>)` |
+//! | `escape_fmt`    | `fmt`    | `fn(&str) -> impl Display + '_` |
+//!
+//! `escape_bytes` preserves bytes not present in the escape table, including
+//! bytes that are not valid UTF-8.
+//!
+//! At runtime the implementation dispatches to the best SIMD backend
+//! available on the current CPU (AVX2/SSE2 on x86_64, NEON on aarch64,
+//! `simd128` on wasm32) and falls back to a scalar loop otherwise.
+//!
+static V_ESCAPE_CHARS: [u8; 256] = [
+    5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8,
+    5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 0u8, 5u8, 5u8, 5u8,
+    1u8, 2u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8,
+    5u8, 5u8, 5u8, 3u8, 5u8, 4u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8,
+    5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8,
+    5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8,
+    5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8,
+    5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8,
+    5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8,
+    5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8,
+    5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8,
+    5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8,
+    5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8,
+    5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8, 5u8,
+];
+static V_ESCAPE_QUOTES: [&str; 5usize] = ["&quot;", "&amp;", "&#x27;", "&lt;", "&gt;"];
+const V_ESCAPE_LEN: usize = 5usize;
+use v_escape_base::{Escapes, EscapesBuilder, Vector, escape_builder};
+#[derive(Debug, Clone, Copy)]
+struct Escape<V: Vector> {
+    independent_a: V,
+    independent_b: V,
+    key_a: V,
+    key_b: V,
+}
+#[allow(dead_code)]
+struct Builder;
+impl EscapesBuilder for Builder {
+    type Escapes<V: Vector> = Escape<V>;
+    #[inline(always)]
+    fn new<V: Vector>() -> Self::Escapes<V> {
+        Self::Escapes {
+            independent_a: V::splat(5),
+            independent_b: V::splat(2),
+            key_a: V::splat(0x27),
+            key_b: V::splat(0x3e),
+        }
+    }
+}
+impl<V: Vector> Escapes for Escape<V> {
+    const ESCAPE_LEN: usize = 5usize;
+    const FALSE_POSITIVE: bool = true;
+    type Vector = V;
+    // TODO: implement this feature in code generator
+    // Based in https://github.com/rust-sailfish/sailfish/blob/main/sailfish/src/runtime/escape/avx2.rs mask
+    #[inline(always)]
+    fn masking(&self, vector2: V) -> V {
+        vector2
+            .or(self.independent_a)
+            .cmpeq(self.key_a)
+            .or(vector2.or(self.independent_b).cmpeq(self.key_b))
+    }
+    #[inline(always)]
+    fn escape(i: usize) -> &'static str {
+        V_ESCAPE_QUOTES[i]
+    }
+    #[inline(always)]
+    fn position(i: u8) -> usize {
+        V_ESCAPE_CHARS[i as usize] as usize
+    }
+    #[inline(always)]
+    fn byte_byte_compare(c: u8) -> bool {
+        (V_ESCAPE_CHARS[c as usize] as usize) < V_ESCAPE_LEN
+    }
+}
+escape_builder!(Builder);

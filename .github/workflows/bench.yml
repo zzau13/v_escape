@@ -34,6 +34,7 @@ jobs:
           RUSTFLAGS: -C target-cpu=native
         run: |
           cargo bench -p benches --bench v_jsonescape -- --output-format bencher | tee output.txt
+          cargo bench -p benches --bench v_html5escape -- --output-format bencher | tee -a output.txt
 
       - name: Compare benchmark results and comment
         # Fork PRs have a read-only token, so skip alert/comment publishing there.

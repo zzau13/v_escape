@@ -10,7 +10,6 @@ cargo-fuzz = true
 
 [dependencies]
 libfuzzer-sys = "0.4"
-bytes = "1.11.1"
 
 [dependencies.v_jsonescape]
 path = ".."

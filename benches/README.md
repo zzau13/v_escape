@@ -13,6 +13,7 @@ cargo bench
 This will run benchmarks for:
 
 - v_htmlescape
+- v_html5escape
 - v_jsonescape
 - v_latexescape
 

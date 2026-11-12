@@ -222,8 +222,8 @@ fn render_module_doc(crate_name: &str, mappings: &[(u8, String)]) -> String {
     out.push_str(
         "//! Each call rewrites the characters listed in the table below into their\n\
          //! replacement string; every other byte of the input is forwarded verbatim.\n\
-         //! All public entry points take a `&str` (UTF-8 guaranteed at the type level),\n\
-         //! so they cannot be used to construct invalid UTF-8.\n",
+         //! String and formatting entry points take a `&str`; `escape_bytes` accepts\n\
+         //! `&[u8]` and preserves non-escaped bytes, including invalid UTF-8.\n",
     );
     out.push_str("//!\n");
     out.push_str("//! ## Escape table\n");

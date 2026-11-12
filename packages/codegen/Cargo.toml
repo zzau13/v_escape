@@ -1,6 +1,6 @@
 [package]
 name = "v_escape_codegen"
-version = "0.2.1"
+version = "1.0.0"
 authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "Code generator package for v_escape"
 edition = "2024"
@@ -16,7 +16,6 @@ prettyplease = { workspace = true }
 clap = { version = "4", default-features = false, features = ["derive", "std"] }
 toml = "1"
 serde = { version = "1", features = ["derive"] }
-heck = "0"
 anyhow = "1"
 
 v_escape-codegen-base = { workspace = true }
