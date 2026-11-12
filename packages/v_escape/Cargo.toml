@@ -1,6 +1,6 @@
 [package]
 name = "v_escape"
-version = "0.19.0"
+version = "1.0.0"
 edition = "2024"
 authors = ["Juan Aguilar Santillana <mhpoin@gmail.com>"]
 description = "The simd optimized escaping code with macro"

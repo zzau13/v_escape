@@ -65,6 +65,7 @@ Use the provided release script:
 - `proc-macro` - Procedural macros
 - `v_escape` - Main escape crate
 - `v_htmlescape` - HTML escaping
+- `v_html5escape` - HTML escaping without escaping `/`
 - `v_jsonescape` - JSON escaping
 - `v_latexescape` - LaTeX escaping
 
@@ -108,8 +109,9 @@ When releasing multiple packages, follow this order to handle dependencies corre
 4. `proc-macro` (depends on base)
 5. `v_escape` (depends on base)
 6. `v_htmlescape` (depends on base)
-7. `v_jsonescape` (depends on base)
-8. `v_latexescape` (depends on base)
+7. `v_html5escape` (depends on base)
+8. `v_jsonescape` (depends on base)
+9. `v_latexescape` (depends on base)
 
 ## Configuration Files
 
