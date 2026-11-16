@@ -11,3 +11,7 @@ use v_jsonescape::escape_fmt;
 
 print!("{}", escape_fmt("foo\"\\bar"));
 ```
+
+## Documentation
+
+- Minimum supported Rust version: 1.93.0 or later
