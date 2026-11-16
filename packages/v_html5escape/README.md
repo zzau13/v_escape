@@ -20,6 +20,10 @@ print!("{}", escape_fmt("<p title=\"it's\">&</p>"));
 The generated crate provides `escape_fmt`, `escape_string`, and `escape_bytes`,
 gated by the `fmt`, `string`, and `bytes` features respectively.
 
+## Documentation
+
+- Minimum supported Rust version: 1.93.0 or later
+
 ## License
 
 Licensed under either of

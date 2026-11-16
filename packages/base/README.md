@@ -18,7 +18,7 @@ preserved unchanged.
 
 ## Documentation
 
-- Minimum supported Rust version: 1.93.1 or later
+- Minimum supported Rust version: 1.93.0 or later
 
 ## License
 
