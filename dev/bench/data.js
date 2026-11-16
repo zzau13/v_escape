@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1794545375936,
+  "lastUpdate": 1794852567044,
   "repoUrl": "https://github.com/zzau13/v_escape",
   "entries": {
     "Benchmark": [
@@ -10104,6 +10104,182 @@ window.BENCHMARK_DATA = {
           {
             "name": "v_html5escape/Escaping/one escaped",
             "value": 6,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_html5escape/Escaping/empty",
+            "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "zzau13",
+            "username": "zzau13"
+          },
+          "committer": {
+            "name": "zzau13",
+            "username": "zzau13"
+          },
+          "id": "8bf455653cd73e075d43161fcfb54cfbf7dca258",
+          "message": "fix: reduce msrv to 1.93.0",
+          "timestamp": "2026-11-13T17:26:06Z",
+          "url": "https://github.com/zzau13/v_escape/pull/193/commits/8bf455653cd73e075d43161fcfb54cfbf7dca258"
+        },
+        "date": 1794852566618,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "v_jsonescape/Escaping/huge",
+            "value": 216499,
+            "range": "± 1386",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/huge escaped",
+            "value": 150577,
+            "range": "± 1819",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/small",
+            "value": 148,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/small escaped",
+            "value": 109,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/tiny",
+            "value": 31,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/tiny escaped",
+            "value": 14,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/very tiny",
+            "value": 7,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/very tiny escaped",
+            "value": 7,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/ultra tiny",
+            "value": 8,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/ultra tiny escaped",
+            "value": 8,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/one",
+            "value": 6,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/one escaped",
+            "value": 7,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_jsonescape/Escaping/empty",
+            "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_html5escape/Escaping/huge",
+            "value": 112539,
+            "range": "± 2177",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_html5escape/Escaping/huge escaped",
+            "value": 26704,
+            "range": "± 194",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_html5escape/Escaping/small",
+            "value": 67,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_html5escape/Escaping/small escaped",
+            "value": 23,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_html5escape/Escaping/tiny",
+            "value": 39,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_html5escape/Escaping/tiny escaped",
+            "value": 10,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_html5escape/Escaping/very tiny",
+            "value": 24,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_html5escape/Escaping/very tiny escaped",
+            "value": 9,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_html5escape/Escaping/ultra tiny",
+            "value": 18,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_html5escape/Escaping/ultra tiny escaped",
+            "value": 11,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_html5escape/Escaping/one",
+            "value": 7,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "v_html5escape/Escaping/one escaped",
+            "value": 8,
             "range": "± 0",
             "unit": "ns/iter"
           },
